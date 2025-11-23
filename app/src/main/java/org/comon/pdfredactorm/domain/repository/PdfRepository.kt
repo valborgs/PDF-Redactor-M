@@ -1,0 +1,22 @@
+package org.comon.pdfredactorm.domain.repository
+
+import kotlinx.coroutines.flow.Flow
+import org.comon.pdfredactorm.domain.model.PdfDocument
+import org.comon.pdfredactorm.domain.model.RedactionMask
+import java.io.File
+
+import java.io.OutputStream
+
+interface PdfRepository {
+    suspend fun loadPdf(file: File): PdfDocument
+    suspend fun getPdfPageCount(file: File): Int
+    suspend fun saveRedactedPdf(originalFile: File, redactions: List<RedactionMask>, outputStream: OutputStream): Result<Unit>
+    
+    // History/Project management
+    fun getRecentProjects(): Flow<List<PdfDocument>>
+    suspend fun saveProject(pdfDocument: PdfDocument)
+    suspend fun saveRedactions(pdfId: String, redactions: List<RedactionMask>)
+    suspend fun getRedactions(pdfId: String): List<RedactionMask>
+    suspend fun deleteProject(pdfId: String)
+    suspend fun getProject(pdfId: String): PdfDocument?
+}

@@ -27,4 +27,9 @@
 ## 🚀 현재 진행 상황
 - [x] 프로젝트 초기화 및 Gradle 설정 (Kotlin 2.2.21, Version Catalog)
 - [x] 개발 계획서 및 기술 스택 선정 완료
-- [ ] Clean Architecture 레이어 구현 (진행 예정)
+- [x] Clean Architecture 레이어 구현 (Domain, Data, Presentation)
+- [x] PDF 파일 불러오기 및 렌더링 (PdfRenderer)
+- [x] 마스킹 UI 및 로직 구현 (터치 드래그, 삭제)
+- [x] 마스킹 된 PDF 저장 기능 (PdfBox, System File Picker)
+- [x] 작업 내역 자동 저장 (Room DB)
+- [ ] PII 자동 탐지 로직 구현 (진행 예정)
