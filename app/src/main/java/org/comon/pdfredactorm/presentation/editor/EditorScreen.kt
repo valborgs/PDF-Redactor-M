@@ -23,14 +23,15 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import org.comon.pdfredactorm.R
 import org.comon.pdfredactorm.domain.model.DetectedPii
 import org.comon.pdfredactorm.domain.model.RedactionMask
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,7 +71,12 @@ fun EditorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(uiState.document?.fileName ?: stringResource(R.string.editor_title)) },
+                title = { 
+                    Text(
+                        text = uiState.document?.fileName ?: stringResource(R.string.editor_title),
+                        fontSize = 11.sp
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back_content_description))
@@ -132,13 +138,19 @@ fun EditorScreen(
                         Icon(Icons.Default.ArrowForward, contentDescription = stringResource(R.string.next_page_content_description))
                     }
                     Spacer(modifier = Modifier.weight(1f))
-                    IconButton(
-                        onClick = { viewModel.toggleMaskingMode() },
-                        colors = IconButtonDefaults.iconButtonColors(
-                            contentColor = if (uiState.isMaskingMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                        )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.toggle_masking_content_description))
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_highlighter),
+                            contentDescription = stringResource(R.string.toggle_masking_content_description),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                        Switch(
+                            checked = uiState.isMaskingMode,
+                            onCheckedChange = { viewModel.toggleMaskingMode() }
+                        )
                     }
                 }
             )
