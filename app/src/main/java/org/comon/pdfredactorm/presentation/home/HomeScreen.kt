@@ -12,10 +12,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Help
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -36,6 +40,7 @@ fun HomeScreen(
 ) {
     val recentProjects by viewModel.recentProjects.collectAsState()
     val context = LocalContext.current
+    var showHelpDialog by remember { mutableStateOf(false) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -57,7 +62,17 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("PDF Redactor") })
+            TopAppBar(
+                title = { Text("PDF Redactor") },
+                actions = {
+                    IconButton(onClick = { showHelpDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Help,
+                            contentDescription = "도움말"
+                        )
+                    }
+                }
+            )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {
@@ -92,6 +107,11 @@ fun HomeScreen(
                     )
                 }
             }
+        }
+
+        // Show help dialog
+        if (showHelpDialog) {
+            HelpDialog(onDismiss = { showHelpDialog = false })
         }
     }
 }
