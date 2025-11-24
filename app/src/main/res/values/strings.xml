@@ -1,6 +1,6 @@
 <resources>
     <!-- App Name -->
-    <string name="app_name">PDF Redactor</string>
+    <string name="app_name">PDF안심이</string>
     
     <!-- Home Screen -->
     <string name="help_content_description">도움말</string>
@@ -46,8 +46,8 @@
     <string name="next_button">다음</string>
     
     <!-- Help Pages -->
-    <string name="help_page_1_title">PDF Redactor에 오신 것을 환영합니다</string>
-    <string name="help_page_1_content">PDF Redactor는 PDF 문서의 민감한 정보를 안전하게 가릴 수 있는 앱입니다.\n\n주요 기능:\n• PDF 파일 불러오기\n• 텍스트 및 이미지 영역 마스킹\n• 수정된 PDF 저장\n\n이 가이드를 통해 앱 사용 방법을 배워보세요.</string>
+    <string name="help_page_1_title">PDF안심이를 사용해주셔서 감사합니다</string>
+    <string name="help_page_1_content">PDF안심이는 PDF 문서의 민감한 정보를 안전하게 가릴 수 있는 앱입니다.\n\n주요 기능:\n• PDF 파일 불러오기\n• 텍스트 및 이미지 영역 마스킹\n• 수정된 PDF 저장\n\n이 가이드를 통해 앱 사용 방법을 배워보세요.</string>
     
     <string name="help_page_2_title">1. PDF 파일 열기</string>
     <string name="help_page_2_content">PDF 파일을 열려면:\n\n1. 홈 화면 오른쪽 하단의 \'+\' 버튼을 탭합니다.\n2. 기기에서 PDF 파일을 선택합니다.\n3. 파일이 로드되면 편집 화면으로 이동합니다.\n\n최근에 작업한 프로젝트는 홈 화면에 목록으로 표시됩니다.</string>

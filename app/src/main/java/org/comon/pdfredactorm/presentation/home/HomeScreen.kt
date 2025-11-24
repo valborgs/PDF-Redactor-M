@@ -1,7 +1,5 @@
 package org.comon.pdfredactorm.presentation.home
 
-import android.app.Activity
-import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,7 +10,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Help
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -29,6 +26,7 @@ import org.comon.pdfredactorm.domain.model.PdfDocument
 import java.io.File
 import java.io.FileOutputStream
 import androidx.compose.foundation.Image
+import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import org.comon.pdfredactorm.R
@@ -68,7 +66,7 @@ fun HomeScreen(
                 actions = {
                     IconButton(onClick = { showHelpDialog = true }) {
                         Icon(
-                            imageVector = Icons.Default.Help,
+                            imageVector = Icons.AutoMirrored.Filled.Help,
                             contentDescription = stringResource(R.string.help_content_description)
                         )
                     }
@@ -90,7 +88,7 @@ fun HomeScreen(
             contentAlignment = Alignment.Center
         ) {
             Image(
-                painter = painterResource(id = R.drawable.ic_pdf_background),
+                painter = painterResource(id = R.drawable.logo),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(0.5f),
                 alpha = 0.3f
