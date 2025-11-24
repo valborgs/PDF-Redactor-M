@@ -48,6 +48,6 @@ object AppModule {
         // Initialize PDFBox
         com.tom_roush.pdfbox.android.PDFBoxResourceLoader.init(context)
         
-        return PdfRepositoryImpl(context, projectDao, redactionDao)
+        return PdfRepositoryImpl(projectDao, redactionDao)
     }
 }

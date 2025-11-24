@@ -38,6 +38,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.List
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,6 +82,7 @@ fun EditorScreen(
     var showPageJumpDialog by remember { mutableStateOf(false) }
     var pageInputValue by remember { mutableStateOf("") }
     var showPageInputError by remember { mutableStateOf(false) }
+    var showOutlineDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -87,7 +95,7 @@ fun EditorScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back_content_description))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back_content_description))
                     }
                 },
                 actions = {
@@ -123,6 +131,13 @@ fun EditorScreen(
                         }
                     }
 
+                    IconButton(
+                        onClick = { showOutlineDialog = true },
+                        enabled = uiState.outline.isNotEmpty()
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = stringResource(R.string.outline_content_description))
+                    }
+
                     IconButton(onClick = {
                         val fileName = "redacted_${System.currentTimeMillis()}.pdf"
                         saveLauncher.launch(fileName)
@@ -136,7 +151,7 @@ fun EditorScreen(
             BottomAppBar(
                 actions = {
                     IconButton(onClick = { viewModel.prevPage() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.prev_page_content_description))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.prev_page_content_description))
                     }
 
                     val interactionSource = remember { MutableInteractionSource() }
@@ -165,7 +180,7 @@ fun EditorScreen(
                     )
 
                     IconButton(onClick = { viewModel.nextPage() }) {
-                        Icon(Icons.Default.ArrowForward, contentDescription = stringResource(R.string.next_page_content_description))
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.next_page_content_description))
                     }
                     Spacer(modifier = Modifier.weight(1f))
                     Row(
@@ -277,6 +292,93 @@ fun EditorScreen(
                 }
             }
         )
+    }
+
+    // Outline Dialog
+    if (showOutlineDialog) {
+        AlertDialog(
+            onDismissRequest = { showOutlineDialog = false },
+            title = { Text(stringResource(R.string.outline_title)) },
+            text = {
+                if (uiState.outline.isEmpty()) {
+                    Text(stringResource(R.string.no_outline_available))
+                } else {
+                    val scrollState = rememberScrollState()
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(400.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(end = 12.dp)
+                                .verticalScroll(scrollState)
+                        ) {
+                            uiState.outline.forEach { item ->
+                                OutlineItemView(
+                                    item = item,
+                                    level = 0,
+                                    onClick = { pageIndex ->
+                                        viewModel.goToPage(pageIndex + 1)
+                                        showOutlineDialog = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showOutlineDialog = false }) {
+                    Text(stringResource(R.string.cancel_button))
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun OutlineItemView(
+    item: org.comon.pdfredactorm.domain.model.PdfOutlineItem,
+    level: Int,
+    onClick: (Int) -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onClick(item.pageIndex) }
+                .padding(
+                    start = (16 * level).dp + 8.dp,
+                    top = 8.dp,
+                    bottom = 8.dp,
+                    end = 8.dp
+                ),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = item.title,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontWeight = if (level == 0) FontWeight.Bold else FontWeight.Normal
+                ),
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = stringResource(R.string.outline_page_format, item.pageIndex + 1),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        // Render children recursively
+        item.children.forEach { child ->
+            OutlineItemView(
+                item = child,
+                level = level + 1,
+                onClick = onClick
+            )
+        }
     }
 }
 

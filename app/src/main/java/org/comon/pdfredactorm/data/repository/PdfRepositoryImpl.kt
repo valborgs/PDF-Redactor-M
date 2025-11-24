@@ -1,13 +1,11 @@
 package org.comon.pdfredactorm.data.repository
 
-import android.content.Context
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -20,15 +18,18 @@ import org.comon.pdfredactorm.data.pii.PiiPatterns
 import org.comon.pdfredactorm.data.pii.PiiTextStripper
 import org.comon.pdfredactorm.domain.model.DetectedPii
 import org.comon.pdfredactorm.domain.model.PdfDocument
+import org.comon.pdfredactorm.domain.model.PdfOutlineItem
 import org.comon.pdfredactorm.domain.model.RedactionMask
 import org.comon.pdfredactorm.domain.repository.PdfRepository
+import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem
+import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineNode
+import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageDestination
 import java.io.File
 import java.io.OutputStream
 import java.util.UUID
 import javax.inject.Inject
 
 class PdfRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val projectDao: ProjectDao,
     private val redactionDao: RedactionDao
 ) : PdfRepository {
@@ -75,9 +76,11 @@ class PdfRepositoryImpl @Inject constructor(
                     if (pageIndex < document.numberOfPages) {
                         val page = document.getPage(pageIndex)
                         val contentStream = PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND, true, true)
-                        
-                        contentStream.setNonStrokingColor(0, 0, 0)
-                        
+
+                        // Set black color using PDColor (new API)
+                        val blackColor = PDColor(floatArrayOf(0f, 0f, 0f), PDDeviceRGB.INSTANCE)
+                        contentStream.setNonStrokingColor(blackColor)
+
                         for (mask in masks) {
                             // PDF coordinates usually start from bottom-left, but Android/Canvas is top-left.
                             // We need to handle coordinate conversion if the UI sends top-left based coordinates.
@@ -195,9 +198,6 @@ class PdfRepositoryImpl @Inject constructor(
                     return@withContext emptyList()
                 }
 
-                val page = document.getPage(pageIndex)
-                val pageHeight = page.mediaBox.height
-
                 val stripper = PiiTextStripper()
                 stripper.startPage = pageIndex + 1
                 stripper.endPage = pageIndex + 1
@@ -289,6 +289,95 @@ class PdfRepositoryImpl @Inject constructor(
             }
 
             allDetectedPii
+        }
+    }
+
+    override suspend fun getOutline(file: File): List<PdfOutlineItem> {
+        return withContext(Dispatchers.IO) {
+            val outlineItems = mutableListOf<PdfOutlineItem>()
+
+            try {
+                val document = PDDocument.load(file)
+                val documentOutline = document.documentCatalog.documentOutline
+
+                if (documentOutline != null) {
+                    processOutlineNode(documentOutline, outlineItems, document)
+                }
+
+                document.close()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            outlineItems
+        }
+    }
+
+    private fun processOutlineNode(
+        node: PDOutlineNode,
+        outlineItems: MutableList<PdfOutlineItem>,
+        document: PDDocument
+    ) {
+        var current: PDOutlineItem? = node.firstChild
+        while (current != null) {
+            try {
+                val title = current.title ?: "Untitled"
+                val destination = current.destination
+                val pageIndex = if (destination != null && destination is PDPageDestination) {
+                    try {
+                        val page = destination.page
+                        if (page != null) {
+                            document.pages.indexOf(page)
+                        } else {
+                            -1
+                        }
+                    } catch (e: Exception) {
+                        -1
+                    }
+                } else {
+                    // Try to get page from action
+                    val action = current.action
+                    if (action is com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionGoTo) {
+                        try {
+                            val dest = action.destination
+                            if (dest is PDPageDestination) {
+                                val page = dest.page
+                                if (page != null) {
+                                    document.pages.indexOf(page)
+                                } else {
+                                    -1
+                                }
+                            } else {
+                                -1
+                            }
+                        } catch (e: Exception) {
+                            -1
+                        }
+                    } else {
+                        -1
+                    }
+                }
+
+                // Only add items with valid page indices
+                if (pageIndex >= 0) {
+                    val children = mutableListOf<PdfOutlineItem>()
+                    if (current.hasChildren()) {
+                        processOutlineNode(current, children, document)
+                    }
+
+                    outlineItems.add(
+                        PdfOutlineItem(
+                            title = title,
+                            pageIndex = pageIndex,
+                            children = children
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            current = current.nextSibling
         }
     }
 }

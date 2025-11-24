@@ -15,6 +15,7 @@
     <string name="detect_current_page">현재 페이지 탐지</string>
     <string name="detect_all_pages">모든 페이지 탐지</string>
     <string name="save_content_description">저장</string>
+    <string name="outline_content_description">목차</string>
     <string name="prev_page_content_description">이전 페이지</string>
     <string name="next_page_content_description">다음 페이지</string>
     <string name="toggle_masking_content_description">마스킹 모드 전환</string>
@@ -25,6 +26,11 @@
     <string name="go_to_page_hint">페이지 번호 입력 (1-%d)</string>
     <string name="confirm_button">확인</string>
     <string name="invalid_page_number">유효하지 않은 페이지 번호입니다</string>
+
+    <!-- Outline Dialog -->
+    <string name="outline_title">목차</string>
+    <string name="no_outline_available">목차를 사용할 수 없습니다</string>
+    <string name="outline_page_format">(p.%d)</string>
 
     <!-- PII Detection Dialog -->
     <string name="detected_pii_title">탐지된 개인정보</string>

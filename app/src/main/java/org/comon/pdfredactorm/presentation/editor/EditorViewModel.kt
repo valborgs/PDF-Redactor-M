@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.comon.pdfredactorm.domain.model.DetectedPii
 import org.comon.pdfredactorm.domain.model.PdfDocument
+import org.comon.pdfredactorm.domain.model.PdfOutlineItem
 import org.comon.pdfredactorm.domain.model.RedactionMask
 import org.comon.pdfredactorm.domain.repository.PdfRepository
 import org.comon.pdfredactorm.domain.usecase.DetectPiiUseCase
@@ -38,6 +39,7 @@ data class EditorUiState(
     val pdfPageHeight: Int = 0,
     val redactions: List<RedactionMask> = emptyList(),
     val detectedPii: List<DetectedPii> = emptyList(),
+    val outline: List<PdfOutlineItem> = emptyList(),
     val isMaskingMode: Boolean = false,
     val isDetecting: Boolean = false,
     val isLoading: Boolean = false,
@@ -69,11 +71,13 @@ class EditorViewModel @Inject constructor(
             val document = repository.getProject(pdfId)
             if (document != null) {
                 val redactions = getRedactionsUseCase(pdfId)
+                val outline = repository.getOutline(document.file)
                 _uiState.update {
                     it.copy(
                         document = document,
                         pageCount = document.pageCount,
                         redactions = redactions,
+                        outline = outline,
                         isLoading = false
                     )
                 }

@@ -3,6 +3,7 @@ package org.comon.pdfredactorm.domain.repository
 import kotlinx.coroutines.flow.Flow
 import org.comon.pdfredactorm.domain.model.DetectedPii
 import org.comon.pdfredactorm.domain.model.PdfDocument
+import org.comon.pdfredactorm.domain.model.PdfOutlineItem
 import org.comon.pdfredactorm.domain.model.RedactionMask
 import java.io.File
 
@@ -16,6 +17,9 @@ interface PdfRepository {
     // PII Detection
     suspend fun detectPii(file: File, pageIndex: Int): List<DetectedPii>
     suspend fun detectPiiInAllPages(file: File): List<DetectedPii>
+
+    // Outline/Bookmarks
+    suspend fun getOutline(file: File): List<PdfOutlineItem>
 
     // History/Project management
     fun getRecentProjects(): Flow<List<PdfDocument>>
