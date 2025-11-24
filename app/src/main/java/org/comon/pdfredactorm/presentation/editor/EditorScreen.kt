@@ -33,6 +33,11 @@ import org.comon.pdfredactorm.domain.model.DetectedPii
 import org.comon.pdfredactorm.domain.model.RedactionMask
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,6 +72,9 @@ fun EditorScreen(
     }
 
     var showDetectionMenu by remember { mutableStateOf(false) }
+    var showPageJumpDialog by remember { mutableStateOf(false) }
+    var pageInputValue by remember { mutableStateOf("") }
+    var showPageInputError by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -130,10 +138,32 @@ fun EditorScreen(
                     IconButton(onClick = { viewModel.prevPage() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.prev_page_content_description))
                     }
-                    Text(
-                        stringResource(R.string.page_indicator, uiState.currentPage + 1, uiState.pageCount),
-                        modifier = Modifier.padding(horizontal = 8.dp)
+
+                    val interactionSource = remember { MutableInteractionSource() }
+                    val isPressed by interactionSource.collectIsPressedAsState()
+
+                    LaunchedEffect(isPressed) {
+                        if (isPressed) {
+                            pageInputValue = (uiState.currentPage + 1).toString()
+                            showPageJumpDialog = true
+                        }
+                    }
+
+                    OutlinedTextField(
+                        value = stringResource(R.string.page_indicator, uiState.currentPage + 1, uiState.pageCount),
+                        onValueChange = { },
+                        readOnly = true,
+                        modifier = Modifier
+                            .width(100.dp)
+                            .padding(horizontal = 4.dp),
+                        textStyle = MaterialTheme.typography.bodySmall.copy(
+                            textAlign = TextAlign.Center,
+                            fontSize = 12.sp
+                        ),
+                        singleLine = true,
+                        interactionSource = interactionSource
                     )
+
                     IconButton(onClick = { viewModel.nextPage() }) {
                         Icon(Icons.Default.ArrowForward, contentDescription = stringResource(R.string.next_page_content_description))
                     }
@@ -190,6 +220,63 @@ fun EditorScreen(
                 }
             }
         }
+    }
+
+    // Page Jump Dialog
+    if (showPageJumpDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showPageJumpDialog = false
+                pageInputValue = ""
+                showPageInputError = false
+            },
+            title = { Text(stringResource(R.string.go_to_page_title)) },
+            text = {
+                OutlinedTextField(
+                    value = pageInputValue,
+                    onValueChange = {
+                        pageInputValue = it
+                        showPageInputError = false
+                    },
+                    label = { Text(stringResource(R.string.go_to_page_hint, uiState.pageCount)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = showPageInputError,
+                    supportingText = if (showPageInputError) {
+                        { Text(stringResource(R.string.invalid_page_number)) }
+                    } else null
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val pageNumber = pageInputValue.toIntOrNull()
+                        if (pageNumber != null && pageNumber in 1..uiState.pageCount) {
+                            viewModel.goToPage(pageNumber)
+                            showPageJumpDialog = false
+                            pageInputValue = ""
+                            showPageInputError = false
+                        } else {
+                            showPageInputError = true
+                        }
+                    }
+                ) {
+                    Text(stringResource(R.string.confirm_button))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showPageJumpDialog = false
+                        pageInputValue = ""
+                        showPageInputError = false
+                    }
+                ) {
+                    Text(stringResource(R.string.cancel_button))
+                }
+            }
+        )
     }
 }
 

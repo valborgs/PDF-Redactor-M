@@ -176,6 +176,14 @@ class EditorViewModel @Inject constructor(
         }
     }
 
+    fun goToPage(pageNumber: Int) {
+        val currentState = _uiState.value
+        val pageIndex = pageNumber - 1 // Convert 1-based to 0-based index
+        if (pageIndex in 0 until currentState.pageCount) {
+            loadPage(pageIndex)
+        }
+    }
+
     fun savePdf(uri: Uri) {
         val currentState = _uiState.value
         currentState.document?.let { doc ->

@@ -19,7 +19,13 @@
     <string name="next_page_content_description">다음 페이지</string>
     <string name="toggle_masking_content_description">마스킹 모드 전환</string>
     <string name="page_indicator">%1$d / %2$d</string>
-    
+
+    <!-- Page Jump Dialog -->
+    <string name="go_to_page_title">페이지 이동</string>
+    <string name="go_to_page_hint">페이지 번호 입력 (1-%d)</string>
+    <string name="confirm_button">확인</string>
+    <string name="invalid_page_number">유효하지 않은 페이지 번호입니다</string>
+
     <!-- PII Detection Dialog -->
     <string name="detected_pii_title">탐지된 개인정보</string>
     <string name="pii_type_label">타입: %s</string>
