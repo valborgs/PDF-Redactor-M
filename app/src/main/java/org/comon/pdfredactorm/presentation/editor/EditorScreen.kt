@@ -259,7 +259,7 @@ fun PdfViewer(
                     translationX = offset.x,
                     translationY = offset.y
                 )
-                .pointerInput(Unit) {
+                .pointerInput(isMaskingMode) {
                     detectTapGestures(
                         onTap = { tapOffset ->
                             if (!isMaskingMode) {

@@ -9,7 +9,8 @@ class PiiTextStripper : PDFTextStripper() {
         val x: Float,
         val y: Float,
         val width: Float,
-        val height: Float
+        val height: Float,
+        val textPositions: List<TextPosition>
     )
 
     val textPositions = mutableListOf<TextWithPosition>()
@@ -33,7 +34,8 @@ class PiiTextStripper : PDFTextStripper() {
                     x = x,
                     y = y,
                     width = width,
-                    height = height
+                    height = height,
+                    textPositions = textPositions.toList()
                 )
             )
         }

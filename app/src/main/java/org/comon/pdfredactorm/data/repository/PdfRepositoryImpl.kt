@@ -210,29 +210,57 @@ class PdfRepositoryImpl @Inject constructor(
                     val matches = PiiPatterns.detectAll(textWithPos.text)
 
                     matches.forEach { (type, match) ->
-                        // Calculate position for the matched text
-                        // This is a simplified approach - in production, you'd need more precise text positioning
-                        val matchedText = match.value
-                        val textRatio = match.range.first.toFloat() / textWithPos.text.length
+                        val startIndex = match.range.first
+                        val endIndex = match.range.last
 
-                        // Estimate the position of the matched text
-                        val estimatedX = textWithPos.x + (textWithPos.width * textRatio)
-                        val estimatedWidth = textWithPos.width * (matchedText.length.toFloat() / textWithPos.text.length)
+                        if (textWithPos.textPositions.size == textWithPos.text.length && 
+                            startIndex >= 0 && endIndex < textWithPos.textPositions.size) {
+                            // Exact match - use precise positions
+                            val firstChar = textWithPos.textPositions[startIndex]
+                            val lastChar = textWithPos.textPositions[endIndex]
 
-                        // Convert from PDF coordinates (bottom-left) to UI coordinates (top-left)
-                        val uiY = pageHeight - textWithPos.y - textWithPos.height
+                            val x = firstChar.x
+                            val width = lastChar.endX - firstChar.x
+                            val height = firstChar.height
+                            // PDFBox TextPosition.y is the baseline. In Top-Left system (Y increases down),
+                            // we need to subtract height to get the top-left corner of the bounding box.
+                            val y = firstChar.y - height
 
-                        detectedPiiList.add(
-                            DetectedPii(
-                                text = matchedText,
-                                type = type,
-                                pageIndex = pageIndex,
-                                x = estimatedX,
-                                y = uiY,
-                                width = estimatedWidth,
-                                height = textWithPos.height
+                            detectedPiiList.add(
+                                DetectedPii(
+                                    text = match.value,
+                                    type = type,
+                                    pageIndex = pageIndex,
+                                    x = x,
+                                    y = y,
+                                    width = width,
+                                    height = height
+                                )
                             )
-                        )
+                        } else {
+                            // Fallback to estimation if sizes don't match (e.g. ligatures)
+                            val matchedText = match.value
+                            val textRatio = match.range.first.toFloat() / textWithPos.text.length
+
+                            val estimatedX = textWithPos.x + (textWithPos.width * textRatio)
+                            val estimatedWidth = textWithPos.width * (matchedText.length.toFloat() / textWithPos.text.length)
+                            
+                            // Use the Y from the text block (Top-Left)
+                            // Note: textWithPos.y comes from firstPosition.y which is the baseline.
+                            val y = textWithPos.y - textWithPos.height
+                            
+                            detectedPiiList.add(
+                                DetectedPii(
+                                    text = matchedText,
+                                    type = type,
+                                    pageIndex = pageIndex,
+                                    x = estimatedX,
+                                    y = y,
+                                    width = estimatedWidth,
+                                    height = textWithPos.height
+                                )
+                            )
+                        }
                     }
                 }
 
