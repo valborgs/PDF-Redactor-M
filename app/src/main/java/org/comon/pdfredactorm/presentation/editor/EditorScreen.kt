@@ -24,6 +24,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import org.comon.pdfredactorm.domain.model.DetectedPii
 import org.comon.pdfredactorm.domain.model.RedactionMask
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -61,6 +62,8 @@ fun EditorScreen(
         }
     }
 
+    var showDetectionMenu by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -71,7 +74,39 @@ fun EditorScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { 
+                    // Detection Menu
+                    Box {
+                        IconButton(onClick = { showDetectionMenu = true }) {
+                            Icon(Icons.Default.Search, contentDescription = "Detect PII")
+                        }
+                        DropdownMenu(
+                            expanded = showDetectionMenu,
+                            onDismissRequest = { showDetectionMenu = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("현재 페이지 탐지") },
+                                onClick = {
+                                    viewModel.detectPiiInCurrentPage()
+                                    showDetectionMenu = false
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Search, contentDescription = null)
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("모든 페이지 탐지") },
+                                onClick = {
+                                    viewModel.detectPiiInAllPages()
+                                    showDetectionMenu = false
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Done, contentDescription = null)
+                                }
+                            )
+                        }
+                    }
+
+                    IconButton(onClick = {
                         val fileName = "redacted_${System.currentTimeMillis()}.pdf"
                         saveLauncher.launch(fileName)
                     }) {
@@ -113,13 +148,14 @@ fun EditorScreen(
                 .background(Color.LightGray),
             contentAlignment = Alignment.Center
         ) {
-            if (uiState.isLoading) {
+            if (uiState.isLoading || uiState.isDetecting) {
                 CircularProgressIndicator()
             } else {
                 uiState.currentPageBitmap?.let { bitmap ->
                     PdfViewer(
                         bitmap = bitmap,
                         redactions = uiState.redactions.filter { it.pageIndex == uiState.currentPage },
+                        detectedPii = uiState.detectedPii.filter { it.pageIndex == uiState.currentPage },
                         isMaskingMode = uiState.isMaskingMode,
                         pdfPageWidth = uiState.pdfPageWidth,
                         pdfPageHeight = uiState.pdfPageHeight,
@@ -128,6 +164,12 @@ fun EditorScreen(
                         },
                         onRemoveRedaction = { id ->
                             viewModel.removeRedaction(id)
+                        },
+                        onConvertPiiToMask = { pii ->
+                            viewModel.convertDetectedPiiToMask(pii)
+                        },
+                        onRemoveDetectedPii = { pii ->
+                            viewModel.removeDetectedPii(pii)
                         }
                     )
                 }
@@ -140,19 +182,26 @@ fun EditorScreen(
 fun PdfViewer(
     bitmap: Bitmap,
     redactions: List<RedactionMask>,
+    detectedPii: List<DetectedPii>,
     isMaskingMode: Boolean,
     pdfPageWidth: Int,
     pdfPageHeight: Int,
     onAddRedaction: (Float, Float, Float, Float) -> Unit,
-    onRemoveRedaction: (String) -> Unit
+    onRemoveRedaction: (String) -> Unit,
+    onConvertPiiToMask: (DetectedPii) -> Unit,
+    onRemoveDetectedPii: (DetectedPii) -> Unit
 ) {
     var scale by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
-    
+
     // Temporary drag state for drawing new mask
     var dragStart by remember { mutableStateOf<Offset?>(null) }
     var dragEnd by remember { mutableStateOf<Offset?>(null) }
+
+    // Context menu state for detected PII
+    var selectedPii by remember { mutableStateOf<DetectedPii?>(null) }
+    var showPiiContextMenu by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -212,6 +261,28 @@ fun PdfViewer(
                 )
                 .pointerInput(Unit) {
                     detectTapGestures(
+                        onTap = { tapOffset ->
+                            if (!isMaskingMode) {
+                                // Check if tap is inside any detected PII
+                                val bitmapWidth = bitmap.width.toFloat()
+                                val bitmapHeight = bitmap.height.toFloat()
+                                val scaleX = pdfPageWidth / bitmapWidth
+                                val scaleY = pdfPageHeight / bitmapHeight
+
+                                val tapX = tapOffset.x * scaleX
+                                val tapY = tapOffset.y * scaleY
+
+                                val hitPii = detectedPii.find { pii ->
+                                    tapX >= pii.x && tapX <= pii.x + pii.width &&
+                                    tapY >= pii.y && tapY <= pii.y + pii.height
+                                }
+
+                                if (hitPii != null) {
+                                    selectedPii = hitPii
+                                    showPiiContextMenu = true
+                                }
+                            }
+                        },
                         onLongPress = { tapOffset ->
                             if (!isMaskingMode) {
                                 // Check if tap is inside any redaction
@@ -219,15 +290,15 @@ fun PdfViewer(
                                 val bitmapHeight = bitmap.height.toFloat()
                                 val scaleX = pdfPageWidth / bitmapWidth
                                 val scaleY = pdfPageHeight / bitmapHeight
-                                
+
                                 val tapX = tapOffset.x * scaleX
                                 val tapY = tapOffset.y * scaleY
-                                
+
                                 val hit = redactions.find { mask ->
                                     tapX >= mask.x && tapX <= mask.x + mask.width &&
                                     tapY >= mask.y && tapY <= mask.y + mask.height
                                 }
-                                
+
                                 hit?.let { onRemoveRedaction(it.id) }
                             }
                         }
@@ -237,12 +308,28 @@ fun PdfViewer(
             // Draw PDF Page
             drawImage(bitmap.asImageBitmap())
             
-            // Draw Existing Redactions
+            // Draw Existing Redactions and Detected PII
             val bitmapWidth = bitmap.width.toFloat()
             val bitmapHeight = bitmap.height.toFloat()
             val scaleX = bitmapWidth / pdfPageWidth
             val scaleY = bitmapHeight / pdfPageHeight
-            
+
+            // Draw detected PII (in yellow/blue with border)
+            detectedPii.forEach { pii ->
+                drawRect(
+                    color = Color.Yellow.copy(alpha = 0.3f),
+                    topLeft = Offset(pii.x * scaleX, pii.y * scaleY),
+                    size = Size(pii.width * scaleX, pii.height * scaleY)
+                )
+                drawRect(
+                    color = Color.Blue,
+                    topLeft = Offset(pii.x * scaleX, pii.y * scaleY),
+                    size = Size(pii.width * scaleX, pii.height * scaleY),
+                    style = Stroke(width = 2f)
+                )
+            }
+
+            // Draw redactions (in black)
             redactions.forEach { mask ->
                 drawRect(
                     color = Color.Black.copy(alpha = 0.5f),
@@ -279,6 +366,41 @@ fun PdfViewer(
                     style = Stroke(width = 2f)
                 )
             }
+        }
+
+        // Context Menu for Detected PII
+        if (showPiiContextMenu && selectedPii != null) {
+            AlertDialog(
+                onDismissRequest = {
+                    showPiiContextMenu = false
+                    selectedPii = null
+                },
+                title = { Text("탐지된 개인정보") },
+                text = {
+                    Column {
+                        Text("타입: ${selectedPii?.type}")
+                        Text("텍스트: ${selectedPii?.text}")
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        selectedPii?.let { onConvertPiiToMask(it) }
+                        showPiiContextMenu = false
+                        selectedPii = null
+                    }) {
+                        Text("마스킹")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        selectedPii?.let { onRemoveDetectedPii(it) }
+                        showPiiContextMenu = false
+                        selectedPii = null
+                    }) {
+                        Text("취소")
+                    }
+                }
+            )
         }
     }
 }

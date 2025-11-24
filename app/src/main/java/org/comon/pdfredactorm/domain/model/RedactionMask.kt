@@ -14,5 +14,7 @@ enum class RedactionType {
     MANUAL,
     PHONE_NUMBER,
     EMAIL,
-    RRN // Resident Registration Number
+    RRN, // Resident Registration Number
+    BIRTH_DATE, // Date of Birth
+    ADDRESS // Physical Address
 }

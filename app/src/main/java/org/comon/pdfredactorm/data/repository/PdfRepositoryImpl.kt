@@ -16,6 +16,9 @@ import org.comon.pdfredactorm.data.local.dao.ProjectDao
 import org.comon.pdfredactorm.data.local.dao.RedactionDao
 import org.comon.pdfredactorm.data.local.entity.ProjectEntity
 import org.comon.pdfredactorm.data.local.entity.RedactionEntity
+import org.comon.pdfredactorm.data.pii.PiiPatterns
+import org.comon.pdfredactorm.data.pii.PiiTextStripper
+import org.comon.pdfredactorm.domain.model.DetectedPii
 import org.comon.pdfredactorm.domain.model.PdfDocument
 import org.comon.pdfredactorm.domain.model.RedactionMask
 import org.comon.pdfredactorm.domain.repository.PdfRepository
@@ -178,6 +181,86 @@ class PdfRepositoryImpl @Inject constructor(
                 lastModified = entity.lastModified,
                 thumbnailUri = entity.thumbnailUri
             )
+        }
+    }
+
+    override suspend fun detectPii(file: File, pageIndex: Int): List<DetectedPii> {
+        return withContext(Dispatchers.IO) {
+            val detectedPiiList = mutableListOf<DetectedPii>()
+
+            try {
+                val document = PDDocument.load(file)
+                if (pageIndex >= document.numberOfPages) {
+                    document.close()
+                    return@withContext emptyList()
+                }
+
+                val page = document.getPage(pageIndex)
+                val pageHeight = page.mediaBox.height
+
+                val stripper = PiiTextStripper()
+                stripper.startPage = pageIndex + 1
+                stripper.endPage = pageIndex + 1
+
+                // Extract text with positions
+                stripper.getText(document)
+
+                // Analyze each text fragment for PII
+                stripper.textPositions.forEach { textWithPos ->
+                    val matches = PiiPatterns.detectAll(textWithPos.text)
+
+                    matches.forEach { (type, match) ->
+                        // Calculate position for the matched text
+                        // This is a simplified approach - in production, you'd need more precise text positioning
+                        val matchedText = match.value
+                        val textRatio = match.range.first.toFloat() / textWithPos.text.length
+
+                        // Estimate the position of the matched text
+                        val estimatedX = textWithPos.x + (textWithPos.width * textRatio)
+                        val estimatedWidth = textWithPos.width * (matchedText.length.toFloat() / textWithPos.text.length)
+
+                        // Convert from PDF coordinates (bottom-left) to UI coordinates (top-left)
+                        val uiY = pageHeight - textWithPos.y - textWithPos.height
+
+                        detectedPiiList.add(
+                            DetectedPii(
+                                text = matchedText,
+                                type = type,
+                                pageIndex = pageIndex,
+                                x = estimatedX,
+                                y = uiY,
+                                width = estimatedWidth,
+                                height = textWithPos.height
+                            )
+                        )
+                    }
+                }
+
+                document.close()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            detectedPiiList
+        }
+    }
+
+    override suspend fun detectPiiInAllPages(file: File): List<DetectedPii> {
+        return withContext(Dispatchers.IO) {
+            val allDetectedPii = mutableListOf<DetectedPii>()
+
+            try {
+                val pageCount = getPdfPageCount(file)
+
+                for (pageIndex in 0 until pageCount) {
+                    val piiOnPage = detectPii(file, pageIndex)
+                    allDetectedPii.addAll(piiOnPage)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            allDetectedPii
         }
     }
 }

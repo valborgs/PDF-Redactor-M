@@ -13,9 +13,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.comon.pdfredactorm.domain.model.DetectedPii
 import org.comon.pdfredactorm.domain.model.PdfDocument
 import org.comon.pdfredactorm.domain.model.RedactionMask
 import org.comon.pdfredactorm.domain.repository.PdfRepository
+import org.comon.pdfredactorm.domain.usecase.DetectPiiUseCase
 import org.comon.pdfredactorm.domain.usecase.GetRedactionsUseCase
 import org.comon.pdfredactorm.domain.usecase.SaveRedactedPdfUseCase
 import org.comon.pdfredactorm.domain.usecase.SaveRedactionsUseCase
@@ -34,7 +36,9 @@ data class EditorUiState(
     val pdfPageWidth: Int = 0,
     val pdfPageHeight: Int = 0,
     val redactions: List<RedactionMask> = emptyList(),
+    val detectedPii: List<DetectedPii> = emptyList(),
     val isMaskingMode: Boolean = false,
+    val isDetecting: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
     val saveSuccess: Boolean = false
@@ -48,7 +52,8 @@ class EditorViewModel @Inject constructor(
     private val repository: PdfRepository,
     private val getRedactionsUseCase: GetRedactionsUseCase,
     private val saveRedactionsUseCase: SaveRedactionsUseCase,
-    private val saveRedactedPdfUseCase: SaveRedactedPdfUseCase
+    private val saveRedactedPdfUseCase: SaveRedactedPdfUseCase,
+    private val detectPiiUseCase: DetectPiiUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditorUiState())
@@ -191,5 +196,75 @@ class EditorViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun detectPiiInCurrentPage() {
+        val currentState = _uiState.value
+        currentState.document?.let { doc ->
+            viewModelScope.launch {
+                _uiState.update { it.copy(isDetecting = true) }
+                detectPiiUseCase.detectInPage(doc.file, currentState.currentPage)
+                    .onSuccess { detectedList ->
+                        // Add only PII from current page
+                        val filteredExisting = currentState.detectedPii.filter { it.pageIndex != currentState.currentPage }
+                        _uiState.update {
+                            it.copy(
+                                detectedPii = filteredExisting + detectedList,
+                                isDetecting = false
+                            )
+                        }
+                    }
+                    .onFailure { e ->
+                        _uiState.update { it.copy(isDetecting = false, error = e.message) }
+                    }
+            }
+        }
+    }
+
+    fun detectPiiInAllPages() {
+        val currentState = _uiState.value
+        currentState.document?.let { doc ->
+            viewModelScope.launch {
+                _uiState.update { it.copy(isDetecting = true) }
+                detectPiiUseCase.detectInAllPages(doc.file)
+                    .onSuccess { detectedList ->
+                        _uiState.update {
+                            it.copy(
+                                detectedPii = detectedList,
+                                isDetecting = false
+                            )
+                        }
+                    }
+                    .onFailure { e ->
+                        _uiState.update { it.copy(isDetecting = false, error = e.message) }
+                    }
+            }
+        }
+    }
+
+    fun convertDetectedPiiToMask(pii: DetectedPii) {
+        val mask = RedactionMask(
+            id = UUID.randomUUID().toString(),
+            pageIndex = pii.pageIndex,
+            x = pii.x,
+            y = pii.y,
+            width = pii.width,
+            height = pii.height,
+            type = pii.type
+        )
+        val updatedRedactions = _uiState.value.redactions + mask
+        val updatedDetectedPii = _uiState.value.detectedPii.filter { it != pii }
+        _uiState.update {
+            it.copy(
+                redactions = updatedRedactions,
+                detectedPii = updatedDetectedPii
+            )
+        }
+        saveRedactions()
+    }
+
+    fun removeDetectedPii(pii: DetectedPii) {
+        val updatedDetectedPii = _uiState.value.detectedPii.filter { it != pii }
+        _uiState.update { it.copy(detectedPii = updatedDetectedPii) }
     }
 }
