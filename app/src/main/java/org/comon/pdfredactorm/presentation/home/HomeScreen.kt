@@ -30,6 +30,7 @@ import java.io.File
 import java.io.FileOutputStream
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import org.comon.pdfredactorm.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,12 +64,12 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("PDF Redactor") },
+                title = { Text(stringResource(R.string.app_name)) },
                 actions = {
                     IconButton(onClick = { showHelpDialog = true }) {
                         Icon(
                             imageVector = Icons.Default.Help,
-                            contentDescription = "도움말"
+                            contentDescription = stringResource(R.string.help_content_description)
                         )
                     }
                 }
@@ -78,7 +79,7 @@ fun HomeScreen(
             FloatingActionButton(onClick = {
                 launcher.launch(arrayOf("application/pdf"))
             }) {
-                Icon(Icons.Default.Add, contentDescription = "Open PDF")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.open_pdf_content_description))
             }
         }
     ) { padding ->
@@ -138,13 +139,13 @@ fun ProjectItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = project.fileName, style = MaterialTheme.typography.titleMedium)
                 Text(
-                    text = "${project.pageCount} pages",
+                    text = stringResource(R.string.page_count, project.pageCount),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete")
+                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete_content_description))
             }
         }
     }

@@ -1,0 +1,58 @@
+<resources>
+    <!-- App Name -->
+    <string name="app_name">PDF Redactor</string>
+    
+    <!-- Home Screen -->
+    <string name="help_content_description">Help</string>
+    <string name="open_pdf_content_description">Open PDF</string>
+    <string name="delete_content_description">Delete</string>
+    <string name="page_count">%d pages</string>
+    
+    <!-- Editor Screen -->
+    <string name="editor_title">Editor</string>
+    <string name="back_content_description">Back</string>
+    <string name="detect_pii_content_description">Detect PII</string>
+    <string name="detect_current_page">Detect Current Page</string>
+    <string name="detect_all_pages">Detect All Pages</string>
+    <string name="save_content_description">Save</string>
+    <string name="prev_page_content_description">Previous Page</string>
+    <string name="next_page_content_description">Next Page</string>
+    <string name="toggle_masking_content_description">Toggle Masking</string>
+    <string name="page_indicator">%1$d / %2$d</string>
+    
+    <!-- PII Detection Dialog -->
+    <string name="detected_pii_title">Detected Personal Information</string>
+    <string name="pii_type_label">Type: %s</string>
+    <string name="pii_text_label">Text: %s</string>
+    <string name="masking_button">Mask</string>
+    <string name="cancel_button">Cancel</string>
+    
+    <!-- Help Dialog -->
+    <string name="user_manual_title">User Manual</string>
+    <string name="close_content_description">Close</string>
+    <string name="previous_button">Previous</string>
+    <string name="next_button">Next</string>
+    
+    <!-- Help Pages -->
+    <string name="help_page_1_title">Welcome to PDF Redactor</string>
+    <string name="help_page_1_content">PDF Redactor is an app that allows you to safely redact sensitive information in PDF documents.\n\nKey Features:\n• Load PDF files\n• Mask text and image areas\n• Save modified PDFs\n\nLearn how to use the app through this guide.</string>
+    
+    <string name="help_page_2_title">1. Opening a PDF File</string>
+    <string name="help_page_2_content">To open a PDF file:\n\n1. Tap the \'+\' button at the bottom right of the home screen.\n2. Select a PDF file from your device.\n3. Once the file is loaded, you\'ll be taken to the editor screen.\n\nRecently worked projects are displayed as a list on the home screen.</string>
+    
+    <string name="help_page_3_title">2. Masking Areas</string>
+    <string name="help_page_3_content">To redact sensitive information:\n\n1. Touch the area you want to redact on the PDF page.\n2. Drag your finger to draw the masking area.\n3. When you release your finger, the area will be covered in black.\n\nYou can mask multiple areas, and each area is managed individually.</string>
+    
+    <string name="help_page_4_title">3. Navigating Pages</string>
+    <string name="help_page_4_content">To navigate a multi-page PDF:\n\n• Check the page number at the bottom of the screen.\n• Use the left/right arrow buttons to move to the previous/next page.\n• You can perform masking operations independently on each page.</string>
+    
+    <string name="help_page_5_title">4. Saving the PDF</string>
+    <string name="help_page_5_content">After completing the masking work:\n\n1. Tap the save button at the top.\n2. The modified PDF will be saved to your device.\n3. You can check the save location through system notifications.\n\nThe original file is not changed; it is saved as a new file.</string>
+    
+    <string name="help_page_6_title">Need Help?</string>
+    <string name="help_page_6_content">If you need additional support:\n\n• Check the version information in the app info.\n• If you encounter problems, try restarting the app.\n• To delete a project, tap the trash icon on the home screen.\n\nFor inquiries, please contact voll1212@gmail.com.\n\nThank you for using PDF Redactor!</string>
+    
+    <!-- Error Messages -->
+    <string name="error_document_not_found">Document not found</string>
+    <string name="error_failed_to_open_output_stream">Failed to open output stream</string>
+</resources>

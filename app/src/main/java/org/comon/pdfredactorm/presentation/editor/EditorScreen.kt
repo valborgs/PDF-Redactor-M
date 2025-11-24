@@ -23,7 +23,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import org.comon.pdfredactorm.R
 import org.comon.pdfredactorm.domain.model.DetectedPii
 import org.comon.pdfredactorm.domain.model.RedactionMask
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -68,24 +70,24 @@ fun EditorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(uiState.document?.fileName ?: "Editor") },
+                title = { Text(uiState.document?.fileName ?: stringResource(R.string.editor_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back_content_description))
                     }
                 },
                 actions = {
                     // Detection Menu
                     Box {
                         IconButton(onClick = { showDetectionMenu = true }) {
-                            Icon(Icons.Default.Search, contentDescription = "Detect PII")
+                            Icon(Icons.Default.Search, contentDescription = stringResource(R.string.detect_pii_content_description))
                         }
                         DropdownMenu(
                             expanded = showDetectionMenu,
                             onDismissRequest = { showDetectionMenu = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text("현재 페이지 탐지") },
+                                text = { Text(stringResource(R.string.detect_current_page)) },
                                 onClick = {
                                     viewModel.detectPiiInCurrentPage()
                                     showDetectionMenu = false
@@ -95,7 +97,7 @@ fun EditorScreen(
                                 }
                             )
                             DropdownMenuItem(
-                                text = { Text("모든 페이지 탐지") },
+                                text = { Text(stringResource(R.string.detect_all_pages)) },
                                 onClick = {
                                     viewModel.detectPiiInAllPages()
                                     showDetectionMenu = false
@@ -111,7 +113,7 @@ fun EditorScreen(
                         val fileName = "redacted_${System.currentTimeMillis()}.pdf"
                         saveLauncher.launch(fileName)
                     }) {
-                        Icon(Icons.Default.Save, contentDescription = "Save")
+                        Icon(Icons.Default.Save, contentDescription = stringResource(R.string.save_content_description))
                     }
                 }
             )
@@ -120,14 +122,14 @@ fun EditorScreen(
             BottomAppBar(
                 actions = {
                     IconButton(onClick = { viewModel.prevPage() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Prev Page")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.prev_page_content_description))
                     }
                     Text(
-                        "${uiState.currentPage + 1} / ${uiState.pageCount}",
+                        stringResource(R.string.page_indicator, uiState.currentPage + 1, uiState.pageCount),
                         modifier = Modifier.padding(horizontal = 8.dp)
                     )
                     IconButton(onClick = { viewModel.nextPage() }) {
-                        Icon(Icons.Default.ArrowForward, contentDescription = "Next Page")
+                        Icon(Icons.Default.ArrowForward, contentDescription = stringResource(R.string.next_page_content_description))
                     }
                     Spacer(modifier = Modifier.weight(1f))
                     IconButton(
@@ -136,7 +138,7 @@ fun EditorScreen(
                             contentColor = if (uiState.isMaskingMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                         )
                     ) {
-                        Icon(Icons.Default.Edit, contentDescription = "Toggle Masking")
+                        Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.toggle_masking_content_description))
                     }
                 }
             )
@@ -376,11 +378,11 @@ fun PdfViewer(
                     showPiiContextMenu = false
                     selectedPii = null
                 },
-                title = { Text("탐지된 개인정보") },
+                title = { Text(stringResource(R.string.detected_pii_title)) },
                 text = {
                     Column {
-                        Text("타입: ${selectedPii?.type}")
-                        Text("텍스트: ${selectedPii?.text}")
+                        Text(stringResource(R.string.pii_type_label, selectedPii?.type ?: ""))
+                        Text(stringResource(R.string.pii_text_label, selectedPii?.text ?: ""))
                     }
                 },
                 confirmButton = {
@@ -389,7 +391,7 @@ fun PdfViewer(
                         showPiiContextMenu = false
                         selectedPii = null
                     }) {
-                        Text("마스킹")
+                        Text(stringResource(R.string.masking_button))
                     }
                 },
                 dismissButton = {
@@ -398,7 +400,7 @@ fun PdfViewer(
                         showPiiContextMenu = false
                         selectedPii = null
                     }) {
-                        Text("취소")
+                        Text(stringResource(R.string.cancel_button))
                     }
                 }
             )

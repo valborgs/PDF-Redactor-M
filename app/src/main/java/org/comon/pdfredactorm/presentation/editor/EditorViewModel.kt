@@ -27,6 +27,7 @@ import javax.inject.Inject
 import androidx.core.graphics.createBitmap
 import android.app.Application
 import android.net.Uri
+import org.comon.pdfredactorm.R
 
 data class EditorUiState(
     val document: PdfDocument? = null,
@@ -79,7 +80,7 @@ class EditorViewModel @Inject constructor(
                 initializeRenderer(document.file)
                 loadPage(0)
             } else {
-                _uiState.update { it.copy(isLoading = false, error = "Document not found") }
+                _uiState.update { it.copy(isLoading = false, error = application.getString(R.string.error_document_not_found)) }
             }
         }
     }
@@ -200,7 +201,7 @@ class EditorViewModel @Inject constructor(
                             _uiState.update { it.copy(isLoading = false, error = e.message) }
                         }
                     } ?: run {
-                        _uiState.update { it.copy(isLoading = false, error = "Failed to open output stream") }
+                        _uiState.update { it.copy(isLoading = false, error = application.getString(R.string.error_failed_to_open_output_stream)) }
                     }
                 } catch (e: Exception) {
                     _uiState.update { it.copy(isLoading = false, error = e.message) }
