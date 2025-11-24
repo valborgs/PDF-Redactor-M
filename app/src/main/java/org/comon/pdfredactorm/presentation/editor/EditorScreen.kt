@@ -83,6 +83,7 @@ fun EditorScreen(
     var pageInputValue by remember { mutableStateOf("") }
     var showPageInputError by remember { mutableStateOf(false) }
     var showOutlineDialog by remember { mutableStateOf(false) }
+    var showColorPickerDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -187,6 +188,18 @@ fun EditorScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        // Color Picker Button
+                        IconButton(
+                            onClick = { showColorPickerDialog = true },
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Circle,
+                                contentDescription = stringResource(R.string.select_mask_color_content_description),
+                                tint = Color(uiState.currentMaskColor),
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
                         Icon(
                             painter = painterResource(id = R.drawable.ic_highlighter),
                             contentDescription = stringResource(R.string.toggle_masking_content_description),
@@ -331,6 +344,72 @@ fun EditorScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showOutlineDialog = false }) {
+                    Text(stringResource(R.string.cancel_button))
+                }
+            }
+        )
+    }
+
+    // Color Picker Dialog
+    if (showColorPickerDialog) {
+        AlertDialog(
+            onDismissRequest = { showColorPickerDialog = false },
+            title = { Text(stringResource(R.string.select_mask_color_title)) },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Black Color Option
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                viewModel.setMaskColor(0xFF000000.toInt())
+                                showColorPickerDialog = false
+                            }
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Circle,
+                            contentDescription = null,
+                            tint = Color.Black,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.color_black),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                    // White Color Option
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                viewModel.setMaskColor(0xFFFFFFFF.toInt())
+                                showColorPickerDialog = false
+                            }
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Circle,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.color_white),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showColorPickerDialog = false }) {
                     Text(stringResource(R.string.cancel_button))
                 }
             }
@@ -573,12 +652,20 @@ fun PdfViewer(
                 )
             }
 
-            // Draw redactions (in black)
+            // Draw redactions (with mask color)
             redactions.forEach { mask ->
+                // Fill with mask color
                 drawRect(
-                    color = Color.Black.copy(alpha = 0.5f),
+                    color = Color(mask.color).copy(alpha = 0.5f),
                     topLeft = Offset(mask.x * scaleX, mask.y * scaleY),
                     size = Size(mask.width * scaleX, mask.height * scaleY)
+                )
+                // Draw black border for visibility
+                drawRect(
+                    color = Color.Black,
+                    topLeft = Offset(mask.x * scaleX, mask.y * scaleY),
+                    size = Size(mask.width * scaleX, mask.height * scaleY),
+                    style = Stroke(width = 2f)
                 )
             }
             

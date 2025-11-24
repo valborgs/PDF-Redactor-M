@@ -13,5 +13,6 @@ data class RedactionEntity(
     val y: Float,
     val width: Float,
     val height: Float,
-    val type: RedactionType
+    val type: RedactionType,
+    val color: Int = 0xFF000000.toInt() // Default: Black
 )

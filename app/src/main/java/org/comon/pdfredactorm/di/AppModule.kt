@@ -2,6 +2,8 @@ package org.comon.pdfredactorm.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,6 +20,13 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
+    private val MIGRATION_1_2 = object : Migration(1, 2) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Add color column to redactions table with default black color
+            db.execSQL("ALTER TABLE redactions ADD COLUMN color INTEGER NOT NULL DEFAULT -16777216")
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
@@ -25,7 +34,7 @@ object AppModule {
             context,
             AppDatabase::class.java,
             "pdf_redactor_db"
-        ).build()
+        ).addMigrations(MIGRATION_1_2).build()
     }
 
     @Provides

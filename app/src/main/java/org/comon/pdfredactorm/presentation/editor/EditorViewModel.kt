@@ -44,7 +44,8 @@ data class EditorUiState(
     val isDetecting: Boolean = false,
     val isLoading: Boolean = false,
     val error: String? = null,
-    val saveSuccess: Boolean = false
+    val saveSuccess: Boolean = false,
+    val currentMaskColor: Int = 0xFF000000.toInt() // Default: Black
 )
 
 
@@ -137,6 +138,10 @@ class EditorViewModel @Inject constructor(
         _uiState.update { it.copy(isMaskingMode = !it.isMaskingMode) }
     }
 
+    fun setMaskColor(color: Int) {
+        _uiState.update { it.copy(currentMaskColor = color) }
+    }
+
     fun addRedaction(x: Float, y: Float, width: Float, height: Float) {
         val currentState = _uiState.value
         val newRedaction = RedactionMask(
@@ -145,7 +150,8 @@ class EditorViewModel @Inject constructor(
             x = x,
             y = y,
             width = width,
-            height = height
+            height = height,
+            color = currentState.currentMaskColor
         )
         val updatedRedactions = currentState.redactions + newRedaction
         _uiState.update { it.copy(redactions = updatedRedactions) }

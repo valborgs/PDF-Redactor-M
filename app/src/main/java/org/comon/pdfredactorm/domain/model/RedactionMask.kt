@@ -7,7 +7,8 @@ data class RedactionMask(
     val y: Float,
     val width: Float,
     val height: Float,
-    val type: RedactionType = RedactionType.MANUAL
+    val type: RedactionType = RedactionType.MANUAL,
+    val color: Int = 0xFF000000.toInt() // Default: Black
 )
 
 enum class RedactionType {

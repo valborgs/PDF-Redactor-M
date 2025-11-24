@@ -77,24 +77,27 @@ class PdfRepositoryImpl @Inject constructor(
                         val page = document.getPage(pageIndex)
                         val contentStream = PDPageContentStream(document, page, PDPageContentStream.AppendMode.APPEND, true, true)
 
-                        // Set black color using PDColor (new API)
-                        val blackColor = PDColor(floatArrayOf(0f, 0f, 0f), PDDeviceRGB.INSTANCE)
-                        contentStream.setNonStrokingColor(blackColor)
-
                         for (mask in masks) {
+                            // Convert Android color (ARGB) to PDF RGB
+                            val red = ((mask.color shr 16) and 0xFF) / 255f
+                            val green = ((mask.color shr 8) and 0xFF) / 255f
+                            val blue = (mask.color and 0xFF) / 255f
+                            val color = PDColor(floatArrayOf(red, green, blue), PDDeviceRGB.INSTANCE)
+                            contentStream.setNonStrokingColor(color)
+
                             // PDF coordinates usually start from bottom-left, but Android/Canvas is top-left.
                             // We need to handle coordinate conversion if the UI sends top-left based coordinates.
                             // For now, assuming the UI sends coordinates relative to the PDF page size correctly.
                             // If UI sends 0..1 normalized coordinates, we multiply by page width/height.
                             // If UI sends absolute coordinates, we use them directly.
                             // Let's assume absolute coordinates for now matching the page size.
-                            
+
                             // Draw rectangle
                             // In PDFBox, addRect(x, y, width, height)
                             // Note: y is from bottom in PDF. If we get y from top, we need: pageHeight - y - height
                             val pageHeight = page.mediaBox.height
                             val pdfY = pageHeight - mask.y - mask.height
-                            
+
                             contentStream.addRect(mask.x, pdfY, mask.width, mask.height)
                             contentStream.fill()
                         }
@@ -149,7 +152,8 @@ class PdfRepositoryImpl @Inject constructor(
                 y = mask.y,
                 width = mask.width,
                 height = mask.height,
-                type = mask.type
+                type = mask.type,
+                color = mask.color
             )
         }
         redactionDao.insertRedactions(entities)
@@ -164,7 +168,8 @@ class PdfRepositoryImpl @Inject constructor(
                 y = entity.y,
                 width = entity.width,
                 height = entity.height,
-                type = entity.type
+                type = entity.type,
+                color = entity.color
             )
         }
     }
