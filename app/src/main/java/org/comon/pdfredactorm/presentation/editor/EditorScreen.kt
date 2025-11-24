@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
@@ -53,7 +54,6 @@ fun EditorScreen(
         uri?.let { viewModel.savePdf(it) }
     }
 
-    val context = androidx.compose.ui.platform.LocalContext.current
     LaunchedEffect(uiState.saveSuccess) {
         if (uiState.saveSuccess) {
             android.util.Log.d("EditorScreen", "PDF Saved Successfully")
@@ -206,9 +206,25 @@ fun PdfViewer(
     onConvertPiiToMask: (DetectedPii) -> Unit,
     onRemoveDetectedPii: (DetectedPii) -> Unit
 ) {
+    var canvasSize by remember { mutableStateOf(IntSize.Zero) }
+
+    // Calculate initial scale to fit the PDF height to canvas height
+    val fitScale = remember(bitmap, canvasSize) {
+        if (canvasSize.height > 0 && bitmap.height > 0) {
+            canvasSize.height.toFloat() / bitmap.height.toFloat()
+        } else {
+            1f
+        }
+    }
+
     var scale by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
-    var canvasSize by remember { mutableStateOf(IntSize.Zero) }
+
+    // Reset scale and offset when bitmap or canvas size changes
+    LaunchedEffect(bitmap, canvasSize) {
+        scale = 1f
+        offset = Offset.Zero
+    }
 
     // Temporary drag state for drawing new mask
     var dragStart by remember { mutableStateOf<Offset?>(null) }
@@ -222,37 +238,60 @@ fun PdfViewer(
         modifier = Modifier
             .fillMaxSize()
             .onSizeChanged { canvasSize = it }
-            .pointerInput(Unit) {
+            .pointerInput(fitScale, bitmap) {
                 detectTransformGestures { _, pan, zoom, _ ->
                     if (!isMaskingMode) {
-                        scale = (scale * zoom).coerceIn(1f, 5f)
-                        offset += pan
-                        // Simple bounds check could be added here
+                        // Update scale
+                        val newScale = (scale * zoom).coerceIn(1f, 5f)
+                        scale = newScale
+
+                        // Only allow panning when zoomed in (scale > 1)
+                        if (scale > 1f) {
+                            // Calculate bounds to keep PDF within view
+                            val scaledWidth = bitmap.width * fitScale * scale
+                            val scaledHeight = bitmap.height * fitScale * scale
+
+                            val maxOffsetX = 0f
+                            val minOffsetX = -(scaledWidth - canvasSize.width).coerceAtLeast(0f)
+                            val maxOffsetY = 0f
+                            val minOffsetY = -(scaledHeight - canvasSize.height).coerceAtLeast(0f)
+
+                            // Apply pan with bounds
+                            val newOffset = offset + pan
+                            offset = Offset(
+                                x = newOffset.x.coerceIn(minOffsetX, maxOffsetX),
+                                y = newOffset.y.coerceIn(minOffsetY, maxOffsetY)
+                            )
+                        } else {
+                            // Reset offset when scale returns to 1
+                            offset = Offset.Zero
+                        }
                     }
                 }
             }
-            .pointerInput(isMaskingMode) {
+            .pointerInput(isMaskingMode, fitScale) {
                 if (isMaskingMode) {
                     detectDragGestures(
                         onDragStart = { dragStart = it },
                         onDragEnd = {
                             if (dragStart != null && dragEnd != null) {
-                                // Convert screen coordinates to PDF coordinates
-                                val start = (dragStart!! - offset) / scale
-                                val end = (dragEnd!! - offset) / scale
-                                
+                                // Convert screen coordinates to bitmap coordinates
+                                val totalScale = fitScale * scale
+                                val start = (dragStart!! - offset) / totalScale
+                                val end = (dragEnd!! - offset) / totalScale
+
                                 // Map from Bitmap size to PDF size
                                 val bitmapWidth = bitmap.width.toFloat()
                                 val bitmapHeight = bitmap.height.toFloat()
-                                
+
                                 val scaleX = pdfPageWidth / bitmapWidth
                                 val scaleY = pdfPageHeight / bitmapHeight
-                                
+
                                 val x = minOf(start.x, end.x) * scaleX
                                 val y = minOf(start.y, end.y) * scaleY
                                 val w = kotlin.math.abs(start.x - end.x) * scaleX
                                 val h = kotlin.math.abs(start.y - end.y) * scaleY
-                                
+
                                 onAddRedaction(x, y, w, h)
                             }
                             dragStart = null
@@ -269,12 +308,13 @@ fun PdfViewer(
             modifier = Modifier
                 .fillMaxSize()
                 .graphicsLayer(
-                    scaleX = scale,
-                    scaleY = scale,
+                    scaleX = fitScale * scale,
+                    scaleY = fitScale * scale,
                     translationX = offset.x,
-                    translationY = offset.y
+                    translationY = offset.y,
+                    transformOrigin = TransformOrigin(0f, 0f)
                 )
-                .pointerInput(isMaskingMode) {
+                .pointerInput(isMaskingMode, fitScale) {
                     detectTapGestures(
                         onTap = { tapOffset ->
                             if (!isMaskingMode) {
@@ -355,20 +395,11 @@ fun PdfViewer(
             
             // Draw Current Drag Selection
             if (isMaskingMode && dragStart != null && dragEnd != null) {
-                // We need to reverse the transform to draw in local coordinates?
-                // No, we are inside the graphicsLayer, so we draw in "bitmap space"?
-                // Wait, the drag coordinates are in "screen space" (outer Box).
-                // But the Canvas is transformed.
-                // This is tricky.
-                // Let's simplify:
-                // If we draw inside the transformed canvas, we need to inverse transform the drag coordinates.
-                // Or we can draw the selection rectangle in an overlay Canvas that is NOT transformed, 
-                // but that would mismatch visually if the user is zoomed in.
-                
-                // Better approach: Calculate the rectangle in "Bitmap Space" and draw it.
-                val start = (dragStart!! - offset) / scale
-                val end = (dragEnd!! - offset) / scale
-                
+                // Calculate the rectangle in bitmap space considering both fitScale and user zoom
+                val totalScale = fitScale * scale
+                val start = (dragStart!! - offset) / totalScale
+                val end = (dragEnd!! - offset) / totalScale
+
                 drawRect(
                     color = Color.Red.copy(alpha = 0.3f),
                     topLeft = Offset(minOf(start.x, end.x), minOf(start.y, end.y)),
