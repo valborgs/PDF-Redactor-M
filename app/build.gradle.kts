@@ -1,9 +1,18 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.hiltAndroid)
     alias(libs.plugins.ksp)
+}
+
+// local.properties 파일에서 AdMob ID 읽기
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.reader())
 }
 
 android {
@@ -24,12 +33,33 @@ android {
     }
 
     buildTypes {
+        // AdMob ID 가져오기 (없으면 빈 문자열)
+        val admobAppIdTest = localProperties.getProperty("ADMOB_APP_ID_TEST", "")
+        val admobBannerIdTest = localProperties.getProperty("ADMOB_BANNER_ID_TEST", "")
+        val admobAppIdRelease = localProperties.getProperty("ADMOB_APP_ID_RELEASE", "")
+        val admobBannerIdRelease = localProperties.getProperty("ADMOB_BANNER_ID_RELEASE", "")
+
+        debug {
+            // Debug 빌드는 테스트 ID 사용
+            buildConfigField("String", "ADMOB_APP_ID", "\"$admobAppIdTest\"")
+            buildConfigField("String", "ADMOB_BANNER_ID", "\"$admobBannerIdTest\"")
+
+            // Manifest placeholder로도 설정 (AndroidManifest.xml에서 사용)
+            manifestPlaceholders["admobAppId"] = admobAppIdTest
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            // Release 빌드는 실제 ID 사용
+            buildConfigField("String", "ADMOB_APP_ID", "\"$admobAppIdRelease\"")
+            buildConfigField("String", "ADMOB_BANNER_ID", "\"$admobBannerIdRelease\"")
+
+            // Manifest placeholder로도 설정
+            manifestPlaceholders["admobAppId"] = admobAppIdRelease
         }
     }
     compileOptions {
@@ -41,6 +71,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     packaging {
         resources {
@@ -85,6 +116,9 @@ dependencies {
 
     // Coil
     implementation(libs.coil.compose)
+
+    // AdMob
+    implementation(libs.play.services.ads)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
