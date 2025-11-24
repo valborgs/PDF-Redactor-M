@@ -54,6 +54,7 @@ fun EditorScreen(
     LaunchedEffect(uiState.saveSuccess) {
         if (uiState.saveSuccess) {
             android.util.Log.d("EditorScreen", "PDF Saved Successfully")
+            onBackClick()
         }
     }
     LaunchedEffect(uiState.error) {

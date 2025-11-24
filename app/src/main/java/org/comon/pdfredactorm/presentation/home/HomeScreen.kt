@@ -24,6 +24,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import org.comon.pdfredactorm.domain.model.PdfDocument
 import java.io.File
 import java.io.FileOutputStream
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import org.comon.pdfredactorm.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,19 +67,30 @@ fun HomeScreen(
             }
         }
     ) { padding ->
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            contentAlignment = Alignment.Center
         ) {
-            items(recentProjects) { project ->
-                ProjectItem(
-                    project = project,
-                    onClick = { onPdfClick(project.id) },
-                    onDelete = { viewModel.deleteProject(project.id) }
-                )
+            Image(
+                painter = painterResource(id = R.drawable.ic_pdf_background),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(0.5f),
+                alpha = 0.3f
+            )
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(recentProjects) { project ->
+                    ProjectItem(
+                        project = project,
+                        onClick = { onPdfClick(project.id) },
+                        onDelete = { viewModel.deleteProject(project.id) }
+                    )
+                }
             }
         }
     }

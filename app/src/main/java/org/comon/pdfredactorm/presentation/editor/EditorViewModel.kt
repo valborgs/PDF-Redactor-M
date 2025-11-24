@@ -184,6 +184,17 @@ class EditorViewModel @Inject constructor(
                     application.contentResolver.openOutputStream(uri)?.use { outputStream ->
                         val result = saveRedactedPdfUseCase(doc.file, currentState.redactions, outputStream)
                         result.onSuccess {
+                            // Close renderer to release file lock
+                            closeRenderer()
+                            
+                            // Delete temp file
+                            if (doc.file.exists()) {
+                                doc.file.delete()
+                            }
+                            
+                            // Delete project from DB
+                            repository.deleteProject(doc.id)
+                            
                             _uiState.update { it.copy(isLoading = false, saveSuccess = true) }
                         }.onFailure { e ->
                             _uiState.update { it.copy(isLoading = false, error = e.message) }
@@ -266,5 +277,20 @@ class EditorViewModel @Inject constructor(
     fun removeDetectedPii(pii: DetectedPii) {
         val updatedDetectedPii = _uiState.value.detectedPii.filter { it != pii }
         _uiState.update { it.copy(detectedPii = updatedDetectedPii) }
+    }
+    private fun closeRenderer() {
+        try {
+            pdfRenderer?.close()
+            pdfRenderer = null
+            fileDescriptor?.close()
+            fileDescriptor = null
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        closeRenderer()
     }
 }
