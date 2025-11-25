@@ -29,6 +29,7 @@ import androidx.core.graphics.createBitmap
 import android.app.Application
 import android.net.Uri
 import org.comon.pdfredactorm.R
+import org.comon.pdfredactorm.domain.logger.Logger
 
 data class EditorUiState(
     val document: PdfDocument? = null,
@@ -57,10 +58,10 @@ class EditorViewModel @Inject constructor(
     private val getRedactionsUseCase: GetRedactionsUseCase,
     private val saveRedactionsUseCase: SaveRedactionsUseCase,
     private val saveRedactedPdfUseCase: SaveRedactedPdfUseCase,
-    private val detectPiiUseCase: DetectPiiUseCase
+    private val detectPiiUseCase: DetectPiiUseCase,
+    private val logger: Logger
 ) : ViewModel() {
-
-    private val _uiState = MutableStateFlow(EditorUiState())
+private val _uiState = MutableStateFlow(EditorUiState())
     val uiState: StateFlow<EditorUiState> = _uiState.asStateFlow()
 
     private var pdfRenderer: PdfRenderer? = null
@@ -68,6 +69,7 @@ class EditorViewModel @Inject constructor(
 
     fun loadPdf(pdfId: String) {
         viewModelScope.launch {
+            logger.info("User opened PDF document: $pdfId")
             _uiState.update { it.copy(isLoading = true) }
             val document = repository.getProject(pdfId)
             if (document != null) {
@@ -198,11 +200,13 @@ class EditorViewModel @Inject constructor(
         val currentState = _uiState.value
         currentState.document?.let { doc ->
             viewModelScope.launch {
+                logger.info("User initiated PDF save")
                 _uiState.update { it.copy(isLoading = true) }
                 try {
                     application.contentResolver.openOutputStream(uri)?.use { outputStream ->
                         val result = saveRedactedPdfUseCase(doc.file, currentState.redactions, outputStream)
                         result.onSuccess {
+                            logger.info("PDF save completed successfully")
                             // Close renderer to release file lock
                             closeRenderer()
                             
@@ -216,6 +220,7 @@ class EditorViewModel @Inject constructor(
                             
                             _uiState.update { it.copy(isLoading = false, saveSuccess = true) }
                         }.onFailure { e ->
+                            logger.warning("PDF save failed")
                             _uiState.update { it.copy(isLoading = false, error = e.message) }
                         }
                     } ?: run {
@@ -232,6 +237,7 @@ class EditorViewModel @Inject constructor(
         val currentState = _uiState.value
         currentState.document?.let { doc ->
             viewModelScope.launch {
+                logger.info("User triggered PII detection on current page ${currentState.currentPage}")
                 _uiState.update { it.copy(isDetecting = true) }
                 detectPiiUseCase.detectInPage(doc.file, currentState.currentPage)
                     .onSuccess { detectedList ->
@@ -255,6 +261,7 @@ class EditorViewModel @Inject constructor(
         val currentState = _uiState.value
         currentState.document?.let { doc ->
             viewModelScope.launch {
+                logger.info("User triggered PII detection on all pages")
                 _uiState.update { it.copy(isDetecting = true) }
                 detectPiiUseCase.detectInAllPages(doc.file)
                     .onSuccess { detectedList ->
@@ -313,3 +320,4 @@ class EditorViewModel @Inject constructor(
         closeRenderer()
     }
 }
+

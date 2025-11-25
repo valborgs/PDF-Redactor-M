@@ -24,6 +24,7 @@ import org.comon.pdfredactorm.domain.repository.PdfRepository
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineNode
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageDestination
+import org.comon.pdfredactorm.domain.logger.Logger
 import java.io.File
 import java.io.OutputStream
 import java.util.UUID
@@ -31,24 +32,32 @@ import javax.inject.Inject
 
 class PdfRepositoryImpl @Inject constructor(
     private val projectDao: ProjectDao,
-    private val redactionDao: RedactionDao
+    private val redactionDao: RedactionDao,
+    private val logger: Logger
 ) : PdfRepository {
-
-    override suspend fun loadPdf(file: File): PdfDocument {
+override suspend fun loadPdf(file: File): PdfDocument {
         return withContext(Dispatchers.IO) {
-            val fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
-            val renderer = PdfRenderer(fileDescriptor)
-            val pageCount = renderer.pageCount
-            renderer.close()
-            fileDescriptor.close()
+            try {
+                logger.info("Loading PDF: ${file.absolutePath}")
+                val fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
+                val renderer = PdfRenderer(fileDescriptor)
+                val pageCount = renderer.pageCount
+                renderer.close()
+                fileDescriptor.close()
 
-            PdfDocument(
-                id = UUID.randomUUID().toString(), // Generate a new ID for the session/project
-                file = file,
-                fileName = file.name,
-                pageCount = pageCount,
-                lastModified = System.currentTimeMillis()
-            )
+                logger.info("PDF loaded successfully: ${file.name}, pages: $pageCount")
+                
+                PdfDocument(
+                    id = UUID.randomUUID().toString(), // Generate a new ID for the session/project
+                    file = file,
+                    fileName = file.name,
+                    pageCount = pageCount,
+                    lastModified = System.currentTimeMillis()
+                )
+            } catch (e: Exception) {
+                logger.error("Failed to load PDF: ${file.absolutePath}", e)
+                throw e
+            }
         }
     }
 
@@ -70,6 +79,7 @@ class PdfRepositoryImpl @Inject constructor(
     ): Result<Unit> {
         return withContext(Dispatchers.IO) {
             try {
+                logger.info("Saving redacted PDF: ${originalFile.name}, redactions: ${redactions.size}")
                 val document = PDDocument.load(originalFile)
                 
                 redactions.groupBy { it.pageIndex }.forEach { (pageIndex, masks) ->
@@ -107,8 +117,10 @@ class PdfRepositoryImpl @Inject constructor(
                 
                 document.save(outputStream)
                 document.close()
+                logger.info("PDF saved successfully with ${redactions.size} redactions")
                 Result.success(Unit)
             } catch (e: Exception) {
+                logger.error("Failed to save redacted PDF: ${originalFile.name}", e)
                 Result.failure(e)
             }
         }
@@ -197,6 +209,7 @@ class PdfRepositoryImpl @Inject constructor(
             val detectedPiiList = mutableListOf<DetectedPii>()
 
             try {
+                logger.debug("Detecting PII on page $pageIndex of ${file.name}")
                 val document = PDDocument.load(file)
                 if (pageIndex >= document.numberOfPages) {
                     document.close()
@@ -270,8 +283,9 @@ class PdfRepositoryImpl @Inject constructor(
                 }
 
                 document.close()
+                logger.info("PII detection completed on page $pageIndex: found ${detectedPiiList.size} items")
             } catch (e: Exception) {
-                e.printStackTrace()
+                logger.error("Failed to detect PII on page $pageIndex of ${file.name}", e)
             }
 
             detectedPiiList
@@ -284,13 +298,16 @@ class PdfRepositoryImpl @Inject constructor(
 
             try {
                 val pageCount = getPdfPageCount(file)
+                logger.info("Detecting PII in all pages of ${file.name}, total pages: $pageCount")
 
                 for (pageIndex in 0 until pageCount) {
                     val piiOnPage = detectPii(file, pageIndex)
                     allDetectedPii.addAll(piiOnPage)
                 }
+                
+                logger.info("PII detection completed for all pages: found ${allDetectedPii.size} total items")
             } catch (e: Exception) {
-                e.printStackTrace()
+                logger.error("Failed to detect PII in all pages of ${file.name}", e)
             }
 
             allDetectedPii
@@ -302,6 +319,7 @@ class PdfRepositoryImpl @Inject constructor(
             val outlineItems = mutableListOf<PdfOutlineItem>()
 
             try {
+                logger.debug("Extracting outline from ${file.name}")
                 val document = PDDocument.load(file)
                 val documentOutline = document.documentCatalog.documentOutline
 
@@ -310,8 +328,9 @@ class PdfRepositoryImpl @Inject constructor(
                 }
 
                 document.close()
+                logger.info("Outline extracted: ${outlineItems.size} items")
             } catch (e: Exception) {
-                e.printStackTrace()
+                logger.error("Failed to extract outline from ${file.name}", e)
             }
 
             outlineItems
@@ -386,3 +405,4 @@ class PdfRepositoryImpl @Inject constructor(
         }
     }
 }
+

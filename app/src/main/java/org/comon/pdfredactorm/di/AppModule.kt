@@ -12,7 +12,9 @@ import dagger.hilt.components.SingletonComponent
 import org.comon.pdfredactorm.data.local.AppDatabase
 import org.comon.pdfredactorm.data.local.dao.ProjectDao
 import org.comon.pdfredactorm.data.local.dao.RedactionDao
+import org.comon.pdfredactorm.data.logger.AndroidLogger
 import org.comon.pdfredactorm.data.repository.PdfRepositoryImpl
+import org.comon.pdfredactorm.domain.logger.Logger
 import org.comon.pdfredactorm.domain.repository.PdfRepository
 import javax.inject.Singleton
 
@@ -52,11 +54,18 @@ object AppModule {
     fun providePdfRepository(
         @ApplicationContext context: Context,
         projectDao: ProjectDao,
-        redactionDao: RedactionDao
+        redactionDao: RedactionDao,
+        logger: Logger
     ): PdfRepository {
         // Initialize PDFBox
         com.tom_roush.pdfbox.android.PDFBoxResourceLoader.init(context)
         
-        return PdfRepositoryImpl(projectDao, redactionDao)
+        return PdfRepositoryImpl(projectDao, redactionDao, logger)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideLogger(): Logger {
+        return AndroidLogger()
     }
 }

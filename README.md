@@ -24,6 +24,8 @@
 
 ## 📂 문서
 - [개발 계획서](docs/development_plan.md)
+- [PII 탐지 가이드](docs/pii_detection.md)
+- [로깅 시스템 가이드](docs/logging.md)
 
 ## 🚀 현재 진행 상황
 - [x] 프로젝트 초기화 및 Gradle 설정 (Kotlin 2.2.21, Version Catalog)
@@ -47,3 +49,4 @@
 - [x] 페이지 이동 기능 추가: 하단 페이지 표시를 클릭 가능한 TextField로 변경, 다이얼로그를 통한 직접 페이지 입력 및 유효성 검증
 - [x] 목차(북마크) 이동 기능 구현: PDFBox를 활용한 PDF 목차 추출, 계층 구조 지원, 목차 항목 클릭 시 해당 페이지로 즉시 이동
 - [x] 마스킹 색상 선택 기능 구현: 흰색/검은색 중 선택 가능한 색상 다이얼로그, 현재 색상 표시 버튼 추가, 마스킹 영역에 검은색 외곽선(2px) 추가로 가시성 개선, Database 마이그레이션 (v1→v2)
+- [x] 로깅 시스템 구축: Clean Architecture 기반 Logger 구현, 주요 에러 발생 지점(Repository) 및 사용자 액션(ViewModel) 로깅 추가

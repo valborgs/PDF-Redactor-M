@@ -10,16 +10,17 @@ import kotlinx.coroutines.launch
 import org.comon.pdfredactorm.domain.model.PdfDocument
 import org.comon.pdfredactorm.domain.repository.PdfRepository
 import org.comon.pdfredactorm.domain.usecase.LoadPdfUseCase
+import org.comon.pdfredactorm.domain.logger.Logger
 import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: PdfRepository,
-    private val loadPdfUseCase: LoadPdfUseCase
+    private val loadPdfUseCase: LoadPdfUseCase,
+    private val logger: Logger
 ) : ViewModel() {
-
-    val recentProjects: StateFlow<List<PdfDocument>> = repository.getRecentProjects()
+val recentProjects: StateFlow<List<PdfDocument>> = repository.getRecentProjects()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -28,18 +29,21 @@ class HomeViewModel @Inject constructor(
 
     fun loadPdf(file: File, onLoaded: (String) -> Unit) {
         viewModelScope.launch {
+            logger.info("User selected PDF file: ${file.name}")
             val result = loadPdfUseCase(file)
             result.onSuccess { document ->
                 onLoaded(document.id)
             }.onFailure {
-                // Handle error
+                logger.warning("PDF load failed")
             }
         }
     }
     
     fun deleteProject(pdfId: String) {
         viewModelScope.launch {
+            logger.info("User deleted project: $pdfId")
             repository.deleteProject(pdfId)
         }
     }
 }
+
