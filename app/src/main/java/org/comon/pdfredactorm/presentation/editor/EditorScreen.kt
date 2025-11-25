@@ -476,10 +476,14 @@ fun PdfViewer(
 ) {
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
 
-    // Calculate initial scale to fit the PDF height to canvas height
+    // Calculate initial scale to fit entire PDF within canvas
+    // Use the minimum of width-based and height-based scales to ensure nothing is cut off
     val fitScale = remember(bitmap, canvasSize) {
-        if (canvasSize.height > 0 && bitmap.height > 0) {
-            canvasSize.height.toFloat() / bitmap.height.toFloat()
+        if (canvasSize.height > 0 && canvasSize.width > 0 && bitmap.height > 0 && bitmap.width > 0) {
+            val widthScale = canvasSize.width.toFloat() / bitmap.width.toFloat()
+            val heightScale = canvasSize.height.toFloat() / bitmap.height.toFloat()
+            // Use minimum to ensure entire document fits
+            minOf(widthScale, heightScale)
         } else {
             1f
         }

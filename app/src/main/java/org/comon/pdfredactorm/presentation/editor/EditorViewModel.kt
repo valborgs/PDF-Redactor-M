@@ -111,10 +111,24 @@ private val _uiState = MutableStateFlow(EditorUiState())
                 if (pageIndex >= renderer.pageCount) return@withContext
 
                 val page = renderer.openPage(pageIndex)
-                // Render at a reasonable density (e.g., screen density * 2 for zoom)
-                // For simplicity, using a fixed width of 2048 or similar, maintaining aspect ratio
-                val width = 2048
-                val height = (width.toFloat() / page.width * page.height).toInt()
+                
+                // Calculate bitmap size to fit within max dimension while maintaining aspect ratio
+                // This ensures the entire page is always renderable without cutting off
+                val maxDimension = 2048
+                val pageAspectRatio = page.width.toFloat() / page.height.toFloat()
+                
+                val width: Int
+                val height: Int
+                
+                if (page.width > page.height) {
+                    // Wider than tall: limit width
+                    width = minOf(maxDimension, page.width * 2)
+                    height = (width / pageAspectRatio).toInt()
+                } else {
+                    // Taller than wide: limit height
+                    height = minOf(maxDimension, page.height * 2)
+                    width = (height * pageAspectRatio).toInt()
+                }
                 
                 val bitmap = createBitmap(width, height)
                 page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
