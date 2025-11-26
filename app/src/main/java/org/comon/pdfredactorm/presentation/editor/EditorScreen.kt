@@ -46,6 +46,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.List
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,7 +91,16 @@ fun EditorScreen(
     var colorPickerDragPosition by remember { mutableStateOf<Offset?>(null) }
     var colorPickerPreviewColor by remember { mutableStateOf<Int?>(null) }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    val maskingEnabledMessage = stringResource(R.string.masking_mode_enabled)
+    val maskingDisabledMessage = stringResource(R.string.masking_mode_disabled)
+    val colorPickerEnabledMessage = stringResource(R.string.color_picker_mode_enabled)
+    val colorSelectedMessage = stringResource(R.string.color_selected)
+
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { 
@@ -212,7 +222,14 @@ fun EditorScreen(
                         )
                         Switch(
                             checked = uiState.isMaskingMode,
-                            onCheckedChange = { viewModel.toggleMaskingMode() }
+                            onCheckedChange = { 
+                                viewModel.toggleMaskingMode()
+                                val message = if (!uiState.isMaskingMode) maskingEnabledMessage else maskingDisabledMessage
+                                scope.launch {
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                    snackbarHostState.showSnackbar(message, duration = SnackbarDuration.Short)
+                                }
+                            }
                         )
                     }
                 }
@@ -253,6 +270,10 @@ fun EditorScreen(
                         onColorPicked = { color ->
                             viewModel.setMaskColor(color)
                             viewModel.toggleColorPickingMode()
+                            scope.launch {
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                                snackbarHostState.showSnackbar(colorSelectedMessage, duration = SnackbarDuration.Short)
+                            }
                         },
                         onColorPickDrag = { position, color ->
                             colorPickerDragPosition = position
@@ -418,6 +439,10 @@ fun EditorScreen(
                             .clickable {
                                 viewModel.setMaskColor(0xFF000000.toInt())
                                 showColorPickerDialog = false
+                                scope.launch {
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                    snackbarHostState.showSnackbar(colorSelectedMessage, duration = SnackbarDuration.Short)
+                                }
                             }
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -441,6 +466,10 @@ fun EditorScreen(
                             .clickable {
                                 viewModel.setMaskColor(0xFFFFFFFF.toInt())
                                 showColorPickerDialog = false
+                                scope.launch {
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                    snackbarHostState.showSnackbar(colorSelectedMessage, duration = SnackbarDuration.Short)
+                                }
                             }
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,
@@ -464,6 +493,10 @@ fun EditorScreen(
                             .clickable {
                                 viewModel.toggleColorPickingMode()
                                 showColorPickerDialog = false
+                                scope.launch {
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                    snackbarHostState.showSnackbar(colorPickerEnabledMessage, duration = SnackbarDuration.Short)
+                                }
                             }
                             .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically,

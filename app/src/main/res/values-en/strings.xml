@@ -74,4 +74,10 @@
     <!-- Error Messages -->
     <string name="error_document_not_found">Document not found</string>
     <string name="error_failed_to_open_output_stream">Failed to open output stream</string>
+
+    <!-- Snackbar Messages -->
+    <string name="masking_mode_enabled">Masking mode enabled</string>
+    <string name="masking_mode_disabled">Masking mode disabled</string>
+    <string name="color_picker_mode_enabled">Color picker mode enabled</string>
+    <string name="color_selected">Color selected</string>
 </resources>

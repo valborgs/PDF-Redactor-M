@@ -74,4 +74,10 @@
     <!-- Error Messages -->
     <string name="error_document_not_found">문서를 찾을 수 없습니다</string>
     <string name="error_failed_to_open_output_stream">출력 스트림을 열 수 없습니다</string>
+
+    <!-- Snackbar Messages -->
+    <string name="masking_mode_enabled">마스킹 모드가 켜졌습니다</string>
+    <string name="masking_mode_disabled">마스킹 모드가 꺼졌습니다</string>
+    <string name="color_picker_mode_enabled">색상 추출 모드가 켜졌습니다</string>
+    <string name="color_selected">색상이 선택되었습니다</string>
 </resources>
