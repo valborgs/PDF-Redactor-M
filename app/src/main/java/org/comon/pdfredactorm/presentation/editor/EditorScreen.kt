@@ -33,6 +33,7 @@ import org.comon.pdfredactorm.domain.model.DetectedPii
 import org.comon.pdfredactorm.domain.model.RedactionMask
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.border
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -84,6 +85,10 @@ fun EditorScreen(
     var showPageInputError by remember { mutableStateOf(false) }
     var showOutlineDialog by remember { mutableStateOf(false) }
     var showColorPickerDialog by remember { mutableStateOf(false) }
+    
+    // Color Picker State
+    var colorPickerDragPosition by remember { mutableStateOf<Offset?>(null) }
+    var colorPickerPreviewColor by remember { mutableStateOf<Int?>(null) }
 
     Scaffold(
         topBar = {
@@ -230,6 +235,7 @@ fun EditorScreen(
                         redactions = uiState.redactions.filter { it.pageIndex == uiState.currentPage },
                         detectedPii = uiState.detectedPii.filter { it.pageIndex == uiState.currentPage },
                         isMaskingMode = uiState.isMaskingMode,
+                        isColorPickingMode = uiState.isColorPickingMode,
                         pdfPageWidth = uiState.pdfPageWidth,
                         pdfPageHeight = uiState.pdfPageHeight,
                         onAddRedaction = { x, y, w, h ->
@@ -243,12 +249,57 @@ fun EditorScreen(
                         },
                         onRemoveDetectedPii = { pii ->
                             viewModel.removeDetectedPii(pii)
+                        },
+                        onColorPicked = { color ->
+                            viewModel.setMaskColor(color)
+                            viewModel.toggleColorPickingMode()
+                        },
+                        onColorPickDrag = { position, color ->
+                            colorPickerDragPosition = position
+                            colorPickerPreviewColor = color
                         }
                     )
                 }
             }
+            // Color Picker Magnifier (Preview)
+            if (uiState.isColorPickingMode && colorPickerDragPosition != null && colorPickerPreviewColor != null) {
+                Box(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    val position = colorPickerDragPosition!!
+                    val screenWidth = androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp.dp
+                    val isLeft = position.x < (androidx.compose.ui.platform.LocalConfiguration.current.screenWidthDp * androidx.compose.ui.platform.LocalDensity.current.density / 2)
+                    
+                    Box(
+                        modifier = Modifier
+                            .align(if (isLeft) Alignment.CenterEnd else Alignment.CenterStart)
+                            .padding(32.dp)
+                            .size(120.dp)
+                            .background(Color.White, androidx.compose.foundation.shape.CircleShape)
+                            .border(2.dp, Color.Gray, androidx.compose.foundation.shape.CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .background(Color(colorPickerPreviewColor!!), androidx.compose.foundation.shape.CircleShape)
+                                    .border(1.dp, Color.LightGray, androidx.compose.foundation.shape.CircleShape)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "#${Integer.toHexString(colorPickerPreviewColor!!).uppercase().takeLast(6)}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
         }
-    }
 
     // Page Jump Dialog
     if (showPageJumpDialog) {
@@ -406,6 +457,29 @@ fun EditorScreen(
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
+                    // Pick from PDF Option
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                viewModel.toggleColorPickingMode()
+                                showColorPickerDialog = false
+                            }
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.pick_from_pdf),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                 }
             },
             confirmButton = {
@@ -414,6 +488,7 @@ fun EditorScreen(
                 }
             }
         )
+    }
     }
 }
 
@@ -467,12 +542,15 @@ fun PdfViewer(
     redactions: List<RedactionMask>,
     detectedPii: List<DetectedPii>,
     isMaskingMode: Boolean,
+    isColorPickingMode: Boolean,
     pdfPageWidth: Int,
     pdfPageHeight: Int,
     onAddRedaction: (Float, Float, Float, Float) -> Unit,
     onRemoveRedaction: (String) -> Unit,
     onConvertPiiToMask: (DetectedPii) -> Unit,
-    onRemoveDetectedPii: (DetectedPii) -> Unit
+    onRemoveDetectedPii: (DetectedPii) -> Unit,
+    onColorPicked: (Int) -> Unit,
+    onColorPickDrag: (Offset?, Int?) -> Unit
 ) {
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
 
@@ -512,7 +590,7 @@ fun PdfViewer(
             .onSizeChanged { canvasSize = it }
             .pointerInput(fitScale, bitmap) {
                 detectTransformGestures { _, pan, zoom, _ ->
-                    if (!isMaskingMode) {
+                    if (!isMaskingMode && !isColorPickingMode) {
                         // Update scale
                         val newScale = (scale * zoom).coerceIn(1f, 5f)
                         scale = newScale
@@ -539,6 +617,94 @@ fun PdfViewer(
                             offset = Offset.Zero
                         }
                     }
+                }
+
+            }
+            .pointerInput(isColorPickingMode, fitScale, bitmap) {
+                if (isColorPickingMode) {
+                    var lastColor: Int? = null
+                    detectDragGestures(
+                        onDragStart = { dragStartOffset ->
+                            // Initial pick
+                            val totalScale = fitScale * scale
+                            // offset is the pan offset (state), dragStartOffset is the touch position
+                             val startX = (dragStartOffset.x - offset.x) / totalScale
+                             val startY = (dragStartOffset.y - offset.y) / totalScale
+                             
+                             if (startX >= 0 && startX < bitmap.width && startY >= 0 && startY < bitmap.height) {
+                                 val pixelColor = bitmap.getPixel(startX.toInt(), startY.toInt())
+                                 lastColor = pixelColor
+                                 onColorPickDrag(dragStartOffset, pixelColor)
+                             }
+                        },
+                        onDragEnd = {
+                            lastColor?.let { color ->
+                                onColorPicked(color)
+                            }
+                            onColorPickDrag(null, null)
+                            lastColor = null
+                        },
+                        onDragCancel = {
+                            onColorPickDrag(null, null)
+                            lastColor = null
+                        },
+                        onDrag = { change, _ ->
+                            change.consume()
+                            val position = change.position
+                            
+                            // Calculate bitmap coordinates
+                            val totalScale = fitScale * scale
+                            // position is relative to the Box (Canvas)
+                            // The content is translated by 'offset' and scaled by 'totalScale'
+                            
+                            val bitmapX = (position.x - offset.x) / totalScale
+                            val bitmapY = (position.y - offset.y) / totalScale
+                            
+                            if (bitmapX >= 0 && bitmapX < bitmap.width && bitmapY >= 0 && bitmapY < bitmap.height) {
+                                val pixelColor = bitmap.getPixel(bitmapX.toInt(), bitmapY.toInt())
+                                lastColor = pixelColor
+                                onColorPickDrag(position, pixelColor)
+                            }
+                        }
+                    )
+                }
+            }
+            .pointerInput(isColorPickingMode, fitScale, bitmap) {
+                if (isColorPickingMode) {
+                    detectTapGestures(
+                        onTap = { tapOffset ->
+                            val totalScale = fitScale * scale
+                            val bitmapX = (tapOffset.x - offset.x) / totalScale
+                            val bitmapY = (tapOffset.y - offset.y) / totalScale
+                            
+                            if (bitmapX >= 0 && bitmapX < bitmap.width && bitmapY >= 0 && bitmapY < bitmap.height) {
+                                val pixelColor = bitmap.getPixel(bitmapX.toInt(), bitmapY.toInt())
+                                onColorPicked(pixelColor)
+                            }
+                        },
+                        onPress = { pressOffset ->
+                            // Handle initial press for drag preview
+                            val totalScale = fitScale * scale
+                            val bitmapX = (pressOffset.x - offset.x) / totalScale
+                            val bitmapY = (pressOffset.y - offset.y) / totalScale
+                            
+                            if (bitmapX >= 0 && bitmapX < bitmap.width && bitmapY >= 0 && bitmapY < bitmap.height) {
+                                val pixelColor = bitmap.getPixel(bitmapX.toInt(), bitmapY.toInt())
+                                onColorPickDrag(pressOffset, pixelColor)
+                            }
+                            tryAwaitRelease()
+                            // On release (if not dragged enough to trigger drag gesture), confirm selection
+                            // But detectTapGestures handles onTap separately.
+                            // We need to clear preview on release if it was a tap.
+                            onColorPickDrag(null, null)
+                            
+                            // If it was a tap, onTap will fire.
+                            // If it was a drag, detectDragGestures will take over? 
+                            // Compose gesture handling can be tricky. 
+                            // Let's use a simpler approach: update preview in onPress, clear in onRelease.
+                            // Actual selection happens in onTap or onDragEnd.
+                        }
+                    )
                 }
             }
             .pointerInput(isMaskingMode, fitScale) {
@@ -586,10 +752,10 @@ fun PdfViewer(
                     translationY = offset.y,
                     transformOrigin = TransformOrigin(0f, 0f)
                 )
-                .pointerInput(isMaskingMode, fitScale) {
+                .pointerInput(isMaskingMode, isColorPickingMode, fitScale) {
                     detectTapGestures(
                         onTap = { tapOffset ->
-                            if (!isMaskingMode) {
+                            if (!isMaskingMode && !isColorPickingMode) {
                                 // Check if tap is inside any detected PII
                                 val bitmapWidth = bitmap.width.toFloat()
                                 val bitmapHeight = bitmap.height.toFloat()

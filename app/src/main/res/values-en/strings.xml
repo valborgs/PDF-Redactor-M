@@ -44,6 +44,7 @@
     <string name="select_mask_color_title">Select Mask Color</string>
     <string name="color_black">Black</string>
     <string name="color_white">White</string>
+    <string name="pick_from_pdf">Pick from PDF</string>
 
     <!-- Help Dialog -->
     <string name="user_manual_title">User Manual</string>

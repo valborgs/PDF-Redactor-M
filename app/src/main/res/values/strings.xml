@@ -44,6 +44,7 @@
     <string name="select_mask_color_title">마스킹 색상 선택</string>
     <string name="color_black">검은색</string>
     <string name="color_white">흰색</string>
+    <string name="pick_from_pdf">PDF에서 색상 추출</string>
 
     <!-- Help Dialog -->
     <string name="user_manual_title">사용 설명서</string>

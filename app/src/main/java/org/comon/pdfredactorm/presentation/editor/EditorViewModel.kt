@@ -46,7 +46,8 @@ data class EditorUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val saveSuccess: Boolean = false,
-    val currentMaskColor: Int = 0xFF000000.toInt() // Default: Black
+    val currentMaskColor: Int = 0xFF000000.toInt(), // Default: Black
+    val isColorPickingMode: Boolean = false
 )
 
 
@@ -152,6 +153,10 @@ private val _uiState = MutableStateFlow(EditorUiState())
 
     fun toggleMaskingMode() {
         _uiState.update { it.copy(isMaskingMode = !it.isMaskingMode) }
+    }
+
+    fun toggleColorPickingMode() {
+        _uiState.update { it.copy(isColorPickingMode = !it.isColorPickingMode) }
     }
 
     fun setMaskColor(color: Int) {
