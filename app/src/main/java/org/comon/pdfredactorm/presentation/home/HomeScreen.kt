@@ -40,8 +40,9 @@ fun HomeScreen(
     onPdfClick: (String) -> Unit
 ) {
     val recentProjects by viewModel.recentProjects.collectAsState()
+    val showHelpDialog by viewModel.showHelpDialog.collectAsState()
     val context = LocalContext.current
-    var showHelpDialog by remember { mutableStateOf(false) }
+    var showManualHelpDialog by remember { mutableStateOf(false) }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -72,7 +73,7 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
-                    IconButton(onClick = { showHelpDialog = true }) {
+                    IconButton(onClick = { showManualHelpDialog = true }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Help,
                             contentDescription = stringResource(R.string.help_content_description)
@@ -116,9 +117,14 @@ fun HomeScreen(
             }
         }
 
-        // Show help dialog
+        // Show help dialog (First Launch)
         if (showHelpDialog) {
-            HelpDialog(onDismiss = { showHelpDialog = false })
+            HelpDialog(onDismiss = { viewModel.dismissHelpDialog() })
+        }
+
+        // Show help dialog (Manual)
+        if (showManualHelpDialog) {
+            HelpDialog(onDismiss = { showManualHelpDialog = false })
         }
     }
 }

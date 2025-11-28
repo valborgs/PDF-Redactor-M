@@ -68,4 +68,10 @@ object AppModule {
     fun provideLogger(): Logger {
         return AndroidLogger()
     }
+
+    @Provides
+    @Singleton
+    fun provideSharedPreferences(@ApplicationContext context: Context): android.content.SharedPreferences {
+        return context.getSharedPreferences("pdf_redactor_prefs", Context.MODE_PRIVATE)
+    }
 }
