@@ -155,6 +155,9 @@ override suspend fun loadPdf(file: File): PdfDocument {
     }
 
     override suspend fun saveRedactions(pdfId: String, redactions: List<RedactionMask>) {
+        // First, delete all existing redactions for this project to ensure deleted masks are removed
+        redactionDao.deleteRedactionsForProject(pdfId)
+        
         val entities = redactions.map { mask ->
             RedactionEntity(
                 id = mask.id,

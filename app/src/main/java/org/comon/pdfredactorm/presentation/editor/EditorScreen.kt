@@ -91,6 +91,10 @@ fun EditorScreen(
     var colorPickerDragPosition by remember { mutableStateOf<Offset?>(null) }
     var colorPickerPreviewColor by remember { mutableStateOf<Int?>(null) }
 
+    // Mask Deletion State
+    var showDeleteMaskDialog by remember { mutableStateOf(false) }
+    var maskToDeleteId by remember { mutableStateOf<String?>(null) }
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -278,6 +282,21 @@ fun EditorScreen(
                         onColorPickDrag = { position, color ->
                             colorPickerDragPosition = position
                             colorPickerPreviewColor = color
+                        },
+                        maskToDeleteId = maskToDeleteId,
+                        showDeleteMaskDialog = showDeleteMaskDialog,
+                        onShowDeleteMaskDialog = { id ->
+                            maskToDeleteId = id
+                            showDeleteMaskDialog = true
+                        },
+                        onDismissDeleteMaskDialog = {
+                            showDeleteMaskDialog = false
+                            maskToDeleteId = null
+                        },
+                        onConfirmDeleteMask = {
+                            maskToDeleteId?.let { viewModel.removeRedaction(it) }
+                            showDeleteMaskDialog = false
+                            maskToDeleteId = null
                         }
                     )
                 }
@@ -522,6 +541,39 @@ fun EditorScreen(
             }
         )
     }
+
+    // Mask Deletion Dialog
+    if (showDeleteMaskDialog && maskToDeleteId != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteMaskDialog = false
+                maskToDeleteId = null
+            },
+            title = { Text(stringResource(R.string.delete_mask_title)) },
+            text = { Text(stringResource(R.string.delete_mask_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        maskToDeleteId?.let { viewModel.removeRedaction(it) }
+                        showDeleteMaskDialog = false
+                        maskToDeleteId = null
+                    }
+                ) {
+                    Text(stringResource(R.string.delete_button))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteMaskDialog = false
+                        maskToDeleteId = null
+                    }
+                ) {
+                    Text(stringResource(R.string.cancel_button))
+                }
+            }
+        )
+    }
     }
 }
 
@@ -583,7 +635,13 @@ fun PdfViewer(
     onConvertPiiToMask: (DetectedPii) -> Unit,
     onRemoveDetectedPii: (DetectedPii) -> Unit,
     onColorPicked: (Int) -> Unit,
-    onColorPickDrag: (Offset?, Int?) -> Unit
+    onColorPickDrag: (Offset?, Int?) -> Unit,
+    // Mask deletion state
+    maskToDeleteId: String?,
+    showDeleteMaskDialog: Boolean,
+    onShowDeleteMaskDialog: (String) -> Unit,
+    onDismissDeleteMaskDialog: () -> Unit,
+    onConfirmDeleteMask: () -> Unit
 ) {
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
 
@@ -789,7 +847,6 @@ fun PdfViewer(
                     detectTapGestures(
                         onTap = { tapOffset ->
                             if (!isMaskingMode && !isColorPickingMode) {
-                                // Check if tap is inside any detected PII
                                 val bitmapWidth = bitmap.width.toFloat()
                                 val bitmapHeight = bitmap.height.toFloat()
                                 val scaleX = pdfPageWidth / bitmapWidth
@@ -798,6 +855,18 @@ fun PdfViewer(
                                 val tapX = tapOffset.x * scaleX
                                 val tapY = tapOffset.y * scaleY
 
+                                // Check if tap is inside any redaction
+                                val hitMask = redactions.find { mask ->
+                                    tapX >= mask.x && tapX <= mask.x + mask.width &&
+                                    tapY >= mask.y && tapY <= mask.y + mask.height
+                                }
+
+                                if (hitMask != null) {
+                                    onShowDeleteMaskDialog(hitMask.id)
+                                    return@detectTapGestures
+                                }
+
+                                // Check if tap is inside any detected PII
                                 val hitPii = detectedPii.find { pii ->
                                     tapX >= pii.x && tapX <= pii.x + pii.width &&
                                     tapY >= pii.y && tapY <= pii.y + pii.height
@@ -807,25 +876,6 @@ fun PdfViewer(
                                     selectedPii = hitPii
                                     showPiiContextMenu = true
                                 }
-                            }
-                        },
-                        onLongPress = { tapOffset ->
-                            if (!isMaskingMode) {
-                                // Check if tap is inside any redaction
-                                val bitmapWidth = bitmap.width.toFloat()
-                                val bitmapHeight = bitmap.height.toFloat()
-                                val scaleX = pdfPageWidth / bitmapWidth
-                                val scaleY = pdfPageHeight / bitmapHeight
-
-                                val tapX = tapOffset.x * scaleX
-                                val tapY = tapOffset.y * scaleY
-
-                                val hit = redactions.find { mask ->
-                                    tapX >= mask.x && tapX <= mask.x + mask.width &&
-                                    tapY >= mask.y && tapY <= mask.y + mask.height
-                                }
-
-                                hit?.let { onRemoveRedaction(it.id) }
                             }
                         }
                     )
