@@ -85,4 +85,11 @@
     <string name="masking_mode_disabled">마스킹 모드가 꺼졌습니다</string>
     <string name="color_picker_mode_enabled">색상 추출 모드가 켜졌습니다</string>
     <string name="color_selected">색상이 선택되었습니다</string>
+
+    <!-- Exit Confirmation Dialog -->
+    <string name="exit_dialog_title">앱을 종료하시겠습니까?</string>
+    <string name="exit_dialog_yes">종료</string>
+    <string name="exit_dialog_no">취소</string>
+    <string name="exit_dialog_review">리뷰남기기</string>
+    <string name="ad_attribution">광고</string>
 </resources>

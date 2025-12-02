@@ -85,4 +85,11 @@
     <string name="masking_mode_disabled">Masking mode disabled</string>
     <string name="color_picker_mode_enabled">Color picker mode enabled</string>
     <string name="color_selected">Color selected</string>
+
+    <!-- Exit Confirmation Dialog -->
+    <string name="exit_dialog_title">Do you want to exit the app?</string>
+    <string name="exit_dialog_yes">Exit</string>
+    <string name="exit_dialog_no">Cancel</string>
+    <string name="exit_dialog_review">Review</string>
+    <string name="ad_attribution">Ad</string>
 </resources>

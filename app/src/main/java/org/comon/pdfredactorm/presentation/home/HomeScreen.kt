@@ -3,6 +3,8 @@ package org.comon.pdfredactorm.presentation.home
 import android.net.Uri
 import android.content.Context
 import android.provider.OpenableColumns
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -39,9 +41,10 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onPdfClick: (String) -> Unit
 ) {
+    val activity = LocalActivity.current
+    val context = LocalContext.current
     val recentProjects by viewModel.recentProjects.collectAsState()
     val showHelpDialog by viewModel.showHelpDialog.collectAsState()
-    val context = LocalContext.current
     var showManualHelpDialog by remember { mutableStateOf(false) }
 
     val launcher = rememberLauncherForActivityResult(
@@ -125,6 +128,20 @@ fun HomeScreen(
         // Show help dialog (Manual)
         if (showManualHelpDialog) {
             HelpDialog(onDismiss = { showManualHelpDialog = false })
+        }
+
+        // Exit Confirmation Dialog
+        var showExitDialog by remember { mutableStateOf(false) }
+
+        BackHandler {
+            showExitDialog = true
+        }
+
+        if (showExitDialog) {
+            ExitConfirmationDialog(
+                onDismiss = { showExitDialog = false },
+                onConfirm = { activity?.finish() }
+            )
         }
     }
 }

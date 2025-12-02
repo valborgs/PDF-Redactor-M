@@ -40,13 +40,17 @@ android {
         // AdMob ID 가져오기 (없으면 빈 문자열)
         val admobAppIdTest = localProperties.getProperty("ADMOB_APP_ID_TEST", "")
         val admobBannerIdTest = localProperties.getProperty("ADMOB_BANNER_ID_TEST", "")
+        val admobNativeIdTest = localProperties.getProperty("ADMOB_NATIVE_ID_TEST", "")
+
         val admobAppIdRelease = localProperties.getProperty("ADMOB_APP_ID_RELEASE", "")
         val admobBannerIdRelease = localProperties.getProperty("ADMOB_BANNER_ID_RELEASE", "")
+        val admobNativeIdRelease = localProperties.getProperty("ADMOB_NATIVE_ID_RELEASE", "")
 
         debug {
             // Debug 빌드는 테스트 ID 사용
             buildConfigField("String", "ADMOB_APP_ID", "\"$admobAppIdTest\"")
             buildConfigField("String", "ADMOB_BANNER_ID", "\"$admobBannerIdTest\"")
+            buildConfigField("String", "ADMOB_NATIVE_ID", "\"$admobNativeIdTest\"")
 
             // Manifest placeholder로도 설정 (AndroidManifest.xml에서 사용)
             manifestPlaceholders["admobAppId"] = admobAppIdTest
@@ -61,6 +65,7 @@ android {
             // Release 빌드는 실제 ID 사용
             buildConfigField("String", "ADMOB_APP_ID", "\"$admobAppIdRelease\"")
             buildConfigField("String", "ADMOB_BANNER_ID", "\"$admobBannerIdRelease\"")
+            buildConfigField("String", "ADMOB_NATIVE_ID", "\"$admobNativeIdRelease\"")
 
             // Manifest placeholder로도 설정
             manifestPlaceholders["admobAppId"] = admobAppIdRelease
