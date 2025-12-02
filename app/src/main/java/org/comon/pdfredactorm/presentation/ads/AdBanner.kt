@@ -11,6 +11,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
+import androidx.compose.foundation.layout.navigationBarsPadding
 import org.comon.pdfredactorm.BuildConfig
 
 /**
@@ -31,9 +32,11 @@ fun AdBanner(
         return
     }
 
+
+
     // 광고를 한 번만 생성하고, 로딩 전후 visibility만 변경
     AndroidView(
-        modifier = modifier,
+        modifier = modifier.navigationBarsPadding(),
         factory = { context ->
 
             AdView(context).apply {
