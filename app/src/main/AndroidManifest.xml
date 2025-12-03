@@ -13,6 +13,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:name=".PdfRedactorApplication"
+        android:usesCleartextTraffic="true"
         android:theme="@style/Theme.PDFRedactorM">
 
         <!-- AdMob App ID (local.properties에서 관리) -->

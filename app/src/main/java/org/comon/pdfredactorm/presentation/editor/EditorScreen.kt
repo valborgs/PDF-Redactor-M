@@ -56,29 +56,6 @@ fun EditorScreen(
     viewModel: EditorViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
-    LaunchedEffect(pdfId) {
-        viewModel.loadPdf(pdfId)
-    }
-
-
-    val saveLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/pdf")
-    ) { uri ->
-        uri?.let { viewModel.savePdf(it) }
-    }
-
-    LaunchedEffect(uiState.saveSuccess) {
-        if (uiState.saveSuccess) {
-            android.util.Log.d("EditorScreen", "PDF Saved Successfully")
-            onBackClick()
-        }
-    }
-    LaunchedEffect(uiState.error) {
-        uiState.error?.let {
-            android.util.Log.d("EditorScreen", "Error: $it")
-        }
-    }
 
     var showDetectionMenu by remember { mutableStateOf(false) }
     var showPageJumpDialog by remember { mutableStateOf(false) }
@@ -86,7 +63,7 @@ fun EditorScreen(
     var showPageInputError by remember { mutableStateOf(false) }
     var showOutlineDialog by remember { mutableStateOf(false) }
     var showColorPickerDialog by remember { mutableStateOf(false) }
-    
+
     // Color Picker State
     var colorPickerDragPosition by remember { mutableStateOf<Offset?>(null) }
     var colorPickerPreviewColor by remember { mutableStateOf<Int?>(null) }
@@ -102,6 +79,48 @@ fun EditorScreen(
     val maskingDisabledMessage = stringResource(R.string.masking_mode_disabled)
     val colorPickerEnabledMessage = stringResource(R.string.color_picker_mode_enabled)
     val colorSelectedMessage = stringResource(R.string.color_selected)
+    
+    LaunchedEffect(pdfId) {
+        viewModel.loadPdf(pdfId)
+    }
+
+
+    val saveLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/pdf")
+    ) { uri ->
+        uri?.let { 
+            if (uiState.proRedactionSuccess) {
+                viewModel.saveProFile(it)
+            } else {
+                viewModel.savePdf(it) 
+            }
+        }
+    }
+
+    LaunchedEffect(uiState.proRedactionSuccess) {
+        if (uiState.proRedactionSuccess) {
+            val fileName = "pro_redacted_${System.currentTimeMillis()}.pdf"
+            saveLauncher.launch(fileName)
+        }
+    }
+
+    LaunchedEffect(uiState.saveSuccess) {
+        if (uiState.saveSuccess) {
+            android.util.Log.d("EditorScreen", "PDF Saved Successfully")
+            onBackClick()
+        }
+    }
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let { errorMsg ->
+            android.util.Log.d("EditorScreen", "Error: $errorMsg")
+            val message = if (errorMsg.contains("Pro Redaction Failed")) {
+                "pdf 마스킹 처리에 실패하였습니다."
+            } else {
+                errorMsg
+            }
+            snackbarHostState.showSnackbar(message, duration = SnackbarDuration.Short)
+        }
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -156,6 +175,11 @@ fun EditorScreen(
                         enabled = uiState.outline.isNotEmpty()
                     ) {
                         Icon(Icons.AutoMirrored.Filled.List, contentDescription = stringResource(R.string.outline_content_description))
+                    }
+
+                    // Pro Redact Button
+                    TextButton(onClick = { viewModel.uploadAndRedactPdf() }) {
+                        Text("Pro", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                     }
 
                     IconButton(onClick = {

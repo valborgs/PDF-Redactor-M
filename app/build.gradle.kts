@@ -34,6 +34,9 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        val apiBaseUrl = localProperties.getProperty("API_BASE_URL", "")
+        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
     }
 
     buildTypes {

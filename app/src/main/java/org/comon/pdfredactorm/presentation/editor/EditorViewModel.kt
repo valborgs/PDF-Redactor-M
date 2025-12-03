@@ -47,7 +47,9 @@ data class EditorUiState(
     val error: String? = null,
     val saveSuccess: Boolean = false,
     val currentMaskColor: Int = 0xFF000000.toInt(), // Default: Black
-    val isColorPickingMode: Boolean = false
+    val isColorPickingMode: Boolean = false,
+    val tempRedactedFile: File? = null,
+    val proRedactionSuccess: Boolean = false
 )
 
 
@@ -60,6 +62,7 @@ class EditorViewModel @Inject constructor(
     private val saveRedactionsUseCase: SaveRedactionsUseCase,
     private val saveRedactedPdfUseCase: SaveRedactedPdfUseCase,
     private val detectPiiUseCase: DetectPiiUseCase,
+    private val redactPdfUseCase: org.comon.pdfredactorm.domain.usecase.RedactPdfUseCase,
     private val logger: Logger
 ) : ViewModel() {
 private val _uiState = MutableStateFlow(EditorUiState())
@@ -332,6 +335,82 @@ private val _uiState = MutableStateFlow(EditorUiState())
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    fun uploadAndRedactPdf() {
+        val currentState = _uiState.value
+        currentState.document?.let { doc ->
+            viewModelScope.launch {
+                logger.info("User initiated Pro Redaction")
+                _uiState.update { it.copy(isLoading = true) }
+                
+                val redactionInfos = currentState.redactions.map { mask ->
+                    org.comon.pdfredactorm.domain.model.RedactionInfo(
+                        pageIndex = mask.pageIndex,
+                        x = mask.x,
+                        y = mask.y,
+                        width = mask.width,
+                        height = mask.height,
+                        color = mask.color
+                    )
+                }
+
+                val result = redactPdfUseCase(doc.file, redactionInfos)
+                
+                result.onSuccess { redactedFile ->
+                    logger.info("Pro Redaction successful")
+                     _uiState.update { 
+                         it.copy(
+                             isLoading = false, 
+                             proRedactionSuccess = true,
+                             tempRedactedFile = redactedFile
+                         ) 
+                     }
+                }.onFailure { e ->
+                    logger.error("Pro Redaction failed", e)
+                    _uiState.update { it.copy(isLoading = false, error = "Pro Redaction Failed: ${e.message}") }
+                }
+            }
+        }
+    }
+
+    fun saveProFile(uri: Uri) {
+        val currentState = _uiState.value
+        currentState.tempRedactedFile?.let { file ->
+            viewModelScope.launch {
+                _uiState.update { it.copy(isLoading = true) }
+                try {
+                    application.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                        file.inputStream().use { inputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                    // Delete the temp file after saving
+                    if (file.exists()) {
+                        file.delete()
+                    }
+
+                    // Cleanup original file and project (same as savePdf)
+                    currentState.document?.let { doc ->
+                        closeRenderer()
+                        if (doc.file.exists()) {
+                            doc.file.delete()
+                        }
+                        repository.deleteProject(doc.id)
+                    }
+                    
+                    logger.info("Pro file saved successfully to $uri")
+                    _uiState.update { it.copy(isLoading = false, saveSuccess = true, proRedactionSuccess = false, tempRedactedFile = null) }
+                } catch (e: Exception) {
+                    logger.error("Failed to save pro file", e)
+                    _uiState.update { it.copy(isLoading = false, error = "Failed to save file: ${e.message}") }
+                }
+            }
+        }
+    }
+
+    fun consumeProRedactionSuccess() {
+        _uiState.update { it.copy(proRedactionSuccess = false) }
     }
 
     override fun onCleared() {

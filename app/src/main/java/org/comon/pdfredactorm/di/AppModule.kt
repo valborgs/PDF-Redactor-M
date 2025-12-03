@@ -9,13 +9,17 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import org.comon.pdfredactorm.BuildConfig
 import org.comon.pdfredactorm.data.local.AppDatabase
 import org.comon.pdfredactorm.data.local.dao.ProjectDao
 import org.comon.pdfredactorm.data.local.dao.RedactionDao
 import org.comon.pdfredactorm.data.logger.AndroidLogger
+import org.comon.pdfredactorm.data.remote.RedactionApi
 import org.comon.pdfredactorm.data.repository.PdfRepositoryImpl
+import org.comon.pdfredactorm.data.repository.RedactionRepositoryImpl
 import org.comon.pdfredactorm.domain.logger.Logger
 import org.comon.pdfredactorm.domain.repository.PdfRepository
+import org.comon.pdfredactorm.domain.repository.RedactionRepository
 import javax.inject.Singleton
 
 @Module
@@ -73,5 +77,34 @@ object AppModule {
     @Singleton
     fun provideSharedPreferences(@ApplicationContext context: Context): android.content.SharedPreferences {
         return context.getSharedPreferences("pdf_redactor_prefs", Context.MODE_PRIVATE)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRetrofit(): retrofit2.Retrofit {
+        val logging = okhttp3.logging.HttpLoggingInterceptor().apply {
+            level = okhttp3.logging.HttpLoggingInterceptor.Level.BODY
+        }
+        val client = okhttp3.OkHttpClient.Builder()
+            .addInterceptor(logging)
+            .build()
+
+        return retrofit2.Retrofit.Builder()
+            .baseUrl(BuildConfig.API_BASE_URL)
+            .client(client)
+            .addConverterFactory(retrofit2.converter.gson.GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRedactionApi(retrofit: retrofit2.Retrofit): RedactionApi {
+        return retrofit.create(RedactionApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRedactionRepository(api: RedactionApi): RedactionRepository {
+        return RedactionRepositoryImpl(api)
     }
 }
