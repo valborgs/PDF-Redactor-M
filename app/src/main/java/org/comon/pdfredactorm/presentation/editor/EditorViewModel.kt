@@ -17,7 +17,7 @@ import org.comon.pdfredactorm.domain.model.DetectedPii
 import org.comon.pdfredactorm.domain.model.PdfDocument
 import org.comon.pdfredactorm.domain.model.PdfOutlineItem
 import org.comon.pdfredactorm.domain.model.RedactionMask
-import org.comon.pdfredactorm.domain.repository.PdfRepository
+import org.comon.pdfredactorm.domain.repository.LocalPdfRepository
 import org.comon.pdfredactorm.domain.usecase.DetectPiiUseCase
 import org.comon.pdfredactorm.domain.usecase.GetRedactionsUseCase
 import org.comon.pdfredactorm.domain.usecase.SaveRedactedPdfUseCase
@@ -57,12 +57,12 @@ data class EditorUiState(
 @HiltViewModel
 class EditorViewModel @Inject constructor(
     private val application: Application,
-    private val repository: PdfRepository,
+    private val repository: LocalPdfRepository,
     private val getRedactionsUseCase: GetRedactionsUseCase,
     private val saveRedactionsUseCase: SaveRedactionsUseCase,
     private val saveRedactedPdfUseCase: SaveRedactedPdfUseCase,
     private val detectPiiUseCase: DetectPiiUseCase,
-    private val redactPdfUseCase: org.comon.pdfredactorm.domain.usecase.RedactPdfUseCase,
+    private val remoteRedactPdfUseCase: org.comon.pdfredactorm.domain.usecase.RemoteRedactPdfUseCase,
     private val logger: Logger
 ) : ViewModel() {
 private val _uiState = MutableStateFlow(EditorUiState())
@@ -355,7 +355,7 @@ private val _uiState = MutableStateFlow(EditorUiState())
                     )
                 }
 
-                val result = redactPdfUseCase(doc.file, redactionInfos)
+                val result = remoteRedactPdfUseCase(doc.file, redactionInfos)
                 
                 result.onSuccess { redactedFile ->
                     logger.info("Pro Redaction successful")

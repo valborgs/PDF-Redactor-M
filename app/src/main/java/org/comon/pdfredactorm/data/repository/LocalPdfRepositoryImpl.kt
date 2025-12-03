@@ -20,7 +20,7 @@ import org.comon.pdfredactorm.domain.model.DetectedPii
 import org.comon.pdfredactorm.domain.model.PdfDocument
 import org.comon.pdfredactorm.domain.model.PdfOutlineItem
 import org.comon.pdfredactorm.domain.model.RedactionMask
-import org.comon.pdfredactorm.domain.repository.PdfRepository
+import org.comon.pdfredactorm.domain.repository.LocalPdfRepository
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineNode
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageDestination
@@ -30,11 +30,11 @@ import java.io.OutputStream
 import java.util.UUID
 import javax.inject.Inject
 
-class PdfRepositoryImpl @Inject constructor(
+class LocalPdfRepositoryImpl @Inject constructor(
     private val projectDao: ProjectDao,
     private val redactionDao: RedactionDao,
     private val logger: Logger
-) : PdfRepository {
+) : LocalPdfRepository {
 override suspend fun loadPdf(file: File): PdfDocument {
         return withContext(Dispatchers.IO) {
             try {

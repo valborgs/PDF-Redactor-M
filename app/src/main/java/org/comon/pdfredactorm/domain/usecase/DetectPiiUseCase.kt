@@ -2,13 +2,13 @@ package org.comon.pdfredactorm.domain.usecase
 
 import org.comon.pdfredactorm.domain.model.DetectedPii
 import org.comon.pdfredactorm.domain.model.RedactionMask
-import org.comon.pdfredactorm.domain.repository.PdfRepository
+import org.comon.pdfredactorm.domain.repository.LocalPdfRepository
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
 
 class DetectPiiUseCase @Inject constructor(
-    private val repository: PdfRepository
+    private val repository: LocalPdfRepository
 ) {
     suspend fun detectInPage(file: File, pageIndex: Int): Result<List<DetectedPii>> {
         return try {

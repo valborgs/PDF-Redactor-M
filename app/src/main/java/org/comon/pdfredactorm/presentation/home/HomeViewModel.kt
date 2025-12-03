@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.comon.pdfredactorm.domain.model.PdfDocument
-import org.comon.pdfredactorm.domain.repository.PdfRepository
 import org.comon.pdfredactorm.domain.usecase.LoadPdfUseCase
 import org.comon.pdfredactorm.domain.logger.Logger
 import android.content.SharedPreferences
@@ -17,10 +16,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
 import javax.inject.Inject
 import androidx.core.content.edit
+import org.comon.pdfredactorm.domain.repository.LocalPdfRepository
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val repository: PdfRepository,
+    private val repository: LocalPdfRepository,
     private val loadPdfUseCase: LoadPdfUseCase,
     private val logger: Logger,
     private val sharedPreferences: SharedPreferences

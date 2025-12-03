@@ -7,14 +7,14 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.comon.pdfredactorm.data.remote.RedactionApi
 import org.comon.pdfredactorm.domain.model.RedactionInfo
-import org.comon.pdfredactorm.domain.repository.RedactionRepository
+import org.comon.pdfredactorm.domain.repository.RemoteRedactionRepository
 import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
 
-class RedactionRepositoryImpl @Inject constructor(
+class RemoteRedactionRepositoryImpl @Inject constructor(
     private val api: RedactionApi
-) : RedactionRepository {
+) : RemoteRedactionRepository {
 
     override suspend fun redactPdf(file: File, redactions: List<RedactionInfo>): Result<File> {
         return try {

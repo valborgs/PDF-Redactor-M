@@ -15,11 +15,11 @@ import org.comon.pdfredactorm.data.local.dao.ProjectDao
 import org.comon.pdfredactorm.data.local.dao.RedactionDao
 import org.comon.pdfredactorm.data.logger.AndroidLogger
 import org.comon.pdfredactorm.data.remote.RedactionApi
-import org.comon.pdfredactorm.data.repository.PdfRepositoryImpl
-import org.comon.pdfredactorm.data.repository.RedactionRepositoryImpl
+import org.comon.pdfredactorm.data.repository.LocalPdfRepositoryImpl
+import org.comon.pdfredactorm.data.repository.RemoteRedactionRepositoryImpl
 import org.comon.pdfredactorm.domain.logger.Logger
-import org.comon.pdfredactorm.domain.repository.PdfRepository
-import org.comon.pdfredactorm.domain.repository.RedactionRepository
+import org.comon.pdfredactorm.domain.repository.LocalPdfRepository
+import org.comon.pdfredactorm.domain.repository.RemoteRedactionRepository
 import javax.inject.Singleton
 
 @Module
@@ -55,16 +55,16 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providePdfRepository(
+    fun provideLocalPdfRepository(
         @ApplicationContext context: Context,
         projectDao: ProjectDao,
         redactionDao: RedactionDao,
         logger: Logger
-    ): PdfRepository {
+    ): LocalPdfRepository {
         // Initialize PDFBox
         com.tom_roush.pdfbox.android.PDFBoxResourceLoader.init(context)
         
-        return PdfRepositoryImpl(projectDao, redactionDao, logger)
+        return LocalPdfRepositoryImpl(projectDao, redactionDao, logger)
     }
     
     @Provides
@@ -104,7 +104,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRedactionRepository(api: RedactionApi): RedactionRepository {
-        return RedactionRepositoryImpl(api)
+    fun provideRemoteRedactionRepository(api: RedactionApi): RemoteRedactionRepository {
+        return RemoteRedactionRepositoryImpl(api)
     }
 }

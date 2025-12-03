@@ -9,7 +9,7 @@ import java.io.File
 
 import java.io.OutputStream
 
-interface PdfRepository {
+interface LocalPdfRepository {
     suspend fun loadPdf(file: File): PdfDocument
     suspend fun getPdfPageCount(file: File): Int
     suspend fun saveRedactedPdf(originalFile: File, redactions: List<RedactionMask>, outputStream: OutputStream): Result<Unit>
