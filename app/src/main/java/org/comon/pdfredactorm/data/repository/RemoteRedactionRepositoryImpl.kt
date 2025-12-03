@@ -1,20 +1,21 @@
 package org.comon.pdfredactorm.data.repository
 
-import com.google.gson.Gson
+import org.comon.pdfredactorm.data.remote.RedactionApi
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.comon.pdfredactorm.data.dto.toDto
-import org.comon.pdfredactorm.data.remote.RedactionApi
 import org.comon.pdfredactorm.domain.model.RedactionMask
 import org.comon.pdfredactorm.domain.repository.RemoteRedactionRepository
 import java.io.File
 import java.io.FileOutputStream
+import kotlinx.serialization.json.Json
+import okhttp3.RequestBody.Companion.toRequestBody
 import javax.inject.Inject
 
 class RemoteRedactionRepositoryImpl @Inject constructor(
-    private val api: RedactionApi
+    private val api: RedactionApi,
+    private val json: Json
 ) : RemoteRedactionRepository {
 
     override suspend fun redactPdf(file: File, redactions: List<RedactionMask>): Result<File> {
@@ -22,9 +23,8 @@ class RemoteRedactionRepositoryImpl @Inject constructor(
             val requestFile = file.asRequestBody("application/pdf".toMediaTypeOrNull())
             val filePart = MultipartBody.Part.createFormData("file", file.name, requestFile)
 
-            val gson = Gson()
             val redactionDtos = redactions.map { it.toDto() }
-            val redactionsJson = gson.toJson(redactionDtos)
+            val redactionsJson = json.encodeToString(redactionDtos)
             val redactionsPart = redactionsJson.toRequestBody("text/plain".toMediaTypeOrNull())
 
             val response = api.redactPdf(filePart, redactionsPart)

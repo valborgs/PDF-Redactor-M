@@ -119,6 +119,7 @@ fun EditorScreen(
                 errorMsg
             }
             snackbarHostState.showSnackbar(message, duration = SnackbarDuration.Short)
+            viewModel.consumeError()
         }
     }
 

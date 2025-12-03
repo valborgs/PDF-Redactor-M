@@ -402,6 +402,10 @@ private val _uiState = MutableStateFlow(EditorUiState())
         _uiState.update { it.copy(proRedactionSuccess = false) }
     }
 
+    fun consumeError() {
+        _uiState.update { it.copy(error = null) }
+    }
+
     override fun onCleared() {
         super.onCleared()
         closeRenderer()

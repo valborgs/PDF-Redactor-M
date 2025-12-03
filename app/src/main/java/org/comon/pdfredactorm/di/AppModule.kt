@@ -1,5 +1,6 @@
 package org.comon.pdfredactorm.di
 
+
 import android.content.Context
 import androidx.room.Room
 import androidx.room.migration.Migration
@@ -14,13 +15,16 @@ import org.comon.pdfredactorm.data.local.AppDatabase
 import org.comon.pdfredactorm.data.local.dao.ProjectDao
 import org.comon.pdfredactorm.data.local.dao.RedactionDao
 import org.comon.pdfredactorm.data.logger.AndroidLogger
-import org.comon.pdfredactorm.data.remote.RedactionApi
 import org.comon.pdfredactorm.data.repository.LocalPdfRepositoryImpl
 import org.comon.pdfredactorm.data.repository.RemoteRedactionRepositoryImpl
 import org.comon.pdfredactorm.domain.logger.Logger
 import org.comon.pdfredactorm.domain.repository.LocalPdfRepository
 import org.comon.pdfredactorm.domain.repository.RemoteRedactionRepository
 import javax.inject.Singleton
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
+import org.comon.pdfredactorm.data.remote.RedactionApi
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -81,7 +85,13 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(): retrofit2.Retrofit {
+    fun provideJson(): Json {
+        return Json { ignoreUnknownKeys = true }
+    }
+
+    @Provides
+    @Singleton
+    fun provideRetrofit(json: Json): retrofit2.Retrofit {
         val logging = okhttp3.logging.HttpLoggingInterceptor().apply {
             level = okhttp3.logging.HttpLoggingInterceptor.Level.BODY
         }
@@ -92,7 +102,7 @@ object AppModule {
         return retrofit2.Retrofit.Builder()
             .baseUrl(BuildConfig.API_BASE_URL)
             .client(client)
-            .addConverterFactory(retrofit2.converter.gson.GsonConverterFactory.create())
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
     }
 
@@ -104,7 +114,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRemoteRedactionRepository(api: RedactionApi): RemoteRedactionRepository {
-        return RemoteRedactionRepositoryImpl(api)
+    fun provideRemoteRedactionRepository(api: RedactionApi, json: Json): RemoteRedactionRepository {
+        return RemoteRedactionRepositoryImpl(api, json)
     }
 }
