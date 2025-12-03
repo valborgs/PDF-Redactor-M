@@ -344,18 +344,7 @@ private val _uiState = MutableStateFlow(EditorUiState())
                 logger.info("User initiated Pro Redaction")
                 _uiState.update { it.copy(isLoading = true) }
                 
-                val redactionInfos = currentState.redactions.map { mask ->
-                    org.comon.pdfredactorm.domain.model.RedactionInfo(
-                        pageIndex = mask.pageIndex,
-                        x = mask.x,
-                        y = mask.y,
-                        width = mask.width,
-                        height = mask.height,
-                        color = mask.color
-                    )
-                }
-
-                val result = remoteRedactPdfUseCase(doc.file, redactionInfos)
+                val result = remoteRedactPdfUseCase(doc.file, currentState.redactions)
                 
                 result.onSuccess { redactedFile ->
                     logger.info("Pro Redaction successful")

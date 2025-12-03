@@ -1,8 +1,8 @@
 package org.comon.pdfredactorm.domain.repository
 
-import org.comon.pdfredactorm.domain.model.RedactionInfo
+import org.comon.pdfredactorm.domain.model.RedactionMask
 import java.io.File
 
 interface RemoteRedactionRepository {
-    suspend fun redactPdf(file: File, redactions: List<RedactionInfo>): Result<File>
+    suspend fun redactPdf(file: File, redactions: List<RedactionMask>): Result<File>
 }
