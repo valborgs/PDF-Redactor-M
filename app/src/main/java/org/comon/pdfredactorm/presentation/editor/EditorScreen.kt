@@ -37,6 +37,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.clickable
@@ -58,6 +59,8 @@ fun EditorScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     var showDetectionMenu by remember { mutableStateOf(false) }
+    var showMainMenu by remember { mutableStateOf(false) }
+    var showPrivacyDetectionDialog by remember { mutableStateOf(false) }
     var showPageJumpDialog by remember { mutableStateOf(false) }
     var pageInputValue by remember { mutableStateOf("") }
     var showPageInputError by remember { mutableStateOf(false) }
@@ -130,7 +133,9 @@ fun EditorScreen(
                 title = { 
                     Text(
                         text = uiState.document?.fileName ?: stringResource(R.string.editor_title),
-                        fontSize = 11.sp
+                        fontSize = 11.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 },
                 navigationIcon = {
@@ -139,55 +144,57 @@ fun EditorScreen(
                     }
                 },
                 actions = {
-                    // Detection Menu
                     Box {
-                        IconButton(onClick = { showDetectionMenu = true }) {
-                            Icon(Icons.Default.Search, contentDescription = stringResource(R.string.detect_pii_content_description))
+                        IconButton(onClick = { showMainMenu = true }) {
+                            Icon(Icons.AutoMirrored.Filled.List, contentDescription = stringResource(R.string.menu_content_description))
                         }
                         DropdownMenu(
-                            expanded = showDetectionMenu,
-                            onDismissRequest = { showDetectionMenu = false }
+                            expanded = showMainMenu,
+                            onDismissRequest = { showMainMenu = false }
                         ) {
+                            // Save Option
                             DropdownMenuItem(
-                                text = { Text(stringResource(R.string.detect_current_page)) },
+                                text = { Text("저장") },
                                 onClick = {
-                                    viewModel.detectPiiInCurrentPage()
-                                    showDetectionMenu = false
+                                    showMainMenu = false
+                                    val fileName = "redacted_${System.currentTimeMillis()}.pdf"
+                                    saveLauncher.launch(fileName)
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.Save, contentDescription = null)
+                                }
+                            )
+
+                            // Table of Contents Option
+                            DropdownMenuItem(
+                                text = { Text("목차") },
+                                onClick = {
+                                    showMainMenu = false
+                                    if (uiState.outline.isNotEmpty()) {
+                                        showOutlineDialog = true
+                                    } else {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar("목차가 없습니다.", duration = SnackbarDuration.Short)
+                                        }
+                                    }
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.AutoMirrored.Filled.List, contentDescription = null)
+                                }
+                            )
+
+                            // Privacy Detection Option
+                            DropdownMenuItem(
+                                text = { Text("개인정보 탐지") },
+                                onClick = {
+                                    showMainMenu = false
+                                    showPrivacyDetectionDialog = true
                                 },
                                 leadingIcon = {
                                     Icon(Icons.Default.Search, contentDescription = null)
                                 }
                             )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.detect_all_pages)) },
-                                onClick = {
-                                    viewModel.detectPiiInAllPages()
-                                    showDetectionMenu = false
-                                },
-                                leadingIcon = {
-                                    Icon(Icons.Default.Done, contentDescription = null)
-                                }
-                            )
                         }
-                    }
-
-                    IconButton(
-                        onClick = { showOutlineDialog = true },
-                        enabled = uiState.outline.isNotEmpty()
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = stringResource(R.string.outline_content_description))
-                    }
-
-                    // Pro Redact Button
-                    TextButton(onClick = { viewModel.uploadAndRedactPdf() }) {
-                        Text("Pro", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                    }
-
-                    IconButton(onClick = {
-                        val fileName = "redacted_${System.currentTimeMillis()}.pdf"
-                        saveLauncher.launch(fileName)
-                    }) {
-                        Icon(Icons.Default.Save, contentDescription = stringResource(R.string.save_content_description))
                     }
                 }
             )
@@ -595,6 +602,34 @@ fun EditorScreen(
                     }
                 ) {
                     Text(stringResource(R.string.cancel_button))
+                }
+            }
+        )
+    }
+    // Privacy Detection Dialog
+    if (showPrivacyDetectionDialog) {
+        AlertDialog(
+            onDismissRequest = { showPrivacyDetectionDialog = false },
+            title = { Text("개인정보 탐지") },
+            text = { Text("탐지 범위를 선택해주세요.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.detectPiiInAllPages()
+                        showPrivacyDetectionDialog = false
+                    }
+                ) {
+                    Text("모든 페이지 탐지")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.detectPiiInCurrentPage()
+                        showPrivacyDetectionDialog = false
+                    }
+                ) {
+                    Text("현재 페이지 탐지")
                 }
             }
         )

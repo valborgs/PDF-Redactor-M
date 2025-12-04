@@ -10,6 +10,7 @@
     
     <!-- Editor Screen -->
     <string name="editor_title">편집기</string>
+    <string name="menu_content_description">메뉴</string>
     <string name="back_content_description">뒤로</string>
     <string name="detect_pii_content_description">개인정보 탐지</string>
     <string name="detect_current_page">현재 페이지 탐지</string>
