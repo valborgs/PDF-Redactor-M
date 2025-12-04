@@ -24,8 +24,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import org.comon.pdfredactorm.BuildConfig
 import org.comon.pdfredactorm.domain.model.PdfDocument
 import java.io.File
 import java.io.FileOutputStream
@@ -76,6 +78,16 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
+                    val uriHandler = LocalUriHandler.current
+                    IconButton(onClick = {
+                        uriHandler.openUri(BuildConfig.COFFEE_CHAT_URL)
+                    }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_coffee),
+                            contentDescription = "Coffee Chat",
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
                     IconButton(onClick = { showManualHelpDialog = true }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Help,

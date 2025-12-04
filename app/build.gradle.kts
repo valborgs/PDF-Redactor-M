@@ -28,8 +28,8 @@ android {
         applicationId = "org.comon.pdfredactorm"
         minSdk = 26
         targetSdk = 36
-        versionCode = 7
-        versionName = "0.0.7"
+        versionCode = 8
+        versionName = "0.0.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -38,6 +38,9 @@ android {
 
         val apiBaseUrl = localProperties.getProperty("API_BASE_URL", "")
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
+
+        val coffeeChatUrl = localProperties.getProperty("COFFEE_CHAT_URL", "")
+        buildConfigField("String", "COFFEE_CHAT_URL", "\"$coffeeChatUrl\"")
     }
 
     buildTypes {
