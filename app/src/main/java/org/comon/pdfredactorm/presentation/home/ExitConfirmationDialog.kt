@@ -5,6 +5,10 @@ import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -13,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import org.comon.pdfredactorm.R
 import org.comon.pdfredactorm.presentation.ads.NativeAdView
+import androidx.core.net.toUri
 
 @Composable
 fun ExitConfirmationDialog(
@@ -20,6 +25,8 @@ fun ExitConfirmationDialog(
     onConfirm: () -> Unit
 ) {
     val context = LocalContext.current
+
+    var isAdLoaded by remember { mutableStateOf(false) }
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -47,7 +54,8 @@ fun ExitConfirmationDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(140.dp)
-                        .padding(bottom = 16.dp)
+                        .padding(bottom = 16.dp),
+                    onAdLoaded = { isAdLoaded = true }
                 )
 
                 Row(
@@ -60,7 +68,7 @@ fun ExitConfirmationDialog(
 
                     TextButton(onClick = {
                         val intent = Intent(Intent.ACTION_VIEW).apply {
-                            data = Uri.parse("market://details?id=${context.packageName}")
+                            data = "market://details?id=${context.packageName}".toUri()
                             setPackage("com.android.vending")
                         }
                         try {
@@ -68,7 +76,7 @@ fun ExitConfirmationDialog(
                         } catch (e: Exception) {
                             // Fallback to browser if Play Store app is not available
                             val browserIntent = Intent(Intent.ACTION_VIEW).apply {
-                                data = Uri.parse("https://play.google.com/store/apps/details?id=${context.packageName}")
+                                data = "https://play.google.com/store/apps/details?id=${context.packageName}".toUri()
                             }
                             context.startActivity(browserIntent)
                         }
@@ -76,7 +84,10 @@ fun ExitConfirmationDialog(
                         Text(stringResource(R.string.exit_dialog_review))
                     }
 
-                    Button(onClick = onConfirm) {
+                    Button(
+                        onClick = onConfirm,
+                        enabled = isAdLoaded
+                    ) {
                         Text(stringResource(R.string.exit_dialog_yes))
                     }
                 }

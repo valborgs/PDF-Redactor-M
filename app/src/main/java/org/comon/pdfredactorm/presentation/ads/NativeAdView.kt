@@ -21,7 +21,8 @@ import org.comon.pdfredactorm.R
 
 @Composable
 fun NativeAdView(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onAdLoaded: () -> Unit = {}
 ) {
     val context = LocalContext.current
     var nativeAd by remember { mutableStateOf<NativeAd?>(null) }
@@ -30,10 +31,12 @@ fun NativeAdView(
         val adLoader = AdLoader.Builder(context, BuildConfig.ADMOB_NATIVE_ID)
             .forNativeAd { ad: NativeAd ->
                 nativeAd = ad
+                onAdLoaded()
             }
             .withAdListener(object : AdListener() {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
                     // Handle the failure by logging, altering the UI, and so on.
+                    onAdLoaded()
                 }
             })
             .withNativeAdOptions(
