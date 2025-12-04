@@ -49,7 +49,8 @@ data class EditorUiState(
     val currentMaskColor: Int = 0xFF000000.toInt(), // Default: Black
     val isColorPickingMode: Boolean = false,
     val tempRedactedFile: File? = null,
-    val proRedactionSuccess: Boolean = false
+    val proRedactionSuccess: Boolean = false,
+    val piiDetectionCount: Int? = null
 )
 
 
@@ -268,7 +269,8 @@ private val _uiState = MutableStateFlow(EditorUiState())
                         _uiState.update {
                             it.copy(
                                 detectedPii = filteredExisting + detectedList,
-                                isDetecting = false
+                                isDetecting = false,
+                                piiDetectionCount = detectedList.size
                             )
                         }
                     }
@@ -290,7 +292,8 @@ private val _uiState = MutableStateFlow(EditorUiState())
                         _uiState.update {
                             it.copy(
                                 detectedPii = detectedList,
-                                isDetecting = false
+                                isDetecting = false,
+                                piiDetectionCount = detectedList.size
                             )
                         }
                     }
@@ -404,6 +407,10 @@ private val _uiState = MutableStateFlow(EditorUiState())
 
     fun consumeError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun consumePiiDetectionResult() {
+        _uiState.update { it.copy(piiDetectionCount = null) }
     }
 
     override fun onCleared() {

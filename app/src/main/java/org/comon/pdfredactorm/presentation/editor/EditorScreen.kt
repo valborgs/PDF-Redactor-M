@@ -634,6 +634,22 @@ fun EditorScreen(
             }
         )
     }
+
+    // PII Detection Result Dialog
+    if (uiState.piiDetectionCount != null) {
+        AlertDialog(
+            onDismissRequest = { viewModel.consumePiiDetectionResult() },
+            title = { Text("알림") },
+            text = { Text("문서에 있는 개인정보 탐지를 수행했습니다. \n탐지수 : ${uiState.piiDetectionCount}개") },
+            confirmButton = {
+                TextButton(
+                    onClick = { viewModel.consumePiiDetectionResult() }
+                ) {
+                    Text(stringResource(R.string.confirm_button))
+                }
+            }
+        )
+    }
     }
 }
 
