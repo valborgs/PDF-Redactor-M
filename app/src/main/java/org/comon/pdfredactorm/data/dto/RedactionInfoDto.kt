@@ -10,7 +10,7 @@ data class RedactionInfoDto(
     val y: Float,
     val width: Float,
     val height: Float,
-//    val color: Int = -16777216 // Default black
+    val color: Int = -16777216 // Default black
 )
 
 fun RedactionMask.toDto(): RedactionInfoDto {
@@ -20,6 +20,6 @@ fun RedactionMask.toDto(): RedactionInfoDto {
         y = this.y,
         width = this.width,
         height = this.height,
-//        color = this.color
+        color = this.color
     )
 }
