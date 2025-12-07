@@ -1,7 +1,7 @@
 package org.comon.pdfredactorm.domain.usecase
 
 import kotlinx.coroutines.flow.first
-import org.comon.pdfredactorm.domain.model.RedactionMask
+import org.comon.pdfredactorm.core.model.RedactionMask
 import org.comon.pdfredactorm.domain.repository.LocalPdfRepository
 import org.comon.pdfredactorm.domain.repository.RemoteRedactionRepository
 import org.comon.pdfredactorm.domain.repository.SettingsRepository

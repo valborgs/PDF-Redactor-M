@@ -14,10 +14,10 @@ import org.comon.pdfredactorm.BuildConfig
 import org.comon.pdfredactorm.data.local.AppDatabase
 import org.comon.pdfredactorm.data.local.dao.ProjectDao
 import org.comon.pdfredactorm.data.local.dao.RedactionDao
-import org.comon.pdfredactorm.data.logger.AndroidLogger
+import org.comon.pdfredactorm.core.common.logger.AndroidLogger
 import org.comon.pdfredactorm.data.repository.LocalPdfRepositoryImpl
 import org.comon.pdfredactorm.data.repository.RemoteRedactionRepositoryImpl
-import org.comon.pdfredactorm.domain.logger.Logger
+import org.comon.pdfredactorm.core.common.logger.Logger
 import org.comon.pdfredactorm.domain.repository.LocalPdfRepository
 import org.comon.pdfredactorm.domain.repository.RemoteRedactionRepository
 import javax.inject.Singleton
@@ -86,7 +86,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideLogger(): Logger {
-        return AndroidLogger()
+        return AndroidLogger(BuildConfig.DEBUG)
     }
 
     @Provides

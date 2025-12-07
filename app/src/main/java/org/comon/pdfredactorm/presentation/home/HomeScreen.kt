@@ -32,7 +32,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import org.comon.pdfredactorm.BuildConfig
-import org.comon.pdfredactorm.domain.model.PdfDocument
+import org.comon.pdfredactorm.core.model.PdfDocument
 import java.io.File
 import java.io.FileOutputStream
 import androidx.compose.foundation.Image

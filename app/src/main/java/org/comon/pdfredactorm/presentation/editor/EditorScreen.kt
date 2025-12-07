@@ -29,8 +29,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import org.comon.pdfredactorm.R
-import org.comon.pdfredactorm.domain.model.DetectedPii
-import org.comon.pdfredactorm.domain.model.RedactionMask
+import org.comon.pdfredactorm.core.model.DetectedPii
+import org.comon.pdfredactorm.core.model.RedactionMask
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
@@ -655,7 +655,7 @@ fun EditorScreen(
 
 @Composable
 fun OutlineItemView(
-    item: org.comon.pdfredactorm.domain.model.PdfOutlineItem,
+    item: org.comon.pdfredactorm.core.model.PdfOutlineItem,
     level: Int,
     onClick: (Int) -> Unit
 ) {

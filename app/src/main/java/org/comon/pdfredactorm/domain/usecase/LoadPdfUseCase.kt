@@ -1,6 +1,6 @@
 package org.comon.pdfredactorm.domain.usecase
 
-import org.comon.pdfredactorm.domain.model.PdfDocument
+import org.comon.pdfredactorm.core.model.PdfDocument
 import org.comon.pdfredactorm.domain.repository.LocalPdfRepository
 import java.io.File
 import javax.inject.Inject

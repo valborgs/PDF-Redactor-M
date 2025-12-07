@@ -7,9 +7,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.comon.pdfredactorm.domain.model.PdfDocument
+import org.comon.pdfredactorm.core.model.PdfDocument
 import org.comon.pdfredactorm.domain.usecase.LoadPdfUseCase
-import org.comon.pdfredactorm.domain.logger.Logger
+import org.comon.pdfredactorm.core.common.logger.Logger
 import android.content.SharedPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

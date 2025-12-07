@@ -1,6 +1,6 @@
 package org.comon.pdfredactorm.domain.usecase
 
-import org.comon.pdfredactorm.domain.model.RedactionMask
+import org.comon.pdfredactorm.core.model.RedactionMask
 import org.comon.pdfredactorm.domain.repository.LocalPdfRepository
 import javax.inject.Inject
 

@@ -1,6 +1,6 @@
 package org.comon.pdfredactorm.data.pii
 
-import org.comon.pdfredactorm.domain.model.RedactionType
+import org.comon.pdfredactorm.core.model.RedactionType
 
 object PiiPatterns {
     data class PiiPattern(

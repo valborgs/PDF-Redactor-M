@@ -13,10 +13,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.comon.pdfredactorm.domain.model.DetectedPii
-import org.comon.pdfredactorm.domain.model.PdfDocument
-import org.comon.pdfredactorm.domain.model.PdfOutlineItem
-import org.comon.pdfredactorm.domain.model.RedactionMask
+import org.comon.pdfredactorm.core.model.DetectedPii
+import org.comon.pdfredactorm.core.model.PdfDocument
+import org.comon.pdfredactorm.core.model.PdfOutlineItem
+import org.comon.pdfredactorm.core.model.RedactionMask
 import org.comon.pdfredactorm.domain.repository.LocalPdfRepository
 import org.comon.pdfredactorm.domain.usecase.DetectPiiUseCase
 import org.comon.pdfredactorm.domain.usecase.GetRedactionsUseCase
@@ -29,7 +29,7 @@ import androidx.core.graphics.createBitmap
 import android.app.Application
 import android.net.Uri
 import org.comon.pdfredactorm.R
-import org.comon.pdfredactorm.domain.logger.Logger
+import org.comon.pdfredactorm.core.common.logger.Logger
 
 data class EditorUiState(
     val document: PdfDocument? = null,

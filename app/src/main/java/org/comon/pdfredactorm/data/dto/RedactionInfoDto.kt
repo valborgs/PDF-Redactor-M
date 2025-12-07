@@ -1,7 +1,7 @@
 package org.comon.pdfredactorm.data.dto
 
 import kotlinx.serialization.Serializable
-import org.comon.pdfredactorm.domain.model.RedactionMask
+import org.comon.pdfredactorm.core.model.RedactionMask
 
 @Serializable
 data class RedactionInfoDto(

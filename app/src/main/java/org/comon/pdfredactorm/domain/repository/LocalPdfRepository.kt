@@ -1,10 +1,10 @@
 package org.comon.pdfredactorm.domain.repository
 
 import kotlinx.coroutines.flow.Flow
-import org.comon.pdfredactorm.domain.model.DetectedPii
-import org.comon.pdfredactorm.domain.model.PdfDocument
-import org.comon.pdfredactorm.domain.model.PdfOutlineItem
-import org.comon.pdfredactorm.domain.model.RedactionMask
+import org.comon.pdfredactorm.core.model.DetectedPii
+import org.comon.pdfredactorm.core.model.PdfDocument
+import org.comon.pdfredactorm.core.model.PdfOutlineItem
+import org.comon.pdfredactorm.core.model.RedactionMask
 import java.io.File
 
 import java.io.OutputStream

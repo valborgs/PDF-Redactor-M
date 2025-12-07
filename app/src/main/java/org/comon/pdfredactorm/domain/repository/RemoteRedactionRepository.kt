@@ -1,6 +1,6 @@
 package org.comon.pdfredactorm.domain.repository
 
-import org.comon.pdfredactorm.domain.model.RedactionMask
+import org.comon.pdfredactorm.core.model.RedactionMask
 import java.io.File
 
 interface RemoteRedactionRepository {
