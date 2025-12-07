@@ -28,8 +28,8 @@ android {
         applicationId = "org.comon.pdfredactorm"
         minSdk = 26
         targetSdk = 36
-        versionCode = 8
-        versionName = "0.0.8"
+        versionCode = 9
+        versionName = "0.0.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -41,6 +41,9 @@ android {
 
         val coffeeChatUrl = localProperties.getProperty("COFFEE_CHAT_URL", "")
         buildConfigField("String", "COFFEE_CHAT_URL", "\"$coffeeChatUrl\"")
+
+        val redeemApiKey = localProperties.getProperty("REDEEM_API_KEY", "")
+        buildConfigField("String", "REDEEM_API_KEY", "\"$redeemApiKey\"")
     }
 
     buildTypes {
@@ -102,6 +105,8 @@ android {
 dependencies {
 
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))

@@ -25,6 +25,18 @@ import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import org.comon.pdfredactorm.data.remote.RedactionApi
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import org.comon.pdfredactorm.data.remote.RedeemApi
+import org.comon.pdfredactorm.domain.repository.RedeemRepository
+import org.comon.pdfredactorm.data.repository.RedeemRepositoryImpl
+import org.comon.pdfredactorm.domain.repository.SettingsRepository
+import org.comon.pdfredactorm.data.repository.SettingsRepositoryImpl
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.preferencesDataStoreFile
+
+private const val USER_PREFERENCES_NAME = "user_preferences"
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -116,5 +128,31 @@ object AppModule {
     @Singleton
     fun provideRemoteRedactionRepository(api: RedactionApi, json: Json): RemoteRedactionRepository {
         return RemoteRedactionRepositoryImpl(api, json)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRedeemApi(retrofit: retrofit2.Retrofit): RedeemApi {
+        return retrofit.create(RedeemApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> {
+        return PreferenceDataStoreFactory.create(
+            produceFile = { context.preferencesDataStoreFile(USER_PREFERENCES_NAME) }
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideSettingsRepository(dataStore: DataStore<Preferences>): SettingsRepository {
+        return SettingsRepositoryImpl(dataStore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRedeemRepository(api: RedeemApi, settingsRepository: SettingsRepository): RedeemRepository {
+        return RedeemRepositoryImpl(api, settingsRepository)
     }
 }

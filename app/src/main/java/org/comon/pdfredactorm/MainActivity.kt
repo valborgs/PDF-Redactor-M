@@ -19,11 +19,21 @@ import org.comon.pdfredactorm.presentation.ads.AdBanner
 import org.comon.pdfredactorm.presentation.navigation.NavGraph
 import org.comon.pdfredactorm.ui.theme.PDFRedactorMTheme
 
+import androidx.activity.viewModels
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    private val mainViewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+
+        splashScreen.setKeepOnScreenCondition {
+            mainViewModel.isLoading.value
+        }
 
         // AdMob SDK 초기화
         MobileAds.initialize(this)

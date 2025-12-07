@@ -18,10 +18,18 @@ import javax.inject.Inject
 import androidx.core.content.edit
 import org.comon.pdfredactorm.domain.repository.LocalPdfRepository
 
+import org.comon.pdfredactorm.domain.usecase.ValidateCodeUseCase
+import org.comon.pdfredactorm.domain.repository.SettingsRepository
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: LocalPdfRepository,
     private val loadPdfUseCase: LoadPdfUseCase,
+    private val validateCodeUseCase: ValidateCodeUseCase,
+    private val settingsRepository: SettingsRepository,
     private val logger: Logger,
     private val sharedPreferences: SharedPreferences
 ) : ViewModel() {
@@ -47,6 +55,35 @@ class HomeViewModel @Inject constructor(
 
     fun dismissHelpDialog() {
         _showHelpDialog.value = false
+    }
+
+    // Pro Activation Logic
+    val isProEnabled: StateFlow<Boolean> = settingsRepository.isProEnabled
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _validationEvent = MutableSharedFlow<Result<String>>()
+    val validationEvent: SharedFlow<Result<String>> = _validationEvent.asSharedFlow()
+
+    fun validateCode(email: String, code: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val uuid = settingsRepository.getAppUuid()
+                val result = validateCodeUseCase(email, code, uuid)
+                result.onSuccess {
+                    _validationEvent.emit(Result.success("Pro 기능이 활성화되었습니다."))
+                }.onFailure { e ->
+                    _validationEvent.emit(Result.failure(e))
+                }
+            } catch (e: Exception) {
+                _validationEvent.emit(Result.failure(e))
+            } finally {
+                _isLoading.value = false
+            }
+        }
     }
 val recentProjects: StateFlow<List<PdfDocument>> = repository.getRecentProjects()
         .stateIn(
