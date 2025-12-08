@@ -75,7 +75,15 @@ private val _uiState = MutableStateFlow(EditorUiState())
     fun loadPdf(pdfId: String) {
         viewModelScope.launch {
             logger.info("User opened PDF document: $pdfId")
-            _uiState.update { it.copy(isLoading = true) }
+            // Reset success and error states to prevent LaunchedEffect from triggering with stale values
+            _uiState.update { 
+                it.copy(
+                    isLoading = true,
+                    saveSuccess = false,
+                    proRedactionSuccess = false,
+                    error = null
+                ) 
+            }
             val document = repository.getProject(pdfId)
             if (document != null) {
                 val redactions = getRedactionsUseCase(pdfId)
@@ -411,6 +419,10 @@ private val _uiState = MutableStateFlow(EditorUiState())
 
     fun consumePiiDetectionResult() {
         _uiState.update { it.copy(piiDetectionCount = null) }
+    }
+
+    fun consumeSaveSuccess() {
+        _uiState.update { it.copy(saveSuccess = false) }
     }
 
     override fun onCleared() {
