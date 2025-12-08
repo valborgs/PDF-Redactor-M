@@ -1,11 +1,10 @@
 package org.comon.pdfredactorm.feature.editor.navigation
 
+import androidx.navigation3.runtime.NavKey
+import kotlinx.serialization.Serializable
+
 /**
- * Editor Feature의 네비게이션 Route 상수
+ * Navigation3 - Editor 화면 네비게이션 키
  */
-object EditorRoute {
-    const val ROUTE = "editor/{pdfId}"
-    const val ARG_PDF_ID = "pdfId"
-    
-    fun createRoute(pdfId: String) = "editor/$pdfId"
-}
+@Serializable
+data class EditorKey(val pdfId: String) : NavKey

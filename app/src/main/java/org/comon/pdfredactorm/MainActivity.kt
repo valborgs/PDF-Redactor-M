@@ -12,7 +12,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.ads.MobileAds
 import dagger.hilt.android.AndroidEntryPoint
 import org.comon.pdfredactorm.core.ui.ads.AdBanner
@@ -54,8 +53,8 @@ class MainActivity : ComponentActivity() {
                                 .weight(1f)
                                 .fillMaxWidth()
                         ) {
-                            val navController = rememberNavController()
-                            AppNavHost(navController = navController)
+                            // Navigation3: NavController 대신 내부에서 백스택 관리
+                            AppNavHost()
                         }
 
                         // 하단 배너 광고

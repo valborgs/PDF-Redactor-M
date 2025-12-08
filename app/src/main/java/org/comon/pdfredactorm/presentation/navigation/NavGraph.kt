@@ -1,41 +1,56 @@
 package org.comon.pdfredactorm.presentation.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.ui.NavDisplay
 import org.comon.pdfredactorm.BuildConfig
+import org.comon.pdfredactorm.feature.home.HomeScreen
 import org.comon.pdfredactorm.feature.home.HomeScreenConfig
-import org.comon.pdfredactorm.feature.home.navigation.HomeRoute
-import org.comon.pdfredactorm.feature.home.navigation.homeScreen
-import org.comon.pdfredactorm.feature.editor.navigation.EditorRoute
-import org.comon.pdfredactorm.feature.editor.navigation.editorScreen
+import org.comon.pdfredactorm.feature.home.navigation.HomeKey
+import org.comon.pdfredactorm.feature.editor.EditorScreen
+import org.comon.pdfredactorm.feature.editor.navigation.EditorKey
 
 /**
- * 앱의 메인 네비게이션 그래프
+ * Navigation3를 사용한 앱의 메인 네비게이션
  * 
- * DroidKnights 2025 스타일: Feature 모듈의 확장함수를 호출하여 그래프 구성
+ * - rememberSaveableBackStack: 백스택 상태 관리 (설정 변경/프로세스 종료 시에도 유지)
+ * - NavDisplay: 백스택 상태에 따라 적절한 화면 표시
+ * - entryProvider: 키 타입에 따른 컴포저블 매핑
  */
 @Composable
-fun AppNavHost(navController: NavHostController) {
+fun AppNavHost() {
     val homeScreenConfig = HomeScreenConfig(
         appName = "PDF안심이",
         coffeeChatUrl = BuildConfig.COFFEE_CHAT_URL,
         nativeAdUnitId = BuildConfig.ADMOB_NATIVE_ID
     )
 
-    NavHost(
-        navController = navController, 
-        startDestination = HomeRoute.ROUTE
-    ) {
-        homeScreen(
-            config = homeScreenConfig,
-            onPdfClick = { pdfId ->
-                navController.navigate(EditorRoute.createRoute(pdfId))
+    // Navigation3: Saveable back stack with initial destination
+    val backStack = rememberNavBackStack(HomeKey)
+
+    NavDisplay(
+        backStack = backStack,
+        entryProvider = entryProvider {
+            // Home 화면
+            entry<HomeKey> {
+                HomeScreen(
+                    config = homeScreenConfig,
+                    onPdfClick = { pdfId ->
+                        backStack.add(EditorKey(pdfId))
+                    }
+                )
             }
-        )
-        
-        editorScreen(
-            onBackClick = { navController.popBackStack() }
-        )
-    }
+
+            // Editor 화면
+            entry<EditorKey> { key ->
+                EditorScreen(
+                    pdfId = key.pdfId,
+                    onBackClick = {
+                        backStack.removeLastOrNull()
+                    }
+                )
+            }
+        }
+    )
 }

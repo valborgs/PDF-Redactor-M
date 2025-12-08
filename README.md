@@ -72,6 +72,7 @@
 - [x] UI/DesignSystem 분리: `:core:designsystem`(테마/타이포그래피), `:core:ui`(광고 컴포넌트/공통 다이얼로그) 모듈화, 광고 ID 파라미터화로 BuildConfig 의존성 제거
 - [x] Feature 모듈 분리: `:feature:home`(홈 화면), `:feature:editor`(PDF 편집기) 모듈화, `HomeScreenConfig` 도입으로 app 의존성 분리, 각 모듈 자체 리소스(strings/drawable) 관리
 - [x] 네비게이션 리팩토링: `NavGraphBuilder` 확장함수 패턴 적용, Feature별 Route/Navigation 분리, `AppNavHost`로 통합
+- [x] Navigation3 마이그레이션: `NavDisplay`/`rememberNavBackStack`/`entryProvider` 적용, `@Serializable` NavKey 클래스 도입, 기존 Navigation Compose에서 Navigation3(1.0.0)으로 전환
 
 ## 추후 작업(개선) 사항
 - [ ] (없음)

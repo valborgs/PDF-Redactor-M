@@ -1,8 +1,10 @@
 package org.comon.pdfredactorm.feature.home.navigation
 
+import androidx.navigation3.runtime.NavKey
+import kotlinx.serialization.Serializable
+
 /**
- * Home Feature의 네비게이션 Route 상수
+ * Navigation3 - Home 화면 네비게이션 키
  */
-object HomeRoute {
-    const val ROUTE = "home"
-}
+@Serializable
+data object HomeKey : NavKey
