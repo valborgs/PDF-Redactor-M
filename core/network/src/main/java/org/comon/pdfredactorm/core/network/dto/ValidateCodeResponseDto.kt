@@ -1,4 +1,4 @@
-package org.comon.pdfredactorm.data.dto
+package org.comon.pdfredactorm.core.network.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

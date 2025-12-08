@@ -1,4 +1,4 @@
-package org.comon.pdfredactorm.data.local.entity
+package org.comon.pdfredactorm.core.database.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

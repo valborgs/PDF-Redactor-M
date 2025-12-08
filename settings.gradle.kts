@@ -23,3 +23,6 @@ rootProject.name = "PDFRedactorM"
 include(":app")
 include(":core:model")
 include(":core:common")
+include(":core:database")
+include(":core:network")
+include(":core:datastore")

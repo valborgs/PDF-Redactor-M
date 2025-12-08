@@ -1,10 +1,10 @@
 package org.comon.pdfredactorm.data.repository
 
-import org.comon.pdfredactorm.data.remote.RedactionApi
+import org.comon.pdfredactorm.core.network.api.RedactionApi
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import org.comon.pdfredactorm.data.dto.toDto
+import org.comon.pdfredactorm.core.network.dto.toDto
 import org.comon.pdfredactorm.core.model.RedactionMask
 import org.comon.pdfredactorm.domain.repository.RemoteRedactionRepository
 import java.io.File

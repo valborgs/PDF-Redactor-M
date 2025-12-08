@@ -1,8 +1,8 @@
 package org.comon.pdfredactorm.data.repository
 
 import org.comon.pdfredactorm.BuildConfig
-import org.comon.pdfredactorm.data.dto.ValidateCodeRequestDto
-import org.comon.pdfredactorm.data.remote.RedeemApi
+import org.comon.pdfredactorm.core.network.dto.ValidateCodeRequestDto
+import org.comon.pdfredactorm.core.network.api.RedeemApi
 import org.comon.pdfredactorm.domain.repository.RedeemRepository
 import org.comon.pdfredactorm.domain.repository.SettingsRepository
 import javax.inject.Inject

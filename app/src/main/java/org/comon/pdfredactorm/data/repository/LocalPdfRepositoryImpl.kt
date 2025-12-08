@@ -10,10 +10,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import org.comon.pdfredactorm.data.local.dao.ProjectDao
-import org.comon.pdfredactorm.data.local.dao.RedactionDao
-import org.comon.pdfredactorm.data.local.entity.ProjectEntity
-import org.comon.pdfredactorm.data.local.entity.RedactionEntity
+import org.comon.pdfredactorm.core.database.dao.ProjectDao
+import org.comon.pdfredactorm.core.database.dao.RedactionDao
+import org.comon.pdfredactorm.core.database.entity.ProjectEntity
+import org.comon.pdfredactorm.core.database.entity.RedactionEntity
 import org.comon.pdfredactorm.data.pii.PiiPatterns
 import org.comon.pdfredactorm.data.pii.PiiTextStripper
 import org.comon.pdfredactorm.core.model.DetectedPii

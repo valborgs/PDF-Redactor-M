@@ -107,6 +107,9 @@ dependencies {
     // Core 모듈 의존성
     implementation(project(":core:model"))
     implementation(project(":core:common"))
+    implementation(project(":core:database"))
+    implementation(project(":core:network"))
+    implementation(project(":core:datastore"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
@@ -128,17 +131,11 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
 
-    // Room
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
-
-    // Retrofit
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.kotlinx.serialization)
+    // Kotlinx Serialization (for Json encoding in Repository)
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.okhttp)
-    implementation(libs.okhttp.logging.interceptor)
+
+    // Retrofit (Repository에서 Response 클래스 사용)
+    implementation(libs.retrofit)
 
     // PDF
     implementation(libs.pdfbox.android)

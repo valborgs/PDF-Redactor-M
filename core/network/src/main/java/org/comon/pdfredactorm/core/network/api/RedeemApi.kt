@@ -1,7 +1,7 @@
-package org.comon.pdfredactorm.data.remote
+package org.comon.pdfredactorm.core.network.api
 
-import org.comon.pdfredactorm.data.dto.ValidateCodeRequestDto
-import org.comon.pdfredactorm.data.dto.ValidateCodeResponseDto
+import org.comon.pdfredactorm.core.network.dto.ValidateCodeRequestDto
+import org.comon.pdfredactorm.core.network.dto.ValidateCodeResponseDto
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Header

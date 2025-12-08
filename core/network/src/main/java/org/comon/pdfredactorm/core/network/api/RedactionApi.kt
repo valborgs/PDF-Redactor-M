@@ -1,4 +1,4 @@
-package org.comon.pdfredactorm.data.remote
+package org.comon.pdfredactorm.core.network.api
 
 import okhttp3.MultipartBody
 import okhttp3.RequestBody

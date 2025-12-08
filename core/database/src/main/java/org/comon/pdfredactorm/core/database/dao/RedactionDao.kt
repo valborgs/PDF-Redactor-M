@@ -1,10 +1,10 @@
-package org.comon.pdfredactorm.data.local.dao
+package org.comon.pdfredactorm.core.database.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import org.comon.pdfredactorm.data.local.entity.RedactionEntity
+import org.comon.pdfredactorm.core.database.entity.RedactionEntity
 
 @Dao
 interface RedactionDao {

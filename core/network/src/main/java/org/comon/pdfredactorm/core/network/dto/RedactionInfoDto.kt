@@ -1,4 +1,4 @@
-package org.comon.pdfredactorm.data.dto
+package org.comon.pdfredactorm.core.network.dto
 
 import kotlinx.serialization.Serializable
 import org.comon.pdfredactorm.core.model.RedactionMask
