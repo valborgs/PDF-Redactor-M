@@ -32,6 +32,7 @@ import androidx.core.graphics.createBitmap
 import android.app.Application
 import android.net.Uri
 import org.comon.pdfredactorm.core.common.logger.Logger
+import org.comon.pdfredactorm.core.domain.usecase.settings.GetProStatusUseCase
 
 data class EditorUiState(
     val document: PdfDocument? = null,
@@ -55,8 +56,6 @@ data class EditorUiState(
     val isProEnabled: Boolean = false
 )
 
-
-
 sealed interface EditorSideEffect {
     data object OpenSaveLauncher : EditorSideEffect
     data class ShowSnackbar(val message: String) : EditorSideEffect
@@ -72,8 +71,7 @@ class EditorViewModel @Inject constructor(
     private val saveRedactionsUseCase: SaveRedactionsUseCase,
     private val saveRedactedPdfUseCase: SaveRedactedPdfUseCase,
     private val detectPiiUseCase: DetectPiiUseCase,
-    private val remoteRedactPdfUseCase: org.comon.pdfredactorm.core.domain.usecase.RemoteRedactPdfUseCase,
-    private val getProStatusUseCase: org.comon.pdfredactorm.core.domain.usecase.settings.GetProStatusUseCase,
+    private val getProStatusUseCase: GetProStatusUseCase,
     private val logger: Logger
 ) : ViewModel() {
 

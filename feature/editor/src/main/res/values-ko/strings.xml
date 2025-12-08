@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Editor Screen -->
+    <string name="editor_title">편집기</string>
+    <string name="menu_content_description">메뉴</string>
+    <string name="back_content_description">뒤로</string>
+    <string name="detect_pii_content_description">개인정보 탐지</string>
+    <string name="detect_current_page">현재 페이지 탐지</string>
+    <string name="detect_all_pages">모든 페이지 탐지</string>
+    <string name="save_content_description">저장</string>
+    <string name="outline_content_description">목차</string>
+    <string name="prev_page_content_description">이전 페이지</string>
+    <string name="next_page_content_description">다음 페이지</string>
+    <string name="toggle_masking_content_description">마스킹 모드 전환</string>
+    <string name="select_mask_color_content_description">마스킹 색상 선택</string>
+    <string name="page_indicator">%1$d / %2$d</string>
+
+    <!-- Page Jump Dialog -->
+    <string name="go_to_page_title">페이지 이동</string>
+    <string name="go_to_page_hint">페이지 번호 입력 (1-%d)</string>
+    <string name="confirm_button">확인</string>
+    <string name="invalid_page_number">유효하지 않은 페이지 번호입니다</string>
+
+    <!-- Outline Dialog -->
+    <string name="outline_title">목차</string>
+    <string name="no_outline_available">목차를 사용할 수 없습니다</string>
+    <string name="outline_page_format">(p.%d)</string>
+
+    <!-- PII Detection Dialog -->
+    <string name="detected_pii_title">탐지된 개인정보</string>
+    <string name="pii_type_label">타입: %s</string>
+    <string name="pii_text_label">텍스트: %s</string>
+    <string name="masking_button">마스킹</string>
+    <string name="cancel_button">취소</string>
+    <string name="notice_title">알림</string>
+    <string name="pii_detection_result_message">문서에 있는 개인정보 탐지를 수행했습니다. \n탐지수 : %d개</string>
+
+    <!-- Mask Deletion Dialog -->
+    <string name="delete_mask_title">마스킹 삭제</string>
+    <string name="delete_mask_message">이 마스킹 영역을 삭제하시겠습니까?</string>
+    <string name="delete_button">삭제</string>
+
+    <!-- Color Picker Dialog -->
+    <string name="select_mask_color_title">마스킹 색상 선택</string>
+    <string name="color_black">검은색</string>
+    <string name="color_white">흰색</string>
+    <string name="pick_from_pdf">PDF에서 색상 추출</string>
+
+    <!-- Snackbar Messages -->
+    <string name="masking_mode_enabled">마스킹 모드가 켜졌습니다</string>
+    <string name="masking_mode_disabled">마스킹 모드가 꺼졌습니다</string>
+    <string name="color_picker_mode_enabled">색상 추출 모드가 켜졌습니다</string>
+    <string name="color_selected">색상이 선택되었습니다</string>
+    <string name="error_masking_failed">pdf 마스킹 처리에 실패하였습니다.</string>
+
+    <!-- Error Messages -->
+    <string name="error_document_not_found">문서를 찾을 수 없습니다</string>
+    <string name="error_failed_to_open_output_stream">출력 스트림을 열 수 없습니다</string>
+</resources>

@@ -77,7 +77,7 @@ fun HomeScreen(
                 showResultDialog = message
             }.onFailure { exception ->
                 isSuccessResult = false
-                showResultDialog = exception.message ?: "Unknown Error"
+                showResultDialog = exception.message ?: context.getString(R.string.unknown_error)
             }
         }
     }
@@ -117,7 +117,7 @@ fun HomeScreen(
                         IconButton(onClick = { showRedeemDialog = true }) {
                             Image(
                                 painter = painterResource(id = R.drawable.ic_crown),
-                                contentDescription = "Activate Pro",
+                                contentDescription = "Activate Functions",
                                 modifier = Modifier.size(24.dp)
                             )
                         }
@@ -214,11 +214,11 @@ fun HomeScreen(
         showResultDialog?.let { message ->
             AlertDialog(
                 onDismissRequest = { showResultDialog = null },
-                title = { Text(if(isSuccessResult) "성공" else "실패") },
+                title = { Text(if(isSuccessResult) stringResource(R.string.success_title) else stringResource(R.string.failure_title)) },
                 text = { Text(message) },
                 confirmButton = {
                     TextButton(onClick = { showResultDialog = null }) {
-                        Text("확인")
+                        Text(stringResource(R.string.confirm_button))
                     }
                 }
             )
@@ -232,6 +232,8 @@ fun RedeemCodeDialog(
     onDismiss: () -> Unit,
     onSubmit: (String, String) -> Unit
 ) {
+    val invalidEmailMsg = stringResource(R.string.error_invalid_email)
+    val invalidCodeMsg = stringResource(R.string.error_invalid_code)
     var email by remember { mutableStateOf("") }
     var code by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf<String?>(null) }
@@ -241,14 +243,14 @@ fun RedeemCodeDialog(
         var hasError = false
         
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            emailError = "유효한 이메일 주소를 입력해주세요."
+            emailError = invalidEmailMsg
             hasError = true
         } else {
             emailError = null
         }
 
         if (code.length != 8) {
-            codeError = "리딤 코드는 8자리여야 합니다."
+            codeError = invalidCodeMsg
             hasError = true
         } else {
             codeError = null
@@ -261,17 +263,17 @@ fun RedeemCodeDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Pro 기능 활성화") },
+        title = { Text(stringResource(R.string.pro_activation_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("이메일과 리딤 코드를 입력하세요.")
+                Text(stringResource(R.string.pro_activation_message))
                 OutlinedTextField(
                     value = email,
                     onValueChange = { 
                         email = it
                         if (emailError != null) emailError = null
                     },
-                    label = { Text("이메일") },
+                    label = { Text(stringResource(R.string.email_label)) },
                     singleLine = true,
                     enabled = !isLoading,
                     isError = emailError != null,
@@ -284,7 +286,7 @@ fun RedeemCodeDialog(
                         code = it
                         if (codeError != null) codeError = null
                     },
-                    label = { Text("리딤 코드") },
+                    label = { Text(stringResource(R.string.redeem_code_label)) },
                     singleLine = true,
                     enabled = !isLoading,
                     isError = codeError != null,
@@ -300,12 +302,12 @@ fun RedeemCodeDialog(
                 onClick = { validateAndSubmit() },
                 enabled = !isLoading
             ) {
-                Text("제출")
+                Text(stringResource(R.string.submit_button))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss, enabled = !isLoading) {
-                Text("취소")
+                Text(stringResource(R.string.cancel_button))
             }
         }
     )
@@ -364,7 +366,7 @@ private fun getFileName(context: Context, uri: Uri): String {
         result = uri.path
         val cut = result?.lastIndexOf('/')
         if (cut != null && cut != -1) {
-            result = result?.substring(cut + 1)
+            result = result.substring(cut + 1)
         }
     }
     return result ?: "unknown.pdf"

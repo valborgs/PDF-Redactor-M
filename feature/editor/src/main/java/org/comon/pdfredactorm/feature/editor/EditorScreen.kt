@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
-import org.comon.pdfredactorm.feature.editor.R
 import org.comon.pdfredactorm.core.model.DetectedPii
 import org.comon.pdfredactorm.core.model.RedactionMask
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -48,6 +47,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.List
 import kotlinx.coroutines.launch
+import androidx.core.graphics.get
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,8 +57,9 @@ fun EditorScreen(
     viewModel: EditorViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
-    var showDetectionMenu by remember { mutableStateOf(false) }
+
     var showMainMenu by remember { mutableStateOf(false) }
     var showPrivacyDetectionDialog by remember { mutableStateOf(false) }
     var showPageJumpDialog by remember { mutableStateOf(false) }
@@ -122,15 +123,12 @@ fun EditorScreen(
              onBackClick()
         }
     }
+
+    val errorMessage = stringResource(R.string.error_masking_failed)
     LaunchedEffect(uiState.error) {
         uiState.error?.let { errorMsg ->
             android.util.Log.d("EditorScreen", "Error: $errorMsg")
-            val message = if (errorMsg.contains("Pro Redaction Failed")) {
-                "pdf 마스킹 처리에 실패하였습니다."
-            } else {
-                errorMsg
-            }
-            snackbarHostState.showSnackbar(message, duration = SnackbarDuration.Short)
+            snackbarHostState.showSnackbar(errorMessage, duration = SnackbarDuration.Short)
             viewModel.consumeError()
         }
     }
@@ -163,7 +161,7 @@ fun EditorScreen(
                         ) {
                             // Save Option
                             DropdownMenuItem(
-                                text = { Text("저장") },
+                                text = { Text(stringResource(R.string.save_content_description)) },
                                 onClick = {
                                     showMainMenu = false
                                     viewModel.onSaveClicked()
@@ -175,14 +173,17 @@ fun EditorScreen(
 
                             // Table of Contents Option
                             DropdownMenuItem(
-                                text = { Text("목차") },
+                                text = { Text(stringResource(R.string.outline_title)) },
                                 onClick = {
                                     showMainMenu = false
                                     if (uiState.outline.isNotEmpty()) {
                                         showOutlineDialog = true
                                     } else {
                                         scope.launch {
-                                            snackbarHostState.showSnackbar("목차가 없습니다.", duration = SnackbarDuration.Short)
+                                            snackbarHostState.showSnackbar(
+                                                message = context.getString(R.string.no_outline_available),
+                                                duration = SnackbarDuration.Short
+                                            )
                                         }
                                     }
                                 },
@@ -193,7 +194,7 @@ fun EditorScreen(
 
                             // Privacy Detection Option
                             DropdownMenuItem(
-                                text = { Text("개인정보 탐지") },
+                                text = { Text(stringResource(R.string.detect_pii_content_description)) },
                                 onClick = {
                                     showMainMenu = false
                                     showPrivacyDetectionDialog = true
@@ -633,8 +634,8 @@ fun EditorScreen(
     if (uiState.piiDetectionCount != null) {
         AlertDialog(
             onDismissRequest = { viewModel.consumePiiDetectionResult() },
-            title = { Text("알림") },
-            text = { Text("문서에 있는 개인정보 탐지를 수행했습니다. \n탐지수 : ${uiState.piiDetectionCount}개") },
+            title = { Text(stringResource(R.string.notice_title)) },
+            text = { Text(stringResource(R.string.pii_detection_result_message, uiState.piiDetectionCount?:0)) },
             confirmButton = {
                 TextButton(
                     onClick = { viewModel.consumePiiDetectionResult() }
@@ -787,7 +788,7 @@ fun PdfViewer(
                              val startY = (dragStartOffset.y - offset.y) / totalScale
                              
                              if (startX >= 0 && startX < bitmap.width && startY >= 0 && startY < bitmap.height) {
-                                 val pixelColor = bitmap.getPixel(startX.toInt(), startY.toInt())
+                                 val pixelColor = bitmap[startX.toInt(), startY.toInt()]
                                  lastColor = pixelColor
                                  onColorPickDrag(dragStartOffset, pixelColor)
                              }
@@ -816,7 +817,7 @@ fun PdfViewer(
                             val bitmapY = (position.y - offset.y) / totalScale
                             
                             if (bitmapX >= 0 && bitmapX < bitmap.width && bitmapY >= 0 && bitmapY < bitmap.height) {
-                                val pixelColor = bitmap.getPixel(bitmapX.toInt(), bitmapY.toInt())
+                                val pixelColor = bitmap[bitmapX.toInt(), bitmapY.toInt()]
                                 lastColor = pixelColor
                                 onColorPickDrag(position, pixelColor)
                             }
@@ -833,7 +834,7 @@ fun PdfViewer(
                             val bitmapY = (tapOffset.y - offset.y) / totalScale
                             
                             if (bitmapX >= 0 && bitmapX < bitmap.width && bitmapY >= 0 && bitmapY < bitmap.height) {
-                                val pixelColor = bitmap.getPixel(bitmapX.toInt(), bitmapY.toInt())
+                                val pixelColor = bitmap[bitmapX.toInt(), bitmapY.toInt()]
                                 onColorPicked(pixelColor)
                             }
                         },
@@ -844,7 +845,7 @@ fun PdfViewer(
                             val bitmapY = (pressOffset.y - offset.y) / totalScale
                             
                             if (bitmapX >= 0 && bitmapX < bitmap.width && bitmapY >= 0 && bitmapY < bitmap.height) {
-                                val pixelColor = bitmap.getPixel(bitmapX.toInt(), bitmapY.toInt())
+                                val pixelColor = bitmap[bitmapX.toInt(), bitmapY.toInt()]
                                 onColorPickDrag(pressOffset, pixelColor)
                             }
                             tryAwaitRelease()

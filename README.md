@@ -78,6 +78,8 @@
 - [x] 리팩토링: SharedPreferences를 DataStore로 마이그레이션 (`First Launch` 플래그), `Clean Architecture` 원칙에 따라 모든 ViewModel(`Home`, `Main`, `Editor`)에서 Repository 직접 사용을 UseCase로 대체
 - [x] 저장 로직 리팩토링: Pro/일반 저장의 프로세스 통합(`performRedaction` -> `saveFinalDocument` 파이프라인), 입출력 로직을 File 기반으로 변경하여 유연성 확보
 - [x] UI 상태 관리 개선: ViewModel-driven 아키텍처 강화, SideEffect 패턴 도입으로 일회성 UI 이벤트(파일 피커 표시 등) 처리 구조화
+- [x] 사용성 개선: 저장 시 원본 파일명을 프리픽스(`redacted_` / `pro_redacted_`)와 함께 자동 제안
+- [x] 다국어 지원 강화: Home/Editor 화면 내 하드코딩 텍스트 전면 리소스화(KO/EN), 다국어 대응 완료
 
 ## 추후 작업(개선) 사항
 - [ ] (없음)
