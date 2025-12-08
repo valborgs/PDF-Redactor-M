@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home Screen -->
+    <string name="help_content_description">도움말</string>
+    <string name="open_pdf_content_description">PDF 열기</string>
+    <string name="delete_content_description">삭제</string>
+    <string name="page_count">%d 페이지</string>
+</resources>

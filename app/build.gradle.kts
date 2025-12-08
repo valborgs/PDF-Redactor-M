@@ -115,6 +115,10 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:ui"))
 
+    // Feature 모듈 의존성
+    implementation(project(":feature:home"))
+    implementation(project(":feature:editor"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.lifecycle.runtime.ktx)

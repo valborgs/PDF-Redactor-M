@@ -1,4 +1,4 @@
-package org.comon.pdfredactorm.presentation.editor
+package org.comon.pdfredactorm.feature.editor
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.Canvas
@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
-import org.comon.pdfredactorm.R
+import org.comon.pdfredactorm.feature.editor.R
 import org.comon.pdfredactorm.core.model.DetectedPii
 import org.comon.pdfredactorm.core.model.RedactionMask
 import androidx.activity.compose.rememberLauncherForActivityResult

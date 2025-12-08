@@ -1,4 +1,4 @@
-package org.comon.pdfredactorm.presentation.home
+package org.comon.pdfredactorm.feature.home
 
 import android.net.Uri
 import android.content.Context
@@ -22,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.Alignment
@@ -31,7 +30,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import org.comon.pdfredactorm.BuildConfig
 import org.comon.pdfredactorm.core.model.PdfDocument
 import java.io.File
 import java.io.FileOutputStream
@@ -39,13 +37,22 @@ import androidx.compose.foundation.Image
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import org.comon.pdfredactorm.R
 import org.comon.pdfredactorm.core.ui.dialog.HelpDialog
 import org.comon.pdfredactorm.core.ui.dialog.ExitConfirmationDialog
+
+/**
+ * 홈 화면에 필요한 설정값
+ */
+data class HomeScreenConfig(
+    val appName: String,
+    val coffeeChatUrl: String,
+    val nativeAdUnitId: String
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    config: HomeScreenConfig,
     viewModel: HomeViewModel = hiltViewModel(),
     onPdfClick: (String) -> Unit
 ) {
@@ -101,7 +108,7 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.app_name)) },
+                title = { Text(config.appName) },
                 actions = {
                     val uriHandler = LocalUriHandler.current
                     
@@ -116,7 +123,7 @@ fun HomeScreen(
                     }
 
                     IconButton(onClick = {
-                        uriHandler.openUri(BuildConfig.COFFEE_CHAT_URL)
+                        uriHandler.openUri(config.coffeeChatUrl)
                     }) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_coffee),
@@ -187,7 +194,7 @@ fun HomeScreen(
 
         if (showExitDialog) {
             ExitConfirmationDialog(
-                nativeAdUnitId = BuildConfig.ADMOB_NATIVE_ID,
+                nativeAdUnitId = config.nativeAdUnitId,
                 onDismiss = { showExitDialog = false },
                 onConfirm = { activity?.finish() }
             )

@@ -1,4 +1,4 @@
-package org.comon.pdfredactorm.presentation.editor
+package org.comon.pdfredactorm.feature.editor
 
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
@@ -28,7 +28,7 @@ import javax.inject.Inject
 import androidx.core.graphics.createBitmap
 import android.app.Application
 import android.net.Uri
-import org.comon.pdfredactorm.R
+import org.comon.pdfredactorm.feature.editor.R
 import org.comon.pdfredactorm.core.common.logger.Logger
 
 data class EditorUiState(

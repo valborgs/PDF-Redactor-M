@@ -1,4 +1,4 @@
-package org.comon.pdfredactorm.presentation.home
+package org.comon.pdfredactorm.feature.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -85,7 +85,8 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-val recentProjects: StateFlow<List<PdfDocument>> = repository.getRecentProjects()
+
+    val recentProjects: StateFlow<List<PdfDocument>> = repository.getRecentProjects()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -111,4 +112,3 @@ val recentProjects: StateFlow<List<PdfDocument>> = repository.getRecentProjects(
         }
     }
 }
-
