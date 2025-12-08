@@ -17,7 +17,9 @@ import org.comon.pdfredactorm.core.model.DetectedPii
 import org.comon.pdfredactorm.core.model.PdfDocument
 import org.comon.pdfredactorm.core.model.PdfOutlineItem
 import org.comon.pdfredactorm.core.model.RedactionMask
-import org.comon.pdfredactorm.core.domain.repository.LocalPdfRepository
+import org.comon.pdfredactorm.core.domain.usecase.pdf.GetPdfDocumentUseCase
+import org.comon.pdfredactorm.core.domain.usecase.pdf.GetPdfOutlineUseCase
+import org.comon.pdfredactorm.core.domain.usecase.pdf.DeletePdfDocumentUseCase
 import org.comon.pdfredactorm.core.domain.usecase.DetectPiiUseCase
 import org.comon.pdfredactorm.core.domain.usecase.GetRedactionsUseCase
 import org.comon.pdfredactorm.core.domain.usecase.SaveRedactedPdfUseCase
@@ -28,7 +30,6 @@ import javax.inject.Inject
 import androidx.core.graphics.createBitmap
 import android.app.Application
 import android.net.Uri
-import org.comon.pdfredactorm.feature.editor.R
 import org.comon.pdfredactorm.core.common.logger.Logger
 
 data class EditorUiState(
@@ -58,7 +59,9 @@ data class EditorUiState(
 @HiltViewModel
 class EditorViewModel @Inject constructor(
     private val application: Application,
-    private val repository: LocalPdfRepository,
+    private val getPdfDocumentUseCase: GetPdfDocumentUseCase,
+    private val getPdfOutlineUseCase: GetPdfOutlineUseCase,
+    private val deletePdfDocumentUseCase: DeletePdfDocumentUseCase,
     private val getRedactionsUseCase: GetRedactionsUseCase,
     private val saveRedactionsUseCase: SaveRedactionsUseCase,
     private val saveRedactedPdfUseCase: SaveRedactedPdfUseCase,
@@ -82,12 +85,12 @@ private val _uiState = MutableStateFlow(EditorUiState())
                     saveSuccess = false,
                     proRedactionSuccess = false,
                     error = null
-                ) 
+                )
             }
-            val document = repository.getProject(pdfId)
+            val document = getPdfDocumentUseCase(pdfId)
             if (document != null) {
                 val redactions = getRedactionsUseCase(pdfId)
-                val outline = repository.getOutline(document.file)
+                val outline = getPdfOutlineUseCase(document.file)
                 _uiState.update {
                     it.copy(
                         document = document,
@@ -248,7 +251,7 @@ private val _uiState = MutableStateFlow(EditorUiState())
                             }
                             
                             // Delete project from DB
-                            repository.deleteProject(doc.id)
+                            deletePdfDocumentUseCase(doc.id)
                             
                             _uiState.update { it.copy(isLoading = false, saveSuccess = true) }
                         }.onFailure { e ->
@@ -398,7 +401,7 @@ private val _uiState = MutableStateFlow(EditorUiState())
                         if (doc.file.exists()) {
                             doc.file.delete()
                         }
-                        repository.deleteProject(doc.id)
+                        deletePdfDocumentUseCase(doc.id)
                     }
                     
                     logger.info("Pro file saved successfully to $uri")

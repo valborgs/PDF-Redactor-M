@@ -75,6 +75,7 @@
 - [x] Navigation3 마이그레이션: `NavDisplay`/`rememberNavBackStack`/`entryProvider` 적용, `@Serializable` NavKey 클래스 도입, 기존 Navigation Compose에서 Navigation3(1.0.0)으로 전환
 - [x] 버그 수정: 로컬 마스킹 저장 후 파일을 다시 열 때 에디터가 바로 닫히는 문제 해결 (`saveSuccess` 상태 초기화 로직 추가)
 - [x] 뷰모델 생명주기 관리 개선: `ScopedViewModelContainer`(`core:ui`)를 도입하여 Editor 화면 진입 시마다 독립적인 `ViewModelScope`를 생성, 마스킹 색상/모드 등 이전 상태가 남지 않도록 개선 및 안정성 확보
+- [x] 리팩토링: SharedPreferences를 DataStore로 마이그레이션 (`First Launch` 플래그), `Clean Architecture` 원칙에 따라 모든 ViewModel(`Home`, `Main`, `Editor`)에서 Repository 직접 사용을 UseCase로 대체
 
 ## 추후 작업(개선) 사항
 - [ ] (없음)

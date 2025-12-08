@@ -17,6 +17,7 @@ class SettingsRepositoryImpl @Inject constructor(
 
     private object PreferencesKeys {
         val IS_PRO_ENABLED = booleanPreferencesKey("is_pro_enabled")
+        val IS_FIRST_LAUNCH = booleanPreferencesKey("first_launch")
         val APP_UUID = stringPreferencesKey("app_uuid")
     }
 
@@ -25,9 +26,20 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences[PreferencesKeys.IS_PRO_ENABLED] ?: false
         }
 
+    override val isFirstLaunch: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[PreferencesKeys.IS_FIRST_LAUNCH] ?: true
+        }
+
     override suspend fun setProEnabled(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.IS_PRO_ENABLED] = enabled
+        }
+    }
+
+    override suspend fun setFirstLaunch(isFirst: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.IS_FIRST_LAUNCH] = isFirst
         }
     }
 

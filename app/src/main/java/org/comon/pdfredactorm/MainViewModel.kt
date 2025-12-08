@@ -7,12 +7,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import org.comon.pdfredactorm.core.domain.repository.SettingsRepository
+import org.comon.pdfredactorm.core.domain.usecase.settings.GetProStatusUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val settingsRepository: SettingsRepository
+    private val getProStatusUseCase: GetProStatusUseCase
 ) : ViewModel() {
 
     private val _isLoading = MutableStateFlow(true)
@@ -24,7 +24,7 @@ class MainViewModel @Inject constructor(
                 // Check Pro status on startup
                 // We just need to ensure the DataStore is ready or any necessary checks are done.
                 // For now, simply reading the value to ensure initialization.
-                settingsRepository.isProEnabled.first()
+                getProStatusUseCase().first()
             } catch (e: Exception) {
                 // Log error or handle fallback defaults
                 e.printStackTrace()

@@ -8,35 +8,35 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.comon.pdfredactorm.core.model.PdfDocument
-import org.comon.pdfredactorm.core.domain.usecase.LoadPdfUseCase
-import org.comon.pdfredactorm.core.common.logger.Logger
-import android.content.SharedPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
 import javax.inject.Inject
-import androidx.core.content.edit
-import org.comon.pdfredactorm.core.domain.repository.LocalPdfRepository
-
+import org.comon.pdfredactorm.core.domain.usecase.pdf.GetRecentProjectsUseCase
+import org.comon.pdfredactorm.core.domain.usecase.pdf.DeletePdfDocumentUseCase
+import org.comon.pdfredactorm.core.domain.usecase.settings.GetFirstLaunchUseCase
+import org.comon.pdfredactorm.core.domain.usecase.settings.SetFirstLaunchUseCase
+import org.comon.pdfredactorm.core.domain.usecase.settings.GetProStatusUseCase
+import org.comon.pdfredactorm.core.domain.usecase.settings.GetAppUuidUseCase
 import org.comon.pdfredactorm.core.domain.usecase.ValidateCodeUseCase
-import org.comon.pdfredactorm.core.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import org.comon.pdfredactorm.core.common.logger.Logger
+import org.comon.pdfredactorm.core.domain.usecase.LoadPdfUseCase
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val repository: LocalPdfRepository,
+    private val getRecentProjectsUseCase: GetRecentProjectsUseCase,
+    private val deletePdfDocumentUseCase: DeletePdfDocumentUseCase,
     private val loadPdfUseCase: LoadPdfUseCase,
     private val validateCodeUseCase: ValidateCodeUseCase,
-    private val settingsRepository: SettingsRepository,
-    private val logger: Logger,
-    private val sharedPreferences: SharedPreferences
+    private val getFirstLaunchUseCase: GetFirstLaunchUseCase,
+    private val setFirstLaunchUseCase: SetFirstLaunchUseCase,
+    private val getProStatusUseCase: GetProStatusUseCase,
+    private val getAppUuidUseCase: GetAppUuidUseCase,
+    private val logger: Logger
 ) : ViewModel() {
-
-    companion object {
-        private const val KEY_FIRST_LAUNCH = "first_launch"
-    }
 
     private val _showHelpDialog = MutableStateFlow(false)
     val showHelpDialog: StateFlow<Boolean> = _showHelpDialog.asStateFlow()
@@ -46,10 +46,13 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun checkFirstLaunch() {
-        val isFirstLaunch = sharedPreferences.getBoolean(KEY_FIRST_LAUNCH, true)
-        if (isFirstLaunch) {
-            _showHelpDialog.value = true
-            sharedPreferences.edit { putBoolean(KEY_FIRST_LAUNCH, false) }
+        viewModelScope.launch {
+            getFirstLaunchUseCase().collect { isFirstLaunch ->
+                if (isFirstLaunch) {
+                    _showHelpDialog.value = true
+                    setFirstLaunchUseCase(false)
+                }
+            }
         }
     }
 
@@ -58,7 +61,7 @@ class HomeViewModel @Inject constructor(
     }
 
     // Pro Activation Logic
-    val isProEnabled: StateFlow<Boolean> = settingsRepository.isProEnabled
+    val isProEnabled: StateFlow<Boolean> = getProStatusUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     private val _isLoading = MutableStateFlow(false)
@@ -71,7 +74,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val uuid = settingsRepository.getAppUuid()
+                val uuid = getAppUuidUseCase()
                 val result = validateCodeUseCase(email, code, uuid)
                 result.onSuccess {
                     _validationEvent.emit(Result.success("Pro 기능이 활성화되었습니다."))
@@ -86,7 +89,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    val recentProjects: StateFlow<List<PdfDocument>> = repository.getRecentProjects()
+    val recentProjects: StateFlow<List<PdfDocument>> = getRecentProjectsUseCase()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -108,7 +111,7 @@ class HomeViewModel @Inject constructor(
     fun deleteProject(pdfId: String) {
         viewModelScope.launch {
             logger.info("User deleted project: $pdfId")
-            repository.deleteProject(pdfId)
+            deletePdfDocumentUseCase(pdfId)
         }
     }
 }

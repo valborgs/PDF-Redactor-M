@@ -21,11 +21,6 @@ object AppModule {
         return BuildConfig.DEBUG
     }
 
-    @Provides
-    @Singleton
-    fun provideSharedPreferences(@ApplicationContext context: Context): android.content.SharedPreferences {
-        return context.getSharedPreferences("pdf_redactor_prefs", Context.MODE_PRIVATE)
-    }
 
     @Provides
     @RedeemApiKey
