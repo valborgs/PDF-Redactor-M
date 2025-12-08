@@ -82,6 +82,6 @@
 - [x] 다국어 지원 강화: Home/Editor 화면 내 하드코딩 텍스트 전면 리소스화(KO/EN), 다국어 대응 완료
 - [x] 컴포저블 리팩토링: HomeScreen 및 EditorScreen의 보조 컴포저블(Dialog, Item 등)을 개별 파일로 분리하고 `component` 패키지로 구조화하여 유지보수성 향상
 - [x] 버그 수정 및 리팩토링: PdfBox 초기화 로직 복원(`PdfRepositoryInitializer`) 및 `core:data` 모듈로 캡슐화하여 Clean Architecture 원칙 준수 (앱 크래시 해결)
-
+- [x] 릴리즈 빌드 최적화: R8 난독화(`minifyEnabled`) 및 리소스 축소(`shrinkResources`) 설정 활성화, Proguard 규칙 추가(PdfBox, Retrofit, Room, Network DTO 등 예외 처리)로 앱 보안성 및 용량 최적화
 ## 추후 작업(개선) 사항
 - [ ] (없음)

@@ -20,19 +20,28 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
-# Kotlin Serialization
--keepattributes *Annotation*, InnerClasses
--dontnote kotlinx.serialization.DescriptorsKt
--keep,allowobfuscation,allowshrinking class kotlinx.serialization.* { *; }
--keepclassmembers class kotlinx.serialization.json.** {
-    *** Companion;
-}
--keepclasseswithmembers class kotlinx.serialization.json.** {
-    *** Companion;
-}
--keepclassmembers class * {
-    @kotlinx.serialization.Serializable <init>(...);
-}
--keep,allowobfuscation,allowshrinking class * {
-    @kotlinx.serialization.Serializable <fields>;
-}
+# Kotlin Serialization rules are provided by the library automatically.
+# Duplicate or outdated rules caused R8 warnings. (Removed)
+# Note: You may see a warning "The type \"<1>$*\" is used in a field rule" from kotlinx-serialization-common.pro.
+# This is a known benign warning in kotlinx-serialization 1.9.0+ and can be safely ignored.
+
+# PdfBox-Android (Uses heavy reflection)
+-keep class com.tom_roush.pdfbox.** { *; }
+-dontwarn com.gemalto.jp2.JP2Decoder
+-dontwarn com.gemalto.jp2.JP2Encoder
+
+# Network DTOs (Json parsing protection due to missing @SerialName)
+-keep class org.comon.pdfredactorm.core.network.dto.** { *; }
+
+# Retrofit & OkHttp
+-dontwarn retrofit2.**
+-keep class retrofit2.** { *; }
+-keepattributes Signature
+-keepattributes Exceptions
+-dontwarn okhttp3.**
+-dontwarn okio.**
+
+# Room
+-keep class * extends androidx.room.RoomDatabase
+-keep class * extends androidx.room.TypeConverter
+-keep @androidx.room.Entity class * { *; }
