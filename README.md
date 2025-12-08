@@ -81,6 +81,7 @@
 - [x] 사용성 개선: 저장 시 원본 파일명을 프리픽스(`redacted_` / `pro_redacted_`)와 함께 자동 제안
 - [x] 다국어 지원 강화: Home/Editor 화면 내 하드코딩 텍스트 전면 리소스화(KO/EN), 다국어 대응 완료
 - [x] 컴포저블 리팩토링: HomeScreen 및 EditorScreen의 보조 컴포저블(Dialog, Item 등)을 개별 파일로 분리하고 `component` 패키지로 구조화하여 유지보수성 향상
+- [x] 버그 수정 및 리팩토링: PdfBox 초기화 로직 복원(`PdfRepositoryInitializer`) 및 `core:data` 모듈로 캡슐화하여 Clean Architecture 원칙 준수 (앱 크래시 해결)
 
 ## 추후 작업(개선) 사항
 - [ ] (없음)

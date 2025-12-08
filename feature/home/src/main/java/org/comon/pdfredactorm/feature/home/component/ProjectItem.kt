@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.comon.pdfredactorm.core.model.PdfDocument
 import org.comon.pdfredactorm.feature.home.R
@@ -42,7 +43,12 @@ fun ProjectItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = project.fileName, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = project.fileName,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
                 Text(
                     text = stringResource(R.string.page_count, project.pageCount),
                     style = MaterialTheme.typography.bodyMedium,
