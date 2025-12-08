@@ -16,7 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.ads.MobileAds
 import dagger.hilt.android.AndroidEntryPoint
 import org.comon.pdfredactorm.core.ui.ads.AdBanner
-import org.comon.pdfredactorm.presentation.navigation.NavGraph
+import org.comon.pdfredactorm.presentation.navigation.AppNavHost
 import org.comon.pdfredactorm.core.designsystem.theme.PDFRedactorMTheme
 
 import androidx.activity.viewModels
@@ -55,7 +55,7 @@ class MainActivity : ComponentActivity() {
                                 .fillMaxWidth()
                         ) {
                             val navController = rememberNavController()
-                            NavGraph(navController = navController)
+                            AppNavHost(navController = navController)
                         }
 
                         // 하단 배너 광고
