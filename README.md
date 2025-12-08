@@ -80,6 +80,7 @@
 - [x] UI 상태 관리 개선: ViewModel-driven 아키텍처 강화, SideEffect 패턴 도입으로 일회성 UI 이벤트(파일 피커 표시 등) 처리 구조화
 - [x] 사용성 개선: 저장 시 원본 파일명을 프리픽스(`redacted_` / `pro_redacted_`)와 함께 자동 제안
 - [x] 다국어 지원 강화: Home/Editor 화면 내 하드코딩 텍스트 전면 리소스화(KO/EN), 다국어 대응 완료
+- [x] 컴포저블 리팩토링: HomeScreen 및 EditorScreen의 보조 컴포저블(Dialog, Item 등)을 개별 파일로 분리하고 `component` 패키지로 구조화하여 유지보수성 향상
 
 ## 추후 작업(개선) 사항
 - [ ] (없음)

@@ -7,13 +7,12 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import org.comon.pdfredactorm.feature.home.component.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -22,15 +21,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import org.comon.pdfredactorm.core.model.PdfDocument
 import java.io.File
 import java.io.FileOutputStream
 import androidx.compose.foundation.Image
@@ -222,127 +217,6 @@ fun HomeScreen(
                     }
                 }
             )
-        }
-    }
-}
-
-@Composable
-fun RedeemCodeDialog(
-    isLoading: Boolean,
-    onDismiss: () -> Unit,
-    onSubmit: (String, String) -> Unit
-) {
-    val invalidEmailMsg = stringResource(R.string.error_invalid_email)
-    val invalidCodeMsg = stringResource(R.string.error_invalid_code)
-    var email by remember { mutableStateOf("") }
-    var code by remember { mutableStateOf("") }
-    var emailError by remember { mutableStateOf<String?>(null) }
-    var codeError by remember { mutableStateOf<String?>(null) }
-
-    fun validateAndSubmit() {
-        var hasError = false
-        
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            emailError = invalidEmailMsg
-            hasError = true
-        } else {
-            emailError = null
-        }
-
-        if (code.length != 8) {
-            codeError = invalidCodeMsg
-            hasError = true
-        } else {
-            codeError = null
-        }
-
-        if (!hasError) {
-            onSubmit(email, code)
-        }
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.pro_activation_title)) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(stringResource(R.string.pro_activation_message))
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { 
-                        email = it
-                        if (emailError != null) emailError = null
-                    },
-                    label = { Text(stringResource(R.string.email_label)) },
-                    singleLine = true,
-                    enabled = !isLoading,
-                    isError = emailError != null,
-                    supportingText = if (emailError != null) { { Text(emailError!!) } } else null,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-                )
-                OutlinedTextField(
-                    value = code,
-                    onValueChange = { 
-                        code = it
-                        if (codeError != null) codeError = null
-                    },
-                    label = { Text(stringResource(R.string.redeem_code_label)) },
-                    singleLine = true,
-                    enabled = !isLoading,
-                    isError = codeError != null,
-                    supportingText = if (codeError != null) { { Text(codeError!!) } } else null
-                )
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { validateAndSubmit() },
-                enabled = !isLoading
-            ) {
-                Text(stringResource(R.string.submit_button))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !isLoading) {
-                Text(stringResource(R.string.cancel_button))
-            }
-        }
-    )
-}
-
-@Composable
-fun ProjectItem(
-    project: PdfDocument,
-    onClick: () -> Unit,
-    onDelete: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = project.fileName, style = MaterialTheme.typography.titleMedium)
-                Text(
-                    text = stringResource(R.string.page_count, project.pageCount),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete_content_description))
-            }
         }
     }
 }
