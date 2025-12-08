@@ -37,6 +37,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.comon.pdfredactorm.core.ui.dialog.HelpDialog
 import org.comon.pdfredactorm.core.ui.dialog.ExitConfirmationDialog
 
@@ -53,7 +54,7 @@ data class HomeScreenConfig(
 @Composable
 fun HomeScreen(
     config: HomeScreenConfig,
-    viewModel: HomeViewModel = hiltViewModel(),
+    viewModel: HomeViewModel = viewModel(),
     onPdfClick: (String) -> Unit
 ) {
     val activity = LocalActivity.current

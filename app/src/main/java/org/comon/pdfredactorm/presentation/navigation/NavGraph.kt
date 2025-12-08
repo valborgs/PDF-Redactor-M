@@ -5,6 +5,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import org.comon.pdfredactorm.BuildConfig
+import org.comon.pdfredactorm.core.ui.ScopedViewModelContainer
 import org.comon.pdfredactorm.feature.home.HomeScreen
 import org.comon.pdfredactorm.feature.home.HomeScreenConfig
 import org.comon.pdfredactorm.feature.home.navigation.HomeKey
@@ -44,12 +45,14 @@ fun AppNavHost() {
 
             // Editor 화면
             entry<EditorKey> { key ->
-                EditorScreen(
-                    pdfId = key.pdfId,
-                    onBackClick = {
-                        backStack.removeLastOrNull()
-                    }
-                )
+                ScopedViewModelContainer {
+                    EditorScreen(
+                        pdfId = key.pdfId,
+                        onBackClick = {
+                            backStack.removeLastOrNull()
+                        }
+                    )
+                }
             }
         }
     )

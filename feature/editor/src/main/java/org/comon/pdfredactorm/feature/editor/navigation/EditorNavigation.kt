@@ -15,8 +15,12 @@ fun editorEntry(
     key: EditorKey,
     onBackClick: () -> Unit
 ): NavEntry<EditorKey> = NavEntry(key) {
-    EditorScreen(
-        pdfId = key.pdfId,
-        onBackClick = onBackClick
-    )
+    // Create a new ViewModelStore for this specific entry
+    // This ensures a fresh ViewModel is created every time this screen is entered
+    org.comon.pdfredactorm.core.ui.ScopedViewModelContainer {
+        EditorScreen(
+            pdfId = key.pdfId,
+            onBackClick = onBackClick
+        )
+    }
 }

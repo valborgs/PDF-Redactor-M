@@ -144,6 +144,7 @@ private val _uiState = MutableStateFlow(EditorUiState())
                 }
                 
                 val bitmap = createBitmap(width, height)
+                bitmap.eraseColor(android.graphics.Color.WHITE)
                 page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                 
                 val pdfWidth = page.width
@@ -320,7 +321,8 @@ private val _uiState = MutableStateFlow(EditorUiState())
             y = pii.y,
             width = pii.width,
             height = pii.height,
-            type = pii.type
+            type = pii.type,
+            color = _uiState.value.currentMaskColor
         )
         val updatedRedactions = _uiState.value.redactions + mask
         val updatedDetectedPii = _uiState.value.detectedPii.filter { it != pii }
