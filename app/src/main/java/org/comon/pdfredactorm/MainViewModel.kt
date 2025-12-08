@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import org.comon.pdfredactorm.domain.repository.SettingsRepository
+import org.comon.pdfredactorm.core.domain.repository.SettingsRepository
 import javax.inject.Inject
 
 @HiltViewModel

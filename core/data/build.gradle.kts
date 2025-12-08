@@ -7,10 +7,11 @@ plugins {
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hiltAndroid)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
-    namespace = "org.comon.pdfredactorm.core.database"
+    namespace = "org.comon.pdfredactorm.core.data"
     compileSdk = 36
 
     defaultConfig {
@@ -43,20 +44,30 @@ android {
 dependencies {
     // Core 모듈 의존성
     implementation(project(":core:model"))
-
-    // Room
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
+    implementation(project(":core:common"))
+    implementation(project(":core:domain"))
+    implementation(project(":core:database"))
+    implementation(project(":core:network"))
+    implementation(project(":core:datastore"))
 
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
+    // Retrofit (Repository에서 Response 클래스 사용)
+    implementation(libs.retrofit)
+
+    // Kotlinx Serialization
+    implementation(libs.kotlinx.serialization.json)
+
+    // PDF (LocalPdfRepositoryImpl에서 사용)
+    implementation(libs.pdfbox.android)
+
+    // DataStore (SettingsRepositoryImpl에서 사용)
+    implementation(libs.androidx.datastore.preferences)
+
+    // Coroutines
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+
     testImplementation(libs.junit)
-}
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
 }

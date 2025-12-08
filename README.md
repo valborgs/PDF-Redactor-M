@@ -68,6 +68,7 @@
 - [x] Pro 기능 활성화 구현: 리딤 코드 검증 API 연동, DataStore 상태 관리, 스플래시 화면 및 전용 UI(왕관 아이콘, 다이얼로그) 통합
 - [x] 멀티 모듈 리팩토링: `:core:model` 및 `:core:common` 모듈 분리, 모델 클래스(PdfDocument, RedactionMask 등) 및 Logger 인터페이스/구현체 모듈화, 네임스페이스 규칙 적용(`org.comon.pdfredactorm.core.*`)
 - [x] 데이터 소스 모듈 분리: `:core:database`(Room), `:core:network`(Retrofit/API/DTO), `:core:datastore`(DataStore) 모듈화 및 Hilt DI 모듈 구성
+- [x] Domain/Data 레이어 분리: `:core:domain`(순수 Kotlin - UseCase/Repository 인터페이스), `:core:data`(Repository 구현체/PII 로직) 분리, `:core:common` 순수 Kotlin 모듈화, Hilt `@Binds` DI 구성
 
 ## 추후 작업(개선) 사항
 - [ ] (없음)

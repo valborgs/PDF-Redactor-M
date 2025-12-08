@@ -14,5 +14,13 @@ kotlin {
 }
 
 dependencies {
-    testImplementation(libs.junit)
+    // Core 모듈 의존성
+    implementation(project(":core:model"))
+    implementation(project(":core:common"))
+
+    // Coroutines
+    implementation(libs.kotlinx.coroutines.core)
+
+    // Javax Inject (for @Inject annotation without Hilt)
+    implementation(libs.javax.inject)
 }

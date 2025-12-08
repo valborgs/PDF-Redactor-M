@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.comon.pdfredactorm.core.model.PdfDocument
-import org.comon.pdfredactorm.domain.usecase.LoadPdfUseCase
+import org.comon.pdfredactorm.core.domain.usecase.LoadPdfUseCase
 import org.comon.pdfredactorm.core.common.logger.Logger
 import android.content.SharedPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,10 +16,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
 import javax.inject.Inject
 import androidx.core.content.edit
-import org.comon.pdfredactorm.domain.repository.LocalPdfRepository
+import org.comon.pdfredactorm.core.domain.repository.LocalPdfRepository
 
-import org.comon.pdfredactorm.domain.usecase.ValidateCodeUseCase
-import org.comon.pdfredactorm.domain.repository.SettingsRepository
+import org.comon.pdfredactorm.core.domain.usecase.ValidateCodeUseCase
+import org.comon.pdfredactorm.core.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow

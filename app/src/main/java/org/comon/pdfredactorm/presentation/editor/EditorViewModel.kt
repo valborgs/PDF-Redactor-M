@@ -17,11 +17,11 @@ import org.comon.pdfredactorm.core.model.DetectedPii
 import org.comon.pdfredactorm.core.model.PdfDocument
 import org.comon.pdfredactorm.core.model.PdfOutlineItem
 import org.comon.pdfredactorm.core.model.RedactionMask
-import org.comon.pdfredactorm.domain.repository.LocalPdfRepository
-import org.comon.pdfredactorm.domain.usecase.DetectPiiUseCase
-import org.comon.pdfredactorm.domain.usecase.GetRedactionsUseCase
-import org.comon.pdfredactorm.domain.usecase.SaveRedactedPdfUseCase
-import org.comon.pdfredactorm.domain.usecase.SaveRedactionsUseCase
+import org.comon.pdfredactorm.core.domain.repository.LocalPdfRepository
+import org.comon.pdfredactorm.core.domain.usecase.DetectPiiUseCase
+import org.comon.pdfredactorm.core.domain.usecase.GetRedactionsUseCase
+import org.comon.pdfredactorm.core.domain.usecase.SaveRedactedPdfUseCase
+import org.comon.pdfredactorm.core.domain.usecase.SaveRedactionsUseCase
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
@@ -63,7 +63,7 @@ class EditorViewModel @Inject constructor(
     private val saveRedactionsUseCase: SaveRedactionsUseCase,
     private val saveRedactedPdfUseCase: SaveRedactedPdfUseCase,
     private val detectPiiUseCase: DetectPiiUseCase,
-    private val remoteRedactPdfUseCase: org.comon.pdfredactorm.domain.usecase.RemoteRedactPdfUseCase,
+    private val remoteRedactPdfUseCase: org.comon.pdfredactorm.core.domain.usecase.RemoteRedactPdfUseCase,
     private val logger: Logger
 ) : ViewModel() {
 private val _uiState = MutableStateFlow(EditorUiState())
