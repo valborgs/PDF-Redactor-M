@@ -1,4 +1,4 @@
-package org.comon.pdfredactorm.presentation.ads
+package org.comon.pdfredactorm.core.ui.ads
 
 import android.view.View
 import android.view.ViewGroup
@@ -12,7 +12,6 @@ import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
 import androidx.compose.foundation.layout.navigationBarsPadding
-import org.comon.pdfredactorm.BuildConfig
 
 /**
  * AdMob 배너광고 컴포저블
@@ -21,10 +20,12 @@ import org.comon.pdfredactorm.BuildConfig
  * 광고 로딩 후에만 광고 높이만큼 공간을 차지합니다.
  * 애니메이션으로 부드럽게 나타납니다.
  *
+ * @param adUnitId 광고 단위 ID
  * @param modifier Modifier (기본값: fillMaxWidth())
  */
 @Composable
 fun AdBanner(
+    adUnitId: String,
     modifier: Modifier = Modifier
 ) {
     // Preview 모드에서는 광고를 표시하지 않음
@@ -32,17 +33,12 @@ fun AdBanner(
         return
     }
 
-
-
     // 광고를 한 번만 생성하고, 로딩 전후 visibility만 변경
     AndroidView(
         modifier = modifier.navigationBarsPadding(),
         factory = { context ->
-
             AdView(context).apply {
-                // local.properties에서 관리되는 광고 ID 사용
-                // Debug 빌드: 테스트 ID, Release 빌드: 실제 ID
-                adUnitId = BuildConfig.ADMOB_BANNER_ID
+                this.adUnitId = adUnitId
                 setAdSize(AdSize.BANNER)
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -70,8 +66,6 @@ fun AdBanner(
                 loadAd(adRequest)
             }
         },
-        update = { adView ->
-
-        }
+        update = { _ -> }
     )
 }

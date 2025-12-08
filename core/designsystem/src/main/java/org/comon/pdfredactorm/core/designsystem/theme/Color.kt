@@ -1,4 +1,4 @@
-package org.comon.pdfredactorm.ui.theme
+package org.comon.pdfredactorm.core.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 

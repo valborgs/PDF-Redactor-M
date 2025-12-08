@@ -40,6 +40,8 @@ import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import org.comon.pdfredactorm.R
+import org.comon.pdfredactorm.core.ui.dialog.HelpDialog
+import org.comon.pdfredactorm.core.ui.dialog.ExitConfirmationDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -185,6 +187,7 @@ fun HomeScreen(
 
         if (showExitDialog) {
             ExitConfirmationDialog(
+                nativeAdUnitId = BuildConfig.ADMOB_NATIVE_ID,
                 onDismiss = { showExitDialog = false },
                 onConfirm = { activity?.finish() }
             )

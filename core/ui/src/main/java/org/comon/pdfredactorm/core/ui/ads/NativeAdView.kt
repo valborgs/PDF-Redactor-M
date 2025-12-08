@@ -1,11 +1,14 @@
-package org.comon.pdfredactorm.presentation.ads
+package org.comon.pdfredactorm.core.ui.ads
 
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -16,11 +19,11 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.google.android.gms.ads.nativead.NativeAdView
-import org.comon.pdfredactorm.BuildConfig
-import org.comon.pdfredactorm.R
+import org.comon.pdfredactorm.core.ui.R
 
 @Composable
 fun NativeAdView(
+    adUnitId: String,
     modifier: Modifier = Modifier,
     onAdLoaded: () -> Unit = {}
 ) {
@@ -28,7 +31,7 @@ fun NativeAdView(
     var nativeAd by remember { mutableStateOf<NativeAd?>(null) }
 
     DisposableEffect(Unit) {
-        val adLoader = AdLoader.Builder(context, BuildConfig.ADMOB_NATIVE_ID)
+        val adLoader = AdLoader.Builder(context, adUnitId)
             .forNativeAd { ad: NativeAd ->
                 nativeAd = ad
                 onAdLoaded()
@@ -41,8 +44,6 @@ fun NativeAdView(
             })
             .withNativeAdOptions(
                 NativeAdOptions.Builder()
-                    // Methods in the NativeAdOptions.Builder class can be
-                    // used here to specify individual options settings.
                     .build()
             )
             .build()
@@ -54,9 +55,9 @@ fun NativeAdView(
         }
     }
 
-    androidx.compose.foundation.layout.Box(
+    Box(
         modifier = modifier,
-        contentAlignment = androidx.compose.ui.Alignment.Center
+        contentAlignment = Alignment.Center
     ) {
         if (nativeAd != null) {
             AndroidView(
@@ -68,15 +69,12 @@ fun NativeAdView(
                 modifier = Modifier.matchParentSize()
             )
         } else {
-            androidx.compose.material3.CircularProgressIndicator()
+            CircularProgressIndicator()
         }
     }
 }
 
 private fun populateNativeAdView(nativeAd: NativeAd, adView: NativeAdView) {
-    // Set the media view.
-    // adView.mediaView = adView.findViewById(R.id.ad_media)
-
     // Set other ad assets.
     adView.headlineView = adView.findViewById(R.id.ad_headline)
     adView.bodyView = adView.findViewById(R.id.ad_body)
@@ -85,7 +83,6 @@ private fun populateNativeAdView(nativeAd: NativeAd, adView: NativeAdView) {
 
     // The headline and mediaContent are guaranteed to be in every NativeAd.
     (adView.headlineView as TextView).text = nativeAd.headline
-    // adView.mediaView.setMediaContent(nativeAd.mediaContent)
 
     // These assets aren't guaranteed to be in every NativeAd, so it's important to
     // check before trying to display them.

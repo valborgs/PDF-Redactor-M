@@ -1,7 +1,6 @@
-package org.comon.pdfredactorm.presentation.home
+package org.comon.pdfredactorm.core.ui.dialog
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -15,12 +14,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import org.comon.pdfredactorm.R
-import org.comon.pdfredactorm.presentation.ads.NativeAdView
+import org.comon.pdfredactorm.core.ui.R
+import org.comon.pdfredactorm.core.ui.ads.NativeAdView
 import androidx.core.net.toUri
 
 @Composable
 fun ExitConfirmationDialog(
+    nativeAdUnitId: String,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
@@ -51,6 +51,7 @@ fun ExitConfirmationDialog(
                 )
 
                 NativeAdView(
+                    adUnitId = nativeAdUnitId,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(140.dp)

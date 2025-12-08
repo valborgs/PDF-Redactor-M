@@ -15,9 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.ads.MobileAds
 import dagger.hilt.android.AndroidEntryPoint
-import org.comon.pdfredactorm.presentation.ads.AdBanner
+import org.comon.pdfredactorm.core.ui.ads.AdBanner
 import org.comon.pdfredactorm.presentation.navigation.NavGraph
-import org.comon.pdfredactorm.ui.theme.PDFRedactorMTheme
+import org.comon.pdfredactorm.core.designsystem.theme.PDFRedactorMTheme
 
 import androidx.activity.viewModels
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -62,6 +62,7 @@ class MainActivity : ComponentActivity() {
                         // 광고 로딩 전에는 공간을 차지하지 않고,
                         // 광고 로딩 후에만 광고 높이만큼 공간 차지
                         AdBanner(
+                            adUnitId = BuildConfig.ADMOB_BANNER_ID,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .align(Alignment.CenterHorizontally)

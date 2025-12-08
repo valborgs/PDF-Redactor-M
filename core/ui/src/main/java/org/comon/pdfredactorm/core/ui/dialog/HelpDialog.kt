@@ -1,4 +1,4 @@
-package org.comon.pdfredactorm.presentation.home
+package org.comon.pdfredactorm.core.ui.dialog
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -24,7 +24,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.launch
-import org.comon.pdfredactorm.R
+import org.comon.pdfredactorm.core.ui.R
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
