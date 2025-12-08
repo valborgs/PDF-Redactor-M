@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -50,11 +51,16 @@ data class EditorUiState(
     val currentMaskColor: Int = 0xFF000000.toInt(), // Default: Black
     val isColorPickingMode: Boolean = false,
     val tempRedactedFile: File? = null,
-    val proRedactionSuccess: Boolean = false,
-    val piiDetectionCount: Int? = null
+    val piiDetectionCount: Int? = null,
+    val isProEnabled: Boolean = false
 )
 
 
+
+sealed interface EditorSideEffect {
+    data object OpenSaveLauncher : EditorSideEffect
+    data class ShowSnackbar(val message: String) : EditorSideEffect
+}
 
 @HiltViewModel
 class EditorViewModel @Inject constructor(
@@ -67,13 +73,30 @@ class EditorViewModel @Inject constructor(
     private val saveRedactedPdfUseCase: SaveRedactedPdfUseCase,
     private val detectPiiUseCase: DetectPiiUseCase,
     private val remoteRedactPdfUseCase: org.comon.pdfredactorm.core.domain.usecase.RemoteRedactPdfUseCase,
+    private val getProStatusUseCase: org.comon.pdfredactorm.core.domain.usecase.settings.GetProStatusUseCase,
     private val logger: Logger
 ) : ViewModel() {
-private val _uiState = MutableStateFlow(EditorUiState())
+
+    private val _uiState = MutableStateFlow(EditorUiState())
     val uiState: StateFlow<EditorUiState> = _uiState.asStateFlow()
+
+    private val _sideEffect = kotlinx.coroutines.channels.Channel<EditorSideEffect>()
+    val sideEffect = _sideEffect.receiveAsFlow()
 
     private var pdfRenderer: PdfRenderer? = null
     private var fileDescriptor: ParcelFileDescriptor? = null
+
+    init {
+        viewModelScope.launch {
+            getProStatusUseCase().collect { isPro ->
+                _uiState.update { it.copy(isProEnabled = isPro) }
+            }
+        }
+    }
+    
+    fun onSaveClicked() {
+        performRedaction()
+    }
 
     fun loadPdf(pdfId: String) {
         viewModelScope.launch {
@@ -83,7 +106,6 @@ private val _uiState = MutableStateFlow(EditorUiState())
                 it.copy(
                     isLoading = true,
                     saveSuccess = false,
-                    proRedactionSuccess = false,
                     error = null
                 )
             }
@@ -114,56 +136,72 @@ private val _uiState = MutableStateFlow(EditorUiState())
                 fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
                 pdfRenderer = PdfRenderer(fileDescriptor!!)
             } catch (e: Exception) {
-                e.printStackTrace()
+                logger.error("Failed to initialize renderer", e)
+                _uiState.update { it.copy(error = "PDF 렌더링 실패: ${e.message}") }
             }
         }
     }
 
+    private data class RenderedPage(
+        val bitmap: Bitmap,
+        val pdfWidth: Int,
+        val pdfHeight: Int
+    )
+
     private fun loadPage(pageIndex: Int) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            withContext(Dispatchers.IO) {
-                val renderer = pdfRenderer ?: return@withContext
-                if (pageIndex >= renderer.pageCount) return@withContext
-
-                val page = renderer.openPage(pageIndex)
-                
-                // Calculate bitmap size to fit within max dimension while maintaining aspect ratio
-                // This ensures the entire page is always renderable without cutting off
-                val maxDimension = 2048
-                val pageAspectRatio = page.width.toFloat() / page.height.toFloat()
-                
-                val width: Int
-                val height: Int
-                
-                if (page.width > page.height) {
-                    // Wider than tall: limit width
-                    width = minOf(maxDimension, page.width * 2)
-                    height = (width / pageAspectRatio).toInt()
-                } else {
-                    // Taller than wide: limit height
-                    height = minOf(maxDimension, page.height * 2)
-                    width = (height * pageAspectRatio).toInt()
-                }
-                
-                val bitmap = createBitmap(width, height)
-                bitmap.eraseColor(android.graphics.Color.WHITE)
-                page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-                
-                val pdfWidth = page.width
-                val pdfHeight = page.height
-                page.close()
-
+            
+            val renderedPage = renderPage(pageIndex)
+            
+            if (renderedPage != null) {
                 _uiState.update {
                     it.copy(
                         currentPage = pageIndex,
-                        currentPageBitmap = bitmap,
-                        pdfPageWidth = pdfWidth,
-                        pdfPageHeight = pdfHeight,
+                        currentPageBitmap = renderedPage.bitmap,
+                        pdfPageWidth = renderedPage.pdfWidth,
+                        pdfPageHeight = renderedPage.pdfHeight,
                         isLoading = false
                     )
                 }
+            } else {
+                _uiState.update { it.copy(isLoading = false) }
             }
+        }
+    }
+
+    private suspend fun renderPage(pageIndex: Int): RenderedPage? = withContext(Dispatchers.IO) {
+        val renderer = pdfRenderer ?: return@withContext null
+        if (pageIndex >= renderer.pageCount) return@withContext null
+
+        val page = renderer.openPage(pageIndex)
+        
+        try {
+            // Calculate bitmap size to fit within max dimension while maintaining aspect ratio
+            // This ensures the entire page is always renderable without cutting off
+            val maxDimension = 2048
+            val pageAspectRatio = page.width.toFloat() / page.height.toFloat()
+            
+            val width: Int
+            val height: Int
+            
+            if (page.width > page.height) {
+                // Wider than tall: limit width
+                width = minOf(maxDimension, page.width * 2)
+                height = (width / pageAspectRatio).toInt()
+            } else {
+                // Taller than wide: limit height
+                height = minOf(maxDimension, page.height * 2)
+                width = (height * pageAspectRatio).toInt()
+            }
+            
+            val bitmap = createBitmap(width, height)
+            bitmap.eraseColor(android.graphics.Color.WHITE)
+            page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+            
+            RenderedPage(bitmap, page.width, page.height)
+        } finally {
+            page.close()
         }
     }
 
@@ -209,6 +247,7 @@ private val _uiState = MutableStateFlow(EditorUiState())
             }
         }
     }
+
     fun nextPage() {
         val currentState = _uiState.value
         if (currentState.currentPage < currentState.pageCount - 1) {
@@ -231,41 +270,16 @@ private val _uiState = MutableStateFlow(EditorUiState())
         }
     }
 
-    fun savePdf(uri: Uri) {
-        val currentState = _uiState.value
-        currentState.document?.let { doc ->
-            viewModelScope.launch {
-                logger.info("User initiated PDF save")
-                _uiState.update { it.copy(isLoading = true) }
-                try {
-                    application.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                        val result = saveRedactedPdfUseCase(doc.file, currentState.redactions, outputStream)
-                        result.onSuccess {
-                            logger.info("PDF save completed successfully")
-                            // Close renderer to release file lock
-                            closeRenderer()
-                            
-                            // Delete temp file
-                            if (doc.file.exists()) {
-                                doc.file.delete()
-                            }
-                            
-                            // Delete project from DB
-                            deletePdfDocumentUseCase(doc.id)
-                            
-                            _uiState.update { it.copy(isLoading = false, saveSuccess = true) }
-                        }.onFailure { e ->
-                            logger.warning("PDF save failed")
-                            _uiState.update { it.copy(isLoading = false, error = e.message) }
-                        }
-                    } ?: run {
-                        _uiState.update { it.copy(isLoading = false, error = application.getString(R.string.error_failed_to_open_output_stream)) }
-                    }
-                } catch (e: Exception) {
-                    _uiState.update { it.copy(isLoading = false, error = e.message) }
-                }
-            }
+
+    // 저장 로직 (IO 작업)
+
+
+    // 정리 작업 (파일/DB 삭제)
+    private suspend fun cleanupProject(document: PdfDocument) {
+        if (document.file.exists()) {
+            document.file.delete()
         }
+        deletePdfDocumentUseCase(document.id)
     }
 
     fun detectPiiInCurrentPage() {
@@ -342,6 +356,7 @@ private val _uiState = MutableStateFlow(EditorUiState())
         val updatedDetectedPii = _uiState.value.detectedPii.filter { it != pii }
         _uiState.update { it.copy(detectedPii = updatedDetectedPii) }
     }
+
     private fun closeRenderer() {
         try {
             pdfRenderer?.close()
@@ -353,69 +368,85 @@ private val _uiState = MutableStateFlow(EditorUiState())
         }
     }
 
-    fun uploadAndRedactPdf() {
+    fun performRedaction() {
         val currentState = _uiState.value
         currentState.document?.let { doc ->
             viewModelScope.launch {
-                logger.info("User initiated Pro Redaction")
+                logger.info("Initiating Redaction Process")
                 _uiState.update { it.copy(isLoading = true) }
                 
-                val result = remoteRedactPdfUseCase(doc.file, currentState.redactions)
-                
-                result.onSuccess { redactedFile ->
-                    logger.info("Pro Redaction successful")
-                     _uiState.update { 
-                         it.copy(
-                             isLoading = false, 
-                             proRedactionSuccess = true,
-                             tempRedactedFile = redactedFile
-                         ) 
-                     }
-                }.onFailure { e ->
-                    logger.error("Pro Redaction failed", e)
-                    _uiState.update { it.copy(isLoading = false, error = "Pro Redaction Failed: ${e.message}") }
+                try {
+                    val tempFile = File.createTempFile("redacted_", ".pdf", application.cacheDir)
+                    val result = saveRedactedPdfUseCase(doc.file, currentState.redactions, tempFile)
+                    
+                    result.onSuccess { redactedFile ->
+                        logger.info("Redaction successful")
+                         _uiState.update { 
+                             it.copy(
+                                 isLoading = false, 
+                                 tempRedactedFile = redactedFile
+                             ) 
+                         }
+                         _sideEffect.send(EditorSideEffect.OpenSaveLauncher)
+                    }.onFailure { e ->
+                        logger.error("Redaction failed", e)
+                        _uiState.update { it.copy(isLoading = false, error = "Redaction Failed: ${e.message}") }
+                    }
+                } catch (e: Exception) {
+                    logger.error("Redaction process error", e)
+                    _uiState.update { it.copy(isLoading = false, error = "Redaction Error: ${e.message}") }
                 }
             }
         }
     }
 
-    fun saveProFile(uri: Uri) {
+    fun saveFinalDocument(uri: Uri) {
         val currentState = _uiState.value
-        currentState.tempRedactedFile?.let { file ->
-            viewModelScope.launch {
-                _uiState.update { it.copy(isLoading = true) }
-                try {
-                    application.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                        file.inputStream().use { inputStream ->
-                            inputStream.copyTo(outputStream)
-                        }
-                    }
-                    // Delete the temp file after saving
-                    if (file.exists()) {
-                        file.delete()
-                    }
+        val tempFile = currentState.tempRedactedFile ?: return
+        val document = currentState.document ?: return
 
-                    // Cleanup original file and project (same as savePdf)
-                    currentState.document?.let { doc ->
-                        closeRenderer()
-                        if (doc.file.exists()) {
-                            doc.file.delete()
-                        }
-                        deletePdfDocumentUseCase(doc.id)
-                    }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            
+            executeSaveFile(tempFile, uri)
+                .onSuccess {
+                    logger.info("File saved successfully to $uri")
+                    cleanupTempRedactedFile()
+                    closeRenderer()
+                    cleanupProject(document)
                     
-                    logger.info("Pro file saved successfully to $uri")
-                    _uiState.update { it.copy(isLoading = false, saveSuccess = true, proRedactionSuccess = false, tempRedactedFile = null) }
-                } catch (e: Exception) {
-                    logger.error("Failed to save pro file", e)
+                    _uiState.update { 
+                        it.copy(
+                            isLoading = false, 
+                            saveSuccess = true
+                        ) 
+                    }
+                }
+                .onFailure { e ->
+                    logger.error("Failed to save file", e)
                     _uiState.update { it.copy(isLoading = false, error = "Failed to save file: ${e.message}") }
                 }
-            }
         }
     }
 
-    fun consumeProRedactionSuccess() {
-        _uiState.update { it.copy(proRedactionSuccess = false) }
+    private fun cleanupTempRedactedFile() {
+        _uiState.value.tempRedactedFile?.let { file ->
+            if (file.exists()) {
+                file.delete()
+            }
+        }
+        _uiState.update { it.copy(tempRedactedFile = null) }
+    }
+
+    private suspend fun executeSaveFile(sourceFile: File, uri: Uri): Result<Unit> = withContext(Dispatchers.IO) {
+        runCatching {
+             application.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                sourceFile.inputStream().use { inputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            } ?: throw Exception(application.getString(R.string.error_failed_to_open_output_stream))
+            Unit
+        }
     }
 
     fun consumeError() {
@@ -424,10 +455,6 @@ private val _uiState = MutableStateFlow(EditorUiState())
 
     fun consumePiiDetectionResult() {
         _uiState.update { it.copy(piiDetectionCount = null) }
-    }
-
-    fun consumeSaveSuccess() {
-        _uiState.update { it.copy(saveSuccess = false) }
     }
 
     override fun onCleared() {

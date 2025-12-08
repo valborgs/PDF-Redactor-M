@@ -76,6 +76,8 @@
 - [x] 버그 수정: 로컬 마스킹 저장 후 파일을 다시 열 때 에디터가 바로 닫히는 문제 해결 (`saveSuccess` 상태 초기화 로직 추가)
 - [x] 뷰모델 생명주기 관리 개선: `ScopedViewModelContainer`(`core:ui`)를 도입하여 Editor 화면 진입 시마다 독립적인 `ViewModelScope`를 생성, 마스킹 색상/모드 등 이전 상태가 남지 않도록 개선 및 안정성 확보
 - [x] 리팩토링: SharedPreferences를 DataStore로 마이그레이션 (`First Launch` 플래그), `Clean Architecture` 원칙에 따라 모든 ViewModel(`Home`, `Main`, `Editor`)에서 Repository 직접 사용을 UseCase로 대체
+- [x] 저장 로직 리팩토링: Pro/일반 저장의 프로세스 통합(`performRedaction` -> `saveFinalDocument` 파이프라인), 입출력 로직을 File 기반으로 변경하여 유연성 확보
+- [x] UI 상태 관리 개선: ViewModel-driven 아키텍처 강화, SideEffect 패턴 도입으로 일회성 UI 이벤트(파일 피커 표시 등) 처리 구조화
 
 ## 추후 작업(개선) 사항
 - [ ] (없음)

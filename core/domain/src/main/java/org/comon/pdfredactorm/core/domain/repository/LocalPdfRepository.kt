@@ -6,12 +6,11 @@ import org.comon.pdfredactorm.core.model.PdfDocument
 import org.comon.pdfredactorm.core.model.PdfOutlineItem
 import org.comon.pdfredactorm.core.model.RedactionMask
 import java.io.File
-import java.io.OutputStream
 
 interface LocalPdfRepository {
     suspend fun loadPdf(file: File): PdfDocument
     suspend fun getPdfPageCount(file: File): Int
-    suspend fun saveRedactedPdf(originalFile: File, redactions: List<RedactionMask>, outputStream: OutputStream): Result<Unit>
+    suspend fun saveRedactedPdf(originalFile: File, redactions: List<RedactionMask>, outputFile: File): Result<Unit>
 
     // PII Detection
     suspend fun detectPii(file: File, pageIndex: Int): List<DetectedPii>

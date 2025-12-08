@@ -87,31 +87,39 @@ fun EditorScreen(
         viewModel.loadPdf(pdfId)
     }
 
-
     val saveLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/pdf")
     ) { uri ->
-        uri?.let { 
-            if (uiState.proRedactionSuccess) {
-                viewModel.saveProFile(it)
-            } else {
-                viewModel.savePdf(it) 
+        uri?.let {
+            viewModel.saveFinalDocument(it)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.sideEffect.collect { effect ->
+            when (effect) {
+                is EditorSideEffect.OpenSaveLauncher -> {
+                    val originalName = viewModel.uiState.value.document?.fileName ?: "document.pdf"
+                    val fileName = if (viewModel.uiState.value.isProEnabled) {
+                        "pro_redacted_$originalName"
+                    } else {
+                        "redacted_$originalName"
+                    }
+                    saveLauncher.launch(fileName)
+                }
+                is EditorSideEffect.ShowSnackbar -> {
+                   scope.launch {
+                       snackbarHostState.showSnackbar(effect.message)
+                   }
+                }
             }
         }
     }
-
-    LaunchedEffect(uiState.proRedactionSuccess) {
-        if (uiState.proRedactionSuccess) {
-            val fileName = "pro_redacted_${System.currentTimeMillis()}.pdf"
-            saveLauncher.launch(fileName)
-        }
-    }
-
+    
     LaunchedEffect(uiState.saveSuccess) {
         if (uiState.saveSuccess) {
-            android.util.Log.d("EditorScreen", "PDF Saved Successfully")
-            viewModel.consumeSaveSuccess()
-            onBackClick()
+             android.util.Log.d("EditorScreen", "PDF Saved Successfully")
+             onBackClick()
         }
     }
     LaunchedEffect(uiState.error) {
@@ -158,8 +166,7 @@ fun EditorScreen(
                                 text = { Text("저장") },
                                 onClick = {
                                     showMainMenu = false
-                                    val fileName = "redacted_${System.currentTimeMillis()}.pdf"
-                                    saveLauncher.launch(fileName)
+                                    viewModel.onSaveClicked()
                                 },
                                 leadingIcon = {
                                     Icon(Icons.Default.Save, contentDescription = null)
@@ -295,9 +302,6 @@ fun EditorScreen(
                         onAddRedaction = { x, y, w, h ->
                             viewModel.addRedaction(x, y, w, h)
                         },
-                        onRemoveRedaction = { id ->
-                            viewModel.removeRedaction(id)
-                        },
                         onConvertPiiToMask = { pii ->
                             viewModel.convertDetectedPiiToMask(pii)
                         },
@@ -316,20 +320,9 @@ fun EditorScreen(
                             colorPickerDragPosition = position
                             colorPickerPreviewColor = color
                         },
-                        maskToDeleteId = maskToDeleteId,
-                        showDeleteMaskDialog = showDeleteMaskDialog,
                         onShowDeleteMaskDialog = { id ->
                             maskToDeleteId = id
                             showDeleteMaskDialog = true
-                        },
-                        onDismissDeleteMaskDialog = {
-                            showDeleteMaskDialog = false
-                            maskToDeleteId = null
-                        },
-                        onConfirmDeleteMask = {
-                            maskToDeleteId?.let { viewModel.removeRedaction(it) }
-                            showDeleteMaskDialog = false
-                            maskToDeleteId = null
                         }
                     )
                 }
@@ -708,17 +701,11 @@ fun PdfViewer(
     pdfPageWidth: Int,
     pdfPageHeight: Int,
     onAddRedaction: (Float, Float, Float, Float) -> Unit,
-    onRemoveRedaction: (String) -> Unit,
     onConvertPiiToMask: (DetectedPii) -> Unit,
     onRemoveDetectedPii: (DetectedPii) -> Unit,
     onColorPicked: (Int) -> Unit,
     onColorPickDrag: (Offset?, Int?) -> Unit,
-    // Mask deletion state
-    maskToDeleteId: String?,
-    showDeleteMaskDialog: Boolean,
-    onShowDeleteMaskDialog: (String) -> Unit,
-    onDismissDeleteMaskDialog: () -> Unit,
-    onConfirmDeleteMask: () -> Unit
+    onShowDeleteMaskDialog: (String) -> Unit
 ) {
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
 

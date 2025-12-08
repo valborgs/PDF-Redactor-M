@@ -14,18 +14,20 @@ class SaveRedactedPdfUseCase @Inject constructor(
     private val remoteRepository: RemoteRedactionRepository,
     private val settingsRepository: SettingsRepository
 ) {
-    suspend operator fun invoke(originalFile: File, redactions: List<RedactionMask>, outputStream: OutputStream): Result<Unit> {
+    suspend operator fun invoke(originalFile: File, redactions: List<RedactionMask>, outputFile: File): Result<File> {
         val isPro = settingsRepository.isProEnabled.first()
         
         return if (isPro) {
             val result = remoteRepository.redactPdf(originalFile, redactions)
             result.map { redactedFile ->
-                redactedFile.inputStream().use { input ->
-                    input.copyTo(outputStream)
-                }
+                // Copy the remote result (temp file) to the target output file
+                redactedFile.copyTo(outputFile, overwrite = true)
+                outputFile
             }
         } else {
-            localRepository.saveRedactedPdf(originalFile, redactions, outputStream)
+            localRepository.saveRedactedPdf(originalFile, redactions, outputFile).map { 
+                outputFile 
+            }
         }
     }
 }

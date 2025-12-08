@@ -76,7 +76,7 @@ class LocalPdfRepositoryImpl @Inject constructor(
     override suspend fun saveRedactedPdf(
         originalFile: File,
         redactions: List<RedactionMask>,
-        outputStream: OutputStream
+        outputFile: File
     ): Result<Unit> {
         return withContext(Dispatchers.IO) {
             try {
@@ -105,9 +105,9 @@ class LocalPdfRepositoryImpl @Inject constructor(
                     }
                 }
                 
-                document.save(outputStream)
+                document.save(outputFile)
                 document.close()
-                logger.info("PDF saved successfully with ${redactions.size} redactions")
+                logger.info("PDF saved successfully with ${redactions.size} redactions to ${outputFile.absolutePath}")
                 Result.success(Unit)
             } catch (e: Exception) {
                 logger.error("Failed to save redacted PDF: ${originalFile.name}", e)
