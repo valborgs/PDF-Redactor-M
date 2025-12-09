@@ -3,14 +3,78 @@
 안드로이드 환경에서 PDF 파일의 개인정보(PII)를 탐지하고 마스킹(Redaction)할 수 있는 애플리케이션입니다.
 
 ## 📱 프로젝트 개요
-- **목표**: 모바일 기기에서 손쉽게 PDF 내 민감 정보를 가리고 안전하게 공유/저장.
-- **주요 기능**:
-    - PDF 파일 불러오기 및 뷰어
-    - 정규식 기반 PII(전화번호, 주민번호 등) 자동 탐지 
-    - 터치 드래그를 통한 수동 마스킹
-    - 마스킹 된 PDF 내보내기 (Flattening/Redaction)
-    - 작업 내역 자동 저장 (Room DB)
-    - 다국어 지원 (시스템 언어에 따른 한국어/영어 자동 전환)
+
+**PDF Redactor M**은 Clean Architecture 기반의 멀티 모듈 안드로이드 애플리케이션으로, PDF 파일 내 개인정보(PII)를 안전하게 탐지하고 마스킹(Redaction)할 수 있는 전문 도구입니다.
+
+### 핵심 가치
+- **개인정보 보호**: 정규식 기반 자동 PII 탐지 및 영구 마스킹
+- **오프라인 우선**: 네트워크 없이도 로컬에서 완전한 PDF 편집 가능
+- **전문가급 기능**: 색상 선택, 스포이드, 목차 탐색 등 고급 편집 도구 제공
+- **확장 가능한 아키텍처**: SOLID 원칙과 Clean Architecture로 유지보수성 극대화
+
+### 모듈 구조
+
+프로젝트는 **11개 모듈**로 구성된 멀티 모듈 아키텍처를 채택하고 있습니다:
+
+#### 📦 App Layer
+- **`app`**: 메인 애플리케이션 모듈, DI 설정, 네비게이션 통합
+
+#### 🔧 Core Layer (9개 모듈)
+- **`core:model`**: 도메인 모델 정의 (PdfDocument, RedactionMask, PdfOutlineItem, DetectedPii)
+- **`core:common`**: 공통 Logger 인터페이스 및 유틸리티
+- **`core:domain`**: UseCase 및 Repository 인터페이스 (순수 Kotlin, 플랫폼 독립적)
+- **`core:data`**: Repository 구현체, PII 탐지 로직, PdfBox 초기화
+- **`core:database`**: Room 기반 로컬 데이터베이스 (작업 내역 영구 저장)
+- **`core:network`**: Retrofit 기반 네트워크 레이어 (리딤 코드 검증, 원격 마스킹 API)
+- **`core:datastore`**: DataStore 기반 설정 저장소 (Pro 상태, 최초 실행 플래그)
+- **`core:designsystem`**: Material3 테마, 타이포그래피, 색상 시스템
+- **`core:ui`**: 공통 UI 컴포넌트, 광고 컴포넌트, 재사용 가능한 다이얼로그
+
+#### 🎨 Feature Layer (2개 모듈)
+- **`feature:home`**: 홈 화면 (PDF 목록, 리딤 코드 입력, 종료 다이얼로그)
+- **`feature:editor`**: PDF 편집기 (마스킹, 뷰어, 색상 선택, PII 탐지, 목차 탐색)
+
+### 주요 기능
+
+#### 📄 핵심 PDF 기능
+- Android PdfRenderer 기반 고성능 뷰어
+- 화면 크기 자동 스케일링 및 확대/축소
+- 페이지 직접 이동 (다이얼로그 입력)
+- PDF 목차(북마크) 계층 구조 탐색
+
+#### 🎯 마스킹 기능
+- **수동 마스킹**: 터치 드래그로 영역 선택, 탭하여 삭제
+- **자동 PII 탐지**: 정규식 기반 전화번호, 주민번호, 이메일 등 자동 감지
+- **색상 커스터마이징**: 
+  - 흰색/검은색 선택
+  - 스포이드 도구로 PDF에서 색상 추출
+  - 실시간 확대경 UI 제공
+- **두 가지 처리 방식**:
+  - 로컬 마스킹 (PdfBox-Android 사용)
+  - 원격 마스킹 (Pro 기능, 서버 API 연동)
+
+#### 👑 Pro 기능
+- 리딤 코드 기반 Pro 버전 활성화
+- 서버 기반 고성능 PDF 마스킹 처리
+- DataStore를 통한 영구 상태 관리
+- 전용 UI (왕관 아이콘, 활성화 다이얼로그)
+
+#### 🎯 UX/UI 기능
+- **다국어 지원**: 한국어/영어 자동 전환 (시스템 언어 기반)
+- **도움말 시스템**: ViewPager 기반 6페이지 사용 설명서
+- **사용자 피드백**: Snackbar를 통한 실시간 상태 알림
+- **광고 통합**: AdMob 배너/네이티브 광고, 종료 시 리뷰 유도
+- **Edge-to-Edge UI**: 상태바 가시성 최적화
+
+#### 📊 데이터 관리
+- Room DB 기반 작업 내역 자동 저장
+- 임시 파일 자동 정리
+- 원본 파일명 기반 스마트 저장 제안
+
+#### 🛡️ 안정성 및 모니터링
+- Firebase Crashlytics 및 Analytics 통합
+- Clean Architecture 기반 에러 처리
+- 로컬/원격 로깅 시스템
 
 ## 🛠 기술 스택
 - **Language**: Kotlin 2.2.21
@@ -55,7 +119,6 @@
             <td><img width="250px" src="https://github.com/user-attachments/assets/32a929c1-991c-4674-bedc-2404738cd240" /></td>
             <td><img width="250px" src="https://github.com/user-attachments/assets/bf90fa9c-d24a-42e2-9d70-dfa1c55ab776" /></td>
             <td><img width="250px" src="https://github.com/user-attachments/assets/730442b9-17f9-4279-a715-5d31f4272cac" /></td>
-
         </tr>
     </tbody>
 </table>
