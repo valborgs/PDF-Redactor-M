@@ -44,6 +44,9 @@ android {
 
         val redeemApiKey = localProperties.getProperty("REDEEM_API_KEY", "")
         buildConfigField("String", "REDEEM_API_KEY", "\"$redeemApiKey\"")
+
+        val redactApiKey = localProperties.getProperty("REDACT_API_KEY", "")
+        buildConfigField("String", "REDACT_API_KEY", "\"$redactApiKey\"")
     }
 
     buildTypes {

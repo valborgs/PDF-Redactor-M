@@ -11,11 +11,13 @@ import java.io.File
 import java.io.FileOutputStream
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.comon.pdfredactorm.core.data.di.RedactApiKey
 import javax.inject.Inject
 
 class RemoteRedactionRepositoryImpl @Inject constructor(
     private val api: RedactionApi,
-    private val json: Json
+    private val json: Json,
+    @param:RedactApiKey private val redactApiKey: String
 ) : RemoteRedactionRepository {
 
     override suspend fun redactPdf(file: File, redactions: List<RedactionMask>): Result<File> {
@@ -27,7 +29,7 @@ class RemoteRedactionRepositoryImpl @Inject constructor(
             val redactionsJson = json.encodeToString(redactionDtos)
             val redactionsPart = redactionsJson.toRequestBody("text/plain".toMediaTypeOrNull())
 
-            val response = api.redactPdf(filePart, redactionsPart)
+            val response = api.redactPdf(redactApiKey, filePart, redactionsPart)
 
             if (response.isSuccessful && response.body() != null) {
                 val responseBody = response.body()!!
