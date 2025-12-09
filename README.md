@@ -33,7 +33,7 @@
     <tr><th colspan="3">pro 기능 활성화 흐름도</th></tr>
         <tr>
             <td colspan="3">
-                <img width="900px" src="https://github.com/user-attachments/assets/10e85815-806d-4c40-bdb7-ed9ec12c3ecc" />
+                <img width="750px" src="https://github.com/user-attachments/assets/10e85815-806d-4c40-bdb7-ed9ec12c3ecc" />
             </td>
         </tr>
         <tr>
@@ -42,9 +42,20 @@
             <th>리딤코드 입력</th>
         </tr>
         <tr>
-            <td><img width="300px" src="https://github.com/user-attachments/assets/e0ca5b79-0bcd-45c3-a67b-252e7f486025" /></td>
-            <td><img width="300px" src="https://github.com/user-attachments/assets/b62abc26-60ec-4e99-9470-947b7fbdaa84" /></td>
-            <td><img width="300px" src="https://github.com/user-attachments/assets/55d85740-0456-4608-800c-2fadf4d15292" /></td>
+            <td><img width="250px" src="https://github.com/user-attachments/assets/e0ca5b79-0bcd-45c3-a67b-252e7f486025" /></td>
+            <td><img width="250px" src="https://github.com/user-attachments/assets/b62abc26-60ec-4e99-9470-947b7fbdaa84" /></td>
+            <td><img width="250px" src="https://github.com/user-attachments/assets/55d85740-0456-4608-800c-2fadf4d15292" /></td>
+        </tr>
+        <tr>
+            <th>기본색상 마스킹 결과</th>
+            <th>컬러피커 기능</th>
+            <th>컬러피커 사용 결과물</th>
+        </tr>
+        <tr>
+            <td><img width="250px" src="https://github.com/user-attachments/assets/32a929c1-991c-4674-bedc-2404738cd240" /></td>
+            <td><img width="250px" src="https://github.com/user-attachments/assets/bf90fa9c-d24a-42e2-9d70-dfa1c55ab776" /></td>
+            <td><img width="250px" src="https://github.com/user-attachments/assets/730442b9-17f9-4279-a715-5d31f4272cac" /></td>
+
         </tr>
     </tbody>
 </table>
