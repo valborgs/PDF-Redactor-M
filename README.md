@@ -10,7 +10,7 @@
     - 터치 드래그를 통한 수동 마스킹
     - 마스킹 된 PDF 내보내기 (Flattening/Redaction)
     - 작업 내역 자동 저장 (Room DB)
-    - 다국어 지원 (한국어/영어 자동 전환)
+    - 다국어 지원 (시스템 언어에 따른 한국어/영어 자동 전환)
 
 ## 🛠 기술 스택
 - **Language**: Kotlin 2.2.21
@@ -19,13 +19,35 @@
 - **DI**: Hilt
 - **Async**: Coroutines + Flow
 - **Local DB**: Room
-- **Network**: Retrofit (Future proofing)
+- **Network**: Retrofit
 - **PDF Engine**: PdfBox-Android (Primary), Android PdfRenderer (Viewer)
 
 ## 📂 문서
 - [개발 계획서](docs/development_plan.md)
 - [PII 탐지 가이드](docs/pii_detection.md)
 - [로깅 시스템 가이드](docs/logging.md)
+
+## 갤러리
+<table>
+    <tbody>
+    <tr><th colspan="3">pro 기능 활성화 흐름도</th></tr>
+        <tr>
+            <td colspan="3">
+                <img width="900px" src="https://github.com/user-attachments/assets/10e85815-806d-4c40-bdb7-ed9ec12c3ecc" />
+            </td>
+        </tr>
+        <tr>
+            <th>마스킹</th>
+            <th>마스킹 취소</th>
+            <th>리딤코드 입력</th>
+        </tr>
+        <tr>
+            <td><img width="300px" src="https://github.com/user-attachments/assets/e0ca5b79-0bcd-45c3-a67b-252e7f486025" /></td>
+            <td><img width="300px" src="https://github.com/user-attachments/assets/b62abc26-60ec-4e99-9470-947b7fbdaa84" /></td>
+            <td><img width="300px" src="https://github.com/user-attachments/assets/55d85740-0456-4608-800c-2fadf4d15292" /></td>
+        </tr>
+    </tbody>
+</table>
 
 ## 🚀 현재 진행 상황
 - [x] 프로젝트 초기화 및 Gradle 설정 (Kotlin 2.2.21, Version Catalog)
