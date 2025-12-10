@@ -1,11 +1,10 @@
 package org.comon.pdfredactorm.core.domain.usecase.settings
 
-import kotlinx.coroutines.flow.Flow
 import org.comon.pdfredactorm.core.domain.repository.SettingsRepository
 import javax.inject.Inject
 
 class GetFirstLaunchUseCase @Inject constructor(
     private val settingsRepository: SettingsRepository
 ) {
-    operator fun invoke(): Flow<Boolean> = settingsRepository.isFirstLaunch
+    suspend operator fun invoke(): Boolean = settingsRepository.checkFirstLaunch()
 }

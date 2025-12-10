@@ -28,10 +28,11 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences[PreferencesKeys.IS_PRO_ENABLED] ?: false
         }
 
-    override val isFirstLaunch: Flow<Boolean> = dataStore.data
-        .map { preferences ->
+    override suspend fun checkFirstLaunch(): Boolean {
+        return dataStore.data.map { preferences ->
             preferences[PreferencesKeys.IS_FIRST_LAUNCH] ?: true
-        }
+        }.firstOrNull() ?: true
+    }
 
     override suspend fun setProEnabled(enabled: Boolean) {
         logger.info("Pro status changed: $enabled")

@@ -49,11 +49,10 @@ class HomeViewModel @Inject constructor(
 
     private fun checkFirstLaunch() {
         viewModelScope.launch {
-            getFirstLaunchUseCase().collect { isFirstLaunch ->
-                if (isFirstLaunch) {
-                    _showHelpDialog.value = true
-                    setFirstLaunchUseCase(false)
-                }
+            val isFirstLaunch = getFirstLaunchUseCase()
+            if (isFirstLaunch) {
+                _showHelpDialog.value = true
+                setFirstLaunchUseCase(false)
             }
         }
     }
