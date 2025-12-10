@@ -4,27 +4,26 @@ import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.comon.pdfredactorm.core.model.PdfDocument
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import java.io.File
-import javax.inject.Inject
-import org.comon.pdfredactorm.core.domain.usecase.pdf.GetRecentProjectsUseCase
-import org.comon.pdfredactorm.core.domain.usecase.pdf.DeletePdfDocumentUseCase
-import org.comon.pdfredactorm.core.domain.usecase.settings.GetFirstLaunchUseCase
-import org.comon.pdfredactorm.core.domain.usecase.settings.SetFirstLaunchUseCase
-import org.comon.pdfredactorm.core.domain.usecase.settings.GetProStatusUseCase
-import org.comon.pdfredactorm.core.domain.usecase.settings.GetAppUuidUseCase
-import org.comon.pdfredactorm.core.domain.usecase.ValidateCodeUseCase
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import org.comon.pdfredactorm.core.common.logger.Logger
 import org.comon.pdfredactorm.core.domain.usecase.LoadPdfUseCase
+import org.comon.pdfredactorm.core.domain.usecase.ValidateCodeUseCase
+import org.comon.pdfredactorm.core.domain.usecase.pdf.DeletePdfDocumentUseCase
+import org.comon.pdfredactorm.core.domain.usecase.pdf.GetRecentProjectsUseCase
+import org.comon.pdfredactorm.core.domain.usecase.settings.GetAppUuidUseCase
+import org.comon.pdfredactorm.core.domain.usecase.settings.GetFirstLaunchUseCase
+import org.comon.pdfredactorm.core.domain.usecase.settings.GetProStatusUseCase
+import org.comon.pdfredactorm.core.domain.usecase.settings.SetFirstLaunchUseCase
+import java.io.File
+import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -40,8 +39,32 @@ class HomeViewModel @Inject constructor(
     private val logger: Logger
 ) : ViewModel() {
 
-    private val _showHelpDialog = MutableStateFlow(false)
-    val showHelpDialog: StateFlow<Boolean> = _showHelpDialog.asStateFlow()
+    // Internal mutable states
+    private val _isLoading = MutableStateFlow(false)
+    private val _isFirstLaunch = MutableStateFlow(false)
+
+    // Side Effect Channel
+    private val _sideEffect = Channel<HomeSideEffect>()
+    val sideEffect = _sideEffect.receiveAsFlow()
+
+    // Combined UI State
+    val uiState: StateFlow<HomeUiState> = combine(
+        _isLoading,
+        _isFirstLaunch,
+        getRecentProjectsUseCase(),
+        getProStatusUseCase()
+    ) { isLoading, isFirstLaunch, recentProjects, isProEnabled ->
+        HomeUiState(
+            isLoading = isLoading,
+            isFirstLaunch = isFirstLaunch,
+            recentProjects = recentProjects,
+            isProEnabled = isProEnabled
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = HomeUiState()
+    )
 
     init {
         checkFirstLaunch()
@@ -51,65 +74,64 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val isFirstLaunch = getFirstLaunchUseCase()
             if (isFirstLaunch) {
-                _showHelpDialog.value = true
+                _isFirstLaunch.value = true
                 setFirstLaunchUseCase(false)
             }
         }
     }
 
-    fun dismissHelpDialog() {
-        _showHelpDialog.value = false
+    /**
+     * MVI Event Handler
+     */
+    fun onEvent(event: HomeEvent) {
+        when (event) {
+            is HomeEvent.ConsumeFirstLaunch -> consumeFirstLaunch()
+            is HomeEvent.LoadPdf -> loadPdf(event.file)
+            is HomeEvent.ValidateCode -> validateCode(event.email, event.code)
+            is HomeEvent.DeleteProject -> deleteProject(event.pdfId)
+        }
     }
 
-    // Pro Activation Logic
-    val isProEnabled: StateFlow<Boolean> = getProStatusUseCase()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+    private fun consumeFirstLaunch() {
+        _isFirstLaunch.value = false
+    }
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    private fun loadPdf(file: File) {
+        viewModelScope.launch {
+            logger.info("User selected PDF file: ${file.name}")
+            val result = loadPdfUseCase(file)
+            result.onSuccess { document ->
+                _sideEffect.send(HomeSideEffect.NavigateToEditor(document.id))
+            }.onFailure {
+                logger.warning("PDF load failed")
+            }
+        }
+    }
 
-    private val _validationEvent = MutableSharedFlow<Result<String>>()
-    val validationEvent: SharedFlow<Result<String>> = _validationEvent.asSharedFlow()
-
-    fun validateCode(email: String, code: String) {
+    private fun validateCode(email: String, code: String) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
                 val uuid = getAppUuidUseCase()
                 val result = validateCodeUseCase(email, code, uuid)
                 result.onSuccess {
-                    _validationEvent.emit(Result.success(application.getString(R.string.pro_activation_success)))
+                    _sideEffect.send(
+                        HomeSideEffect.ShowValidationResult(
+                            Result.success(application.getString(R.string.pro_activation_success))
+                        )
+                    )
                 }.onFailure { e ->
-                    _validationEvent.emit(Result.failure(e))
+                    _sideEffect.send(HomeSideEffect.ShowValidationResult(Result.failure(e)))
                 }
             } catch (e: Exception) {
-                _validationEvent.emit(Result.failure(e))
+                _sideEffect.send(HomeSideEffect.ShowValidationResult(Result.failure(e)))
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    val recentProjects: StateFlow<List<PdfDocument>> = getRecentProjectsUseCase()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
-
-    fun loadPdf(file: File, onLoaded: (String) -> Unit) {
-        viewModelScope.launch {
-            logger.info("User selected PDF file: ${file.name}")
-            val result = loadPdfUseCase(file)
-            result.onSuccess { document ->
-                onLoaded(document.id)
-            }.onFailure {
-                logger.warning("PDF load failed")
-            }
-        }
-    }
-    
-    fun deleteProject(pdfId: String) {
+    private fun deleteProject(pdfId: String) {
         viewModelScope.launch {
             logger.info("User deleted project: $pdfId")
             deletePdfDocumentUseCase(pdfId)

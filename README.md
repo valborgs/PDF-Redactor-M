@@ -79,7 +79,7 @@
 ## 🛠 기술 스택
 - **Language**: Kotlin 2.2.21
 - **UI**: Jetpack Compose (Material3)
-- **Architecture**: Clean Architecture + MVI (Editor) / MVVM (Home)
+- **Architecture**: Clean Architecture + MVI
 - **DI**: Hilt
 - **Async**: Coroutines + Flow
 - **Local DB**: Room
@@ -185,6 +185,8 @@
 - [x] API Key Interceptor 리팩토링: API 키 관리를 `core:data`에서 `core:network`로 이동, `ApiKeyInterceptor`를 통한 헤더 자동 추가, API별 OkHttpClient 분리 및 Qualifier 적용으로 Repository의 인프라 관심사 제거
 - [x] 로깅 시스템 확장: `RedeemRepositoryImpl`, `RemoteRedactionRepositoryImpl`, `SettingsRepositoryImpl`, `MainViewModel`, `ApiKeyInterceptor`에 Logger 주입 추가
 - [x] Repository 함수 타입 리팩토링: `isFirstLaunch`를 `Flow` 프로퍼티에서 `suspend fun checkFirstLaunch()`로 변경 (일회성 조회에 적합한 타입으로 개선, 클린코드 명명 규칙 적용)
+- [x] Home Feature MVI 리팩토링: `HomeContract.kt` 신규 생성(`HomeUiState`, `HomeEvent`, `HomeSideEffect`), `HomeViewModel` 단일 `uiState` 및 `onEvent()` 패턴 적용, `HomeScreen` `collectAsStateWithLifecycle` 적용 및 다이얼로그 상태 관리 정책 정리(비즈니스 로직은 ViewModel, UI 토글은 Screen에서 관리)
 
 ## 추후 작업(개선) 사항
-- [ ] (없음)
+- [ ] google analytics 적용
+- [ ] 종료 다이얼로그 광고 미리 로드

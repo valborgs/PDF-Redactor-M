@@ -15,7 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +31,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.comon.pdfredactorm.core.ui.dialog.HelpDialog
 import org.comon.pdfredactorm.core.ui.dialog.ExitConfirmationDialog
@@ -54,25 +54,32 @@ fun HomeScreen(
 ) {
     val activity = LocalActivity.current
     val context = LocalContext.current
-    val recentProjects by viewModel.recentProjects.collectAsState()
-    val showHelpDialog by viewModel.showHelpDialog.collectAsState()
-    var showManualHelpDialog by remember { mutableStateOf(false) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val isProEnabled by viewModel.isProEnabled.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    // UI-only states (transient, not business logic)
+    var showManualHelpDialog by remember { mutableStateOf(false) }
     var showRedeemDialog by remember { mutableStateOf(false) }
     var showResultDialog by remember { mutableStateOf<String?>(null) }
     var isSuccessResult by remember { mutableStateOf(false) }
+    var showExitDialog by remember { mutableStateOf(false) }
 
+    // Collect SideEffects from ViewModel
     LaunchedEffect(Unit) {
-        viewModel.validationEvent.collect { result ->
-            result.onSuccess { message ->
-                showRedeemDialog = false
-                isSuccessResult = true
-                showResultDialog = message
-            }.onFailure { exception ->
-                isSuccessResult = false
-                showResultDialog = exception.message ?: context.getString(R.string.unknown_error)
+        viewModel.sideEffect.collect { effect ->
+            when (effect) {
+                is HomeSideEffect.NavigateToEditor -> {
+                    onPdfClick(effect.pdfId)
+                }
+                is HomeSideEffect.ShowValidationResult -> {
+                    effect.result.onSuccess { message ->
+                        showRedeemDialog = false
+                        isSuccessResult = true
+                        showResultDialog = message
+                    }.onFailure { exception ->
+                        isSuccessResult = false
+                        showResultDialog = exception.message ?: context.getString(R.string.unknown_error)
+                    }
+                }
             }
         }
     }
@@ -95,9 +102,7 @@ fun HomeScreen(
             inputStream?.close()
             outputStream.close()
 
-            viewModel.loadPdf(file) { pdfId ->
-                onPdfClick(pdfId)
-            }
+            viewModel.onEvent(HomeEvent.LoadPdf(file))
         }
     }
 
@@ -108,7 +113,7 @@ fun HomeScreen(
                 actions = {
                     val uriHandler = LocalUriHandler.current
                     
-                    if (!isProEnabled) {
+                    if (!uiState.isProEnabled) {
                         IconButton(onClick = { showRedeemDialog = true }) {
                             Image(
                                 painter = painterResource(id = R.drawable.ic_crown),
@@ -161,19 +166,19 @@ fun HomeScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(recentProjects) { project ->
+                items(uiState.recentProjects) { project ->
                     ProjectItem(
                         project = project,
                         onClick = { onPdfClick(project.id) },
-                        onDelete = { viewModel.deleteProject(project.id) }
+                        onDelete = { viewModel.onEvent(HomeEvent.DeleteProject(project.id)) }
                     )
                 }
             }
         }
 
         // Show help dialog (First Launch)
-        if (showHelpDialog) {
-            HelpDialog(onDismiss = { viewModel.dismissHelpDialog() })
+        if (uiState.isFirstLaunch) {
+            HelpDialog(onDismiss = { viewModel.onEvent(HomeEvent.ConsumeFirstLaunch) })
         }
 
         // Show help dialog (Manual)
@@ -182,8 +187,6 @@ fun HomeScreen(
         }
 
         // Exit Confirmation Dialog
-        var showExitDialog by remember { mutableStateOf(false) }
-
         BackHandler {
             showExitDialog = true
         }
@@ -198,10 +201,10 @@ fun HomeScreen(
         
         if (showRedeemDialog) {
             RedeemCodeDialog(
-                isLoading = isLoading,
+                isLoading = uiState.isLoading,
                 onDismiss = { showRedeemDialog = false },
                 onSubmit = { email, code ->
-                    viewModel.validateCode(email, code)
+                    viewModel.onEvent(HomeEvent.ValidateCode(email, code))
                 }
             )
         }

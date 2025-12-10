@@ -1,6 +1,5 @@
 package org.comon.pdfredactorm.feature.editor
 
-import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 import androidx.lifecycle.ViewModel
@@ -16,7 +15,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.comon.pdfredactorm.core.model.DetectedPii
 import org.comon.pdfredactorm.core.model.PdfDocument
-import org.comon.pdfredactorm.core.model.PdfOutlineItem
 import org.comon.pdfredactorm.core.model.RedactionMask
 import org.comon.pdfredactorm.core.domain.usecase.pdf.GetPdfDocumentUseCase
 import org.comon.pdfredactorm.core.domain.usecase.pdf.GetPdfOutlineUseCase
@@ -30,37 +28,10 @@ import java.util.UUID
 import javax.inject.Inject
 import androidx.core.graphics.createBitmap
 import android.app.Application
+import android.graphics.Bitmap
 import android.net.Uri
 import org.comon.pdfredactorm.core.common.logger.Logger
 import org.comon.pdfredactorm.core.domain.usecase.settings.GetProStatusUseCase
-
-data class EditorUiState(
-    val document: PdfDocument? = null,
-    val currentPage: Int = 0,
-    val pageCount: Int = 0,
-    val currentPageBitmap: Bitmap? = null,
-    val pdfPageWidth: Int = 0,
-    val pdfPageHeight: Int = 0,
-    val redactions: List<RedactionMask> = emptyList(),
-    val detectedPii: List<DetectedPii> = emptyList(),
-    val tableOfContents: List<PdfOutlineItem> = emptyList(),
-    val isMaskingMode: Boolean = false,
-    val isDetecting: Boolean = false,
-    val isLoading: Boolean = false,
-    val saveSuccess: Boolean = false,
-    val currentMaskColor: Int = 0xFF000000.toInt(), // Default: Black
-    val isColorPickingMode: Boolean = false,
-    val tempRedactedFile: File? = null,
-    val piiDetectionCount: Int? = null,
-    val isProEnabled: Boolean = false
-)
-
-sealed interface EditorSideEffect {
-    data object OpenSaveLauncher : EditorSideEffect
-    data class ShowSnackbar(val message: String) : EditorSideEffect
-    data object NavigateBack : EditorSideEffect
-    data object ShowFileSizeExceededDialog : EditorSideEffect
-}
 
 @HiltViewModel
 class EditorViewModel @Inject constructor(
