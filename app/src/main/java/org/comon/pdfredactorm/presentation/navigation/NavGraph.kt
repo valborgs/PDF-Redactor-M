@@ -1,10 +1,12 @@
 package org.comon.pdfredactorm.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import org.comon.pdfredactorm.BuildConfig
+import org.comon.pdfredactorm.R
 import org.comon.pdfredactorm.core.ui.ScopedViewModelContainer
 import org.comon.pdfredactorm.feature.home.HomeScreen
 import org.comon.pdfredactorm.feature.home.HomeScreenConfig
@@ -22,7 +24,7 @@ import org.comon.pdfredactorm.feature.editor.navigation.EditorKey
 @Composable
 fun AppNavHost() {
     val homeScreenConfig = HomeScreenConfig(
-        appName = "PDF안심이",
+        appName = stringResource(R.string.app_name),
         coffeeChatUrl = BuildConfig.COFFEE_CHAT_URL,
         nativeAdUnitId = BuildConfig.ADMOB_NATIVE_ID
     )
