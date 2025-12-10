@@ -28,9 +28,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import kotlinx.coroutines.launch
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,18 +38,16 @@ fun EditorScreen(
     onBackClick: () -> Unit,
     viewModel: EditorViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-
+    // UI-only states (transient, not business logic)
     var showMainMenu by remember { mutableStateOf(false) }
     var showPrivacyDetectionDialog by remember { mutableStateOf(false) }
     var showPageJumpDialog by remember { mutableStateOf(false) }
-
-    var showOutlineDialog by remember { mutableStateOf(false) }
+    var showTableOfContentsDialog by remember { mutableStateOf(false) }
     var showColorPickerDialog by remember { mutableStateOf(false) }
 
-    // Color Picker State
+    // Color Picker State (high-frequency updates, kept in UI)
     var colorPickerDragPosition by remember { mutableStateOf<Offset?>(null) }
     var colorPickerPreviewColor by remember { mutableStateOf<Int?>(null) }
 
@@ -59,26 +56,22 @@ fun EditorScreen(
     var maskToDeleteId by remember { mutableStateOf<String?>(null) }
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
-    val maskingEnabledMessage = stringResource(R.string.masking_mode_enabled)
-    val maskingDisabledMessage = stringResource(R.string.masking_mode_disabled)
-    val colorPickerEnabledMessage = stringResource(R.string.color_picker_mode_enabled)
-    val colorSelectedMessage = stringResource(R.string.color_selected)
-    val errorMessage = stringResource(R.string.error_masking_failed)
-    
+    // Load PDF on initial composition
     LaunchedEffect(pdfId) {
-        viewModel.loadPdf(pdfId)
+        viewModel.handleIntent(EditorIntent.LoadPdf(pdfId))
     }
 
+    // Save file launcher
     val saveLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/pdf")
     ) { uri ->
         uri?.let {
-            viewModel.saveFinalDocument(it)
+            viewModel.handleIntent(EditorIntent.SaveFinalDocument(it))
         }
     }
 
+    // Collect SideEffects from ViewModel
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
@@ -92,27 +85,13 @@ fun EditorScreen(
                     saveLauncher.launch(fileName)
                 }
                 is EditorSideEffect.ShowSnackbar -> {
-                   scope.launch {
-                       snackbarHostState.showSnackbar(effect.message)
-                   }
+                    snackbarHostState.currentSnackbarData?.dismiss()
+                    snackbarHostState.showSnackbar(effect.message, duration = SnackbarDuration.Short)
+                }
+                is EditorSideEffect.NavigateBack -> {
+                    onBackClick()
                 }
             }
-        }
-    }
-    
-    LaunchedEffect(uiState.saveSuccess) {
-        if (uiState.saveSuccess) {
-             android.util.Log.d("EditorScreen", "PDF Saved Successfully")
-             onBackClick()
-        }
-    }
-
-
-    LaunchedEffect(uiState.error) {
-        uiState.error?.let { errorMsg ->
-            android.util.Log.d("EditorScreen", "Error: $errorMsg")
-            snackbarHostState.showSnackbar(errorMessage, duration = SnackbarDuration.Short)
-            viewModel.consumeError()
         }
     }
 
@@ -147,7 +126,7 @@ fun EditorScreen(
                                 text = { Text(stringResource(R.string.save_content_description)) },
                                 onClick = {
                                     showMainMenu = false
-                                    viewModel.onSaveClicked()
+                                    viewModel.handleIntent(EditorIntent.PerformRedaction)
                                 },
                                 leadingIcon = {
                                     Icon(Icons.Default.Save, contentDescription = null)
@@ -159,16 +138,7 @@ fun EditorScreen(
                                 text = { Text(stringResource(R.string.outline_title)) },
                                 onClick = {
                                     showMainMenu = false
-                                    if (uiState.outline.isNotEmpty()) {
-                                        showOutlineDialog = true
-                                    } else {
-                                        scope.launch {
-                                            snackbarHostState.showSnackbar(
-                                                message = context.getString(R.string.no_outline_available),
-                                                duration = SnackbarDuration.Short
-                                            )
-                                        }
-                                    }
+                                    showTableOfContentsDialog = true
                                 },
                                 leadingIcon = {
                                     Icon(Icons.AutoMirrored.Filled.List, contentDescription = null)
@@ -194,7 +164,7 @@ fun EditorScreen(
         bottomBar = {
             BottomAppBar(
                 actions = {
-                    IconButton(onClick = { viewModel.prevPage() }) {
+                    IconButton(onClick = { viewModel.handleIntent(EditorIntent.PrevPage) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.prev_page_content_description))
                     }
 
@@ -222,7 +192,7 @@ fun EditorScreen(
                         interactionSource = interactionSource
                     )
 
-                    IconButton(onClick = { viewModel.nextPage() }) {
+                    IconButton(onClick = { viewModel.handleIntent(EditorIntent.NextPage) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = stringResource(R.string.next_page_content_description))
                     }
                     Spacer(modifier = Modifier.weight(1f))
@@ -250,12 +220,7 @@ fun EditorScreen(
                         Switch(
                             checked = uiState.isMaskingMode,
                             onCheckedChange = { 
-                                viewModel.toggleMaskingMode()
-                                val message = if (!uiState.isMaskingMode) maskingEnabledMessage else maskingDisabledMessage
-                                scope.launch {
-                                    snackbarHostState.currentSnackbarData?.dismiss()
-                                    snackbarHostState.showSnackbar(message, duration = SnackbarDuration.Short)
-                                }
+                                viewModel.handleIntent(EditorIntent.ToggleMaskingMode)
                             }
                         )
                     }
@@ -283,21 +248,16 @@ fun EditorScreen(
                         pdfPageWidth = uiState.pdfPageWidth,
                         pdfPageHeight = uiState.pdfPageHeight,
                         onAddRedaction = { x, y, w, h ->
-                            viewModel.addRedaction(x, y, w, h)
+                            viewModel.handleIntent(EditorIntent.AddRedaction(x, y, w, h))
                         },
                         onConvertPiiToMask = { pii ->
-                            viewModel.convertDetectedPiiToMask(pii)
+                            viewModel.handleIntent(EditorIntent.ConvertPiiToMask(pii))
                         },
                         onRemoveDetectedPii = { pii ->
-                            viewModel.removeDetectedPii(pii)
+                            viewModel.handleIntent(EditorIntent.RemoveDetectedPii(pii))
                         },
                         onColorPicked = { color ->
-                            viewModel.setMaskColor(color)
-                            viewModel.toggleColorPickingMode()
-                            scope.launch {
-                                snackbarHostState.currentSnackbarData?.dismiss()
-                                snackbarHostState.showSnackbar(colorSelectedMessage, duration = SnackbarDuration.Short)
-                            }
+                            viewModel.handleIntent(EditorIntent.SetMaskColor(color))
                         },
                         onColorPickDrag = { position, color ->
                             colorPickerDragPosition = position
@@ -349,79 +309,69 @@ fun EditorScreen(
             }
         }
 
-    // Page Jump Dialog
-    if (showPageJumpDialog) {
-        PageJumpDialog(
-            pageCount = uiState.pageCount,
-            onDismiss = { showPageJumpDialog = false },
-            onJump = { pageNumber ->
-                viewModel.goToPage(pageNumber)
-            }
-        )
-    }
-
-    // Outline Dialog
-    if (showOutlineDialog) {
-        OutlineDialog(
-            outline = uiState.outline,
-            onDismiss = { showOutlineDialog = false },
-            onItemClick = { pageIndex ->
-                viewModel.goToPage(pageIndex + 1)
-            }
-        )
-    }
-
-    // Color Picker Dialog
-    if (showColorPickerDialog) {
-        ColorPickerDialog(
-            onDismiss = { showColorPickerDialog = false },
-            onColorSelected = { color ->
-                viewModel.setMaskColor(color)
-                scope.launch {
-                    snackbarHostState.currentSnackbarData?.dismiss()
-                    snackbarHostState.showSnackbar(colorSelectedMessage, duration = SnackbarDuration.Short)
+        // Page Jump Dialog
+        if (showPageJumpDialog) {
+            PageJumpDialog(
+                pageCount = uiState.pageCount,
+                onDismiss = { showPageJumpDialog = false },
+                onJump = { pageNumber ->
+                    viewModel.handleIntent(EditorIntent.GoToPage(pageNumber))
                 }
-            },
-            onPickFromPdf = {
-                viewModel.toggleColorPickingMode()
-                scope.launch {
-                    snackbarHostState.currentSnackbarData?.dismiss()
-                    snackbarHostState.showSnackbar(colorPickerEnabledMessage, duration = SnackbarDuration.Short)
+            )
+        }
+
+        // Outline Dialog
+        if (showTableOfContentsDialog) {
+            TableOfContentsDialog(
+                tableOfContents = uiState.tableOfContents,
+                onDismiss = { showTableOfContentsDialog = false },
+                onItemClick = { pageIndex ->
+                    viewModel.handleIntent(EditorIntent.GoToPage(pageIndex + 1))
                 }
-            }
-        )
-    }
+            )
+        }
 
-    // Mask Deletion Dialog
-    if (showDeleteMaskDialog && maskToDeleteId != null) {
-        DeleteMaskDialog(
-            onDismiss = {
-                showDeleteMaskDialog = false
-                maskToDeleteId = null
-            },
-            onDelete = {
-                maskToDeleteId?.let { viewModel.removeRedaction(it) }
-            }
-        )
-    }
-    // Privacy Detection Dialog
-    if (showPrivacyDetectionDialog) {
-        PrivacyDetectionDialog(
-            onDismiss = { showPrivacyDetectionDialog = false },
-            onDetectCurrentPage = { viewModel.detectPiiInCurrentPage() },
-            onDetectAllPages = { viewModel.detectPiiInAllPages() }
-        )
-    }
+        // Color Picker Dialog
+        if (showColorPickerDialog) {
+            ColorPickerDialog(
+                onDismiss = { showColorPickerDialog = false },
+                onColorSelected = { color ->
+                    viewModel.handleIntent(EditorIntent.SetMaskColor(color))
+                },
+                onPickFromPdf = {
+                    viewModel.handleIntent(EditorIntent.ToggleColorPickingMode)
+                }
+            )
+        }
 
-    // PII Detection Result Dialog
-    if (uiState.piiDetectionCount != null) {
-        PiiDetectionResultDialog(
-            count = uiState.piiDetectionCount ?: 0,
-            onDismiss = { viewModel.consumePiiDetectionResult() },
-            onConfirm = { viewModel.consumePiiDetectionResult() }
-        )
-    }
+        // Mask Deletion Dialog
+        if (showDeleteMaskDialog && maskToDeleteId != null) {
+            DeleteMaskDialog(
+                onDismiss = {
+                    showDeleteMaskDialog = false
+                    maskToDeleteId = null
+                },
+                onDelete = {
+                    maskToDeleteId?.let { viewModel.handleIntent(EditorIntent.RemoveRedaction(it)) }
+                }
+            )
+        }
+        // Privacy Detection Dialog
+        if (showPrivacyDetectionDialog) {
+            PrivacyDetectionDialog(
+                onDismiss = { showPrivacyDetectionDialog = false },
+                onDetectCurrentPage = { viewModel.handleIntent(EditorIntent.DetectPiiInCurrentPage) },
+                onDetectAllPages = { viewModel.handleIntent(EditorIntent.DetectPiiInAllPages) }
+            )
+        }
+
+        // PII Detection Result Dialog
+        if (uiState.piiDetectionCount != null) {
+            PiiDetectionResultDialog(
+                count = uiState.piiDetectionCount ?: 0,
+                onDismiss = { viewModel.handleIntent(EditorIntent.ConsumePiiDetectionResult) },
+                onConfirm = { viewModel.handleIntent(EditorIntent.ConsumePiiDetectionResult) }
+            )
+        }
     }
 }
-
-

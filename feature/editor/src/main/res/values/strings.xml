@@ -23,7 +23,7 @@
 
     <!-- Outline Dialog -->
     <string name="outline_title">Outline</string>
-    <string name="no_outline_available">No outline available</string>
+    <string name="no_table_of_contents_available">No outline available</string>
     <string name="outline_page_format">(p.%d)</string>
 
     <!-- PII Detection Dialog -->

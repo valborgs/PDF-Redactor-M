@@ -43,11 +43,10 @@ data class EditorUiState(
     val pdfPageHeight: Int = 0,
     val redactions: List<RedactionMask> = emptyList(),
     val detectedPii: List<DetectedPii> = emptyList(),
-    val outline: List<PdfOutlineItem> = emptyList(),
+    val tableOfContents: List<PdfOutlineItem> = emptyList(),
     val isMaskingMode: Boolean = false,
     val isDetecting: Boolean = false,
     val isLoading: Boolean = false,
-    val error: String? = null,
     val saveSuccess: Boolean = false,
     val currentMaskColor: Int = 0xFF000000.toInt(), // Default: Black
     val isColorPickingMode: Boolean = false,
@@ -59,6 +58,7 @@ data class EditorUiState(
 sealed interface EditorSideEffect {
     data object OpenSaveLauncher : EditorSideEffect
     data class ShowSnackbar(val message: String) : EditorSideEffect
+    data object NavigateBack : EditorSideEffect
 }
 
 @HiltViewModel
@@ -91,39 +91,64 @@ class EditorViewModel @Inject constructor(
             }
         }
     }
-    
-    fun onSaveClicked() {
-        performRedaction()
+
+    // ==================== MVI Entry Point ====================
+
+    /**
+     * MVI 패턴의 단일 진입점.
+     * 모든 사용자 행동(Intent)은 이 함수를 통해 처리됩니다.
+     */
+    fun handleIntent(intent: EditorIntent) {
+        logger.info("Processing Intent: ${intent::class.simpleName}")
+        when (intent) {
+            is EditorIntent.LoadPdf -> loadPdf(intent.pdfId)
+            is EditorIntent.NextPage -> nextPage()
+            is EditorIntent.PrevPage -> prevPage()
+            is EditorIntent.GoToPage -> goToPage(intent.pageNumber)
+            is EditorIntent.ToggleMaskingMode -> toggleMaskingMode()
+            is EditorIntent.ToggleColorPickingMode -> toggleColorPickingMode()
+            is EditorIntent.SetMaskColor -> setMaskColor(intent.color)
+            is EditorIntent.AddRedaction -> addRedaction(intent.x, intent.y, intent.width, intent.height)
+            is EditorIntent.RemoveRedaction -> removeRedaction(intent.id)
+            is EditorIntent.PerformRedaction -> performRedaction()
+            is EditorIntent.SaveFinalDocument -> saveFinalDocument(intent.uri)
+            is EditorIntent.DetectPiiInCurrentPage -> detectPiiInCurrentPage()
+            is EditorIntent.DetectPiiInAllPages -> detectPiiInAllPages()
+            is EditorIntent.ConvertPiiToMask -> convertDetectedPiiToMask(intent.pii)
+            is EditorIntent.RemoveDetectedPii -> removeDetectedPii(intent.pii)
+            is EditorIntent.ConsumePiiDetectionResult -> consumePiiDetectionResult()
+        }
     }
 
-    fun loadPdf(pdfId: String) {
+    // ==================== Internal Logic (Private) ====================
+
+    private fun loadPdf(pdfId: String) {
         viewModelScope.launch {
             logger.info("User opened PDF document: $pdfId")
-            // Reset success and error states to prevent LaunchedEffect from triggering with stale values
             _uiState.update { 
                 it.copy(
                     isLoading = true,
-                    saveSuccess = false,
-                    error = null
+                    saveSuccess = false
                 )
             }
             val document = getPdfDocumentUseCase(pdfId)
             if (document != null) {
                 val redactions = getRedactionsUseCase(pdfId)
-                val outline = getPdfOutlineUseCase(document.file)
+                val tableOfContents = getPdfOutlineUseCase(document.file)
                 _uiState.update {
                     it.copy(
                         document = document,
                         pageCount = document.pageCount,
                         redactions = redactions,
-                        outline = outline,
+                        tableOfContents = tableOfContents,
                         isLoading = false
                     )
                 }
                 initializeRenderer(document.file)
                 loadPage(0)
             } else {
-                _uiState.update { it.copy(isLoading = false, error = application.getString(R.string.error_document_not_found)) }
+                _uiState.update { it.copy(isLoading = false) }
+                sendSnackbar(application.getString(R.string.error_document_not_found))
             }
         }
     }
@@ -135,7 +160,7 @@ class EditorViewModel @Inject constructor(
                 pdfRenderer = PdfRenderer(fileDescriptor!!)
             } catch (e: Exception) {
                 logger.error("Failed to initialize renderer", e)
-                _uiState.update { it.copy(error = "PDF 렌더링 실패: ${e.message}") }
+                sendSnackbar("PDF 렌더링 실패: ${e.message}")
             }
         }
     }
@@ -175,8 +200,6 @@ class EditorViewModel @Inject constructor(
         val page = renderer.openPage(pageIndex)
         
         try {
-            // Calculate bitmap size to fit within max dimension while maintaining aspect ratio
-            // This ensures the entire page is always renderable without cutting off
             val maxDimension = 2048
             val pageAspectRatio = page.width.toFloat() / page.height.toFloat()
             
@@ -184,11 +207,9 @@ class EditorViewModel @Inject constructor(
             val height: Int
             
             if (page.width > page.height) {
-                // Wider than tall: limit width
                 width = minOf(maxDimension, page.width * 2)
                 height = (width / pageAspectRatio).toInt()
             } else {
-                // Taller than wide: limit height
                 height = minOf(maxDimension, page.height * 2)
                 width = (height * pageAspectRatio).toInt()
             }
@@ -203,19 +224,31 @@ class EditorViewModel @Inject constructor(
         }
     }
 
-    fun toggleMaskingMode() {
-        _uiState.update { it.copy(isMaskingMode = !it.isMaskingMode) }
+    private fun toggleMaskingMode() {
+        val newMode = !_uiState.value.isMaskingMode
+        _uiState.update { it.copy(isMaskingMode = newMode) }
+        val message = if (newMode) {
+            application.getString(R.string.masking_mode_enabled)
+        } else {
+            application.getString(R.string.masking_mode_disabled)
+        }
+        sendSnackbar(message)
     }
 
-    fun toggleColorPickingMode() {
-        _uiState.update { it.copy(isColorPickingMode = !it.isColorPickingMode) }
+    private fun toggleColorPickingMode() {
+        val newMode = !_uiState.value.isColorPickingMode
+        _uiState.update { it.copy(isColorPickingMode = newMode) }
+        if (newMode) {
+            sendSnackbar(application.getString(R.string.color_picker_mode_enabled))
+        }
     }
 
-    fun setMaskColor(color: Int) {
-        _uiState.update { it.copy(currentMaskColor = color) }
+    private fun setMaskColor(color: Int) {
+        _uiState.update { it.copy(currentMaskColor = color, isColorPickingMode = false) }
+        sendSnackbar(application.getString(R.string.color_selected))
     }
 
-    fun addRedaction(x: Float, y: Float, width: Float, height: Float) {
+    private fun addRedaction(x: Float, y: Float, width: Float, height: Float) {
         val currentState = _uiState.value
         val newRedaction = RedactionMask(
             id = UUID.randomUUID().toString(),
@@ -231,7 +264,7 @@ class EditorViewModel @Inject constructor(
         saveRedactions()
     }
 
-    fun removeRedaction(id: String) {
+    private fun removeRedaction(id: String) {
         val updatedRedactions = _uiState.value.redactions.filter { it.id != id }
         _uiState.update { it.copy(redactions = updatedRedactions) }
         saveRedactions()
@@ -246,33 +279,28 @@ class EditorViewModel @Inject constructor(
         }
     }
 
-    fun nextPage() {
+    private fun nextPage() {
         val currentState = _uiState.value
         if (currentState.currentPage < currentState.pageCount - 1) {
             loadPage(currentState.currentPage + 1)
         }
     }
 
-    fun prevPage() {
+    private fun prevPage() {
         val currentState = _uiState.value
         if (currentState.currentPage > 0) {
             loadPage(currentState.currentPage - 1)
         }
     }
 
-    fun goToPage(pageNumber: Int) {
+    private fun goToPage(pageNumber: Int) {
         val currentState = _uiState.value
-        val pageIndex = pageNumber - 1 // Convert 1-based to 0-based index
+        val pageIndex = pageNumber - 1
         if (pageIndex in 0 until currentState.pageCount) {
             loadPage(pageIndex)
         }
     }
 
-
-    // 저장 로직 (IO 작업)
-
-
-    // 정리 작업 (파일/DB 삭제)
     private suspend fun cleanupProject(document: PdfDocument) {
         if (document.file.exists()) {
             document.file.delete()
@@ -280,7 +308,7 @@ class EditorViewModel @Inject constructor(
         deletePdfDocumentUseCase(document.id)
     }
 
-    fun detectPiiInCurrentPage() {
+    private fun detectPiiInCurrentPage() {
         val currentState = _uiState.value
         currentState.document?.let { doc ->
             viewModelScope.launch {
@@ -288,7 +316,6 @@ class EditorViewModel @Inject constructor(
                 _uiState.update { it.copy(isDetecting = true) }
                 detectPiiUseCase.detectInPage(doc.file, currentState.currentPage)
                     .onSuccess { detectedList ->
-                        // Add only PII from current page
                         val filteredExisting = currentState.detectedPii.filter { it.pageIndex != currentState.currentPage }
                         _uiState.update {
                             it.copy(
@@ -299,13 +326,14 @@ class EditorViewModel @Inject constructor(
                         }
                     }
                     .onFailure { e ->
-                        _uiState.update { it.copy(isDetecting = false, error = e.message) }
+                        _uiState.update { it.copy(isDetecting = false) }
+                        sendSnackbar(e.message ?: "PII 탐지 실패")
                     }
             }
         }
     }
 
-    fun detectPiiInAllPages() {
+    private fun detectPiiInAllPages() {
         val currentState = _uiState.value
         currentState.document?.let { doc ->
             viewModelScope.launch {
@@ -322,13 +350,18 @@ class EditorViewModel @Inject constructor(
                         }
                     }
                     .onFailure { e ->
-                        _uiState.update { it.copy(isDetecting = false, error = e.message) }
+                        _uiState.update { it.copy(isDetecting = false) }
+                        sendSnackbar(e.message ?: "PII 탐지 실패")
                     }
             }
         }
     }
 
-    fun convertDetectedPiiToMask(pii: DetectedPii) {
+    private fun consumePiiDetectionResult() {
+        _uiState.update { it.copy(piiDetectionCount = null) }
+    }
+
+    private fun convertDetectedPiiToMask(pii: DetectedPii) {
         val mask = RedactionMask(
             id = UUID.randomUUID().toString(),
             pageIndex = pii.pageIndex,
@@ -350,7 +383,7 @@ class EditorViewModel @Inject constructor(
         saveRedactions()
     }
 
-    fun removeDetectedPii(pii: DetectedPii) {
+    private fun removeDetectedPii(pii: DetectedPii) {
         val updatedDetectedPii = _uiState.value.detectedPii.filter { it != pii }
         _uiState.update { it.copy(detectedPii = updatedDetectedPii) }
     }
@@ -366,7 +399,7 @@ class EditorViewModel @Inject constructor(
         }
     }
 
-    fun performRedaction() {
+    private fun performRedaction() {
         val currentState = _uiState.value
         currentState.document?.let { doc ->
             viewModelScope.launch {
@@ -388,17 +421,19 @@ class EditorViewModel @Inject constructor(
                          _sideEffect.send(EditorSideEffect.OpenSaveLauncher)
                     }.onFailure { e ->
                         logger.error("Redaction failed", e)
-                        _uiState.update { it.copy(isLoading = false, error = "Redaction Failed: ${e.message}") }
+                        _uiState.update { it.copy(isLoading = false) }
+                        sendSnackbar("Redaction Failed: ${e.message}")
                     }
                 } catch (e: Exception) {
                     logger.error("Redaction process error", e)
-                    _uiState.update { it.copy(isLoading = false, error = "Redaction Error: ${e.message}") }
+                    _uiState.update { it.copy(isLoading = false) }
+                    sendSnackbar("Redaction Error: ${e.message}")
                 }
             }
         }
     }
 
-    fun saveFinalDocument(uri: Uri) {
+    private fun saveFinalDocument(uri: Uri) {
         val currentState = _uiState.value
         val tempFile = currentState.tempRedactedFile ?: return
         val document = currentState.document ?: return
@@ -419,10 +454,12 @@ class EditorViewModel @Inject constructor(
                             saveSuccess = true
                         ) 
                     }
+                    _sideEffect.send(EditorSideEffect.NavigateBack)
                 }
                 .onFailure { e ->
                     logger.error("Failed to save file", e)
-                    _uiState.update { it.copy(isLoading = false, error = "Failed to save file: ${e.message}") }
+                    _uiState.update { it.copy(isLoading = false) }
+                    sendSnackbar("Failed to save file: ${e.message}")
                 }
         }
     }
@@ -447,12 +484,12 @@ class EditorViewModel @Inject constructor(
         }
     }
 
-    fun consumeError() {
-        _uiState.update { it.copy(error = null) }
-    }
+    // ==================== Helper Functions ====================
 
-    fun consumePiiDetectionResult() {
-        _uiState.update { it.copy(piiDetectionCount = null) }
+    private fun sendSnackbar(message: String) {
+        viewModelScope.launch {
+            _sideEffect.send(EditorSideEffect.ShowSnackbar(message))
+        }
     }
 
     override fun onCleared() {
@@ -460,4 +497,3 @@ class EditorViewModel @Inject constructor(
         closeRenderer()
     }
 }
-

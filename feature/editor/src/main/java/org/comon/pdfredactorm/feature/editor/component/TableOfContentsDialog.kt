@@ -19,8 +19,8 @@ import org.comon.pdfredactorm.core.model.PdfOutlineItem
 import org.comon.pdfredactorm.feature.editor.R
 
 @Composable
-fun OutlineDialog(
-    outline: List<PdfOutlineItem>,
+fun TableOfContentsDialog(
+    tableOfContents: List<PdfOutlineItem>,
     onDismiss: () -> Unit,
     onItemClick: (Int) -> Unit
 ) {
@@ -28,8 +28,8 @@ fun OutlineDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.outline_title)) },
         text = {
-            if (outline.isEmpty()) {
-                Text(stringResource(R.string.no_outline_available))
+            if (tableOfContents.isEmpty()) {
+                Text(stringResource(R.string.no_table_of_contents_available))
             } else {
                 val scrollState = rememberScrollState()
                 Box(
@@ -43,7 +43,7 @@ fun OutlineDialog(
                             .padding(end = 12.dp)
                             .verticalScroll(scrollState)
                     ) {
-                        outline.forEach { item ->
+                        tableOfContents.forEach { item ->
                             OutlineItemView(
                                 item = item,
                                 level = 0,

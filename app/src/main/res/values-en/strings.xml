@@ -30,7 +30,7 @@
 
     <!-- Outline Dialog -->
     <string name="outline_title">Table of Contents</string>
-    <string name="no_outline_available">No table of contents available</string>
+    <string name="no_table_of_contents_available">No table of contents available</string>
     <string name="outline_page_format">(p.%d)</string>
 
     <!-- PII Detection Dialog -->
