@@ -34,6 +34,8 @@
     <string name="cancel_button">Cancel</string>
     <string name="notice_title">Notice</string>
     <string name="pii_detection_result_message">PII detection completed.\nDetected: %d</string>
+    <string name="privacy_detection_title">PII Detection</string>
+    <string name="privacy_detection_message">Please select the detection range.</string>
 
     <!-- Mask Deletion Dialog -->
     <string name="delete_mask_title">Delete Mask</string>
@@ -56,4 +58,10 @@
     <!-- Error Messages -->
     <string name="error_document_not_found">Document not found</string>
     <string name="error_failed_to_open_output_stream">Failed to open output stream</string>
+    <string name="error_pdf_rendering_failed">PDF rendering failed: %s</string>
+    <string name="error_pii_detection_failed">PII detection failed</string>
+    <string name="error_redaction_failed">Redaction failed: %s</string>
+    <string name="error_redaction_process">Redaction error: %s</string>
+    <string name="error_save_file_failed">Failed to save file: %s</string>
+    <string name="error_file_size_exceeded">PDF file size must not exceed 50MB.</string>
 </resources>

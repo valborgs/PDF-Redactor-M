@@ -2,6 +2,7 @@ package org.comon.pdfredactorm.core.ui.dialog
 
 import android.content.Intent
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -87,7 +88,9 @@ fun ExitConfirmationDialog(
 
                     Button(
                         onClick = onConfirm,
-                        enabled = isAdLoaded
+                        enabled = isAdLoaded,
+                        shape = RoundedCornerShape(4.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                     ) {
                         Text(stringResource(R.string.exit_dialog_yes))
                     }

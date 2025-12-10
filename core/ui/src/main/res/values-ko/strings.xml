@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Ad -->
+    <string name="ad_attribution">광고</string>
+    
+    <!-- Help Dialog -->
+    <string name="user_manual_title">사용 설명서</string>
+    <string name="close_content_description">닫기</string>
+    <string name="previous_button">이전</string>
+    <string name="next_button">다음</string>
+    
+    <!-- Help Pages -->
+    <string name="help_page_1_title">PDF안심이를 사용해주셔서 감사합니다</string>
+    <string name="help_page_1_content">PDF안심이는 PDF 문서의 민감한 정보를 안전하게 가릴 수 있는 앱입니다.\n\n주요 기능:\n• PDF 파일 불러오기\n• 텍스트 및 이미지 영역 마스킹\n• 수정된 PDF 저장\n\n이 가이드를 통해 앱 사용 방법을 배워보세요.</string>
+    
+    <string name="help_page_2_title">1. PDF 파일 열기</string>
+    <string name="help_page_2_content">PDF 파일을 열려면:\n\n1. 홈 화면 오른쪽 하단의 \'+\' 버튼을 탭합니다.\n2. 기기에서 PDF 파일을 선택합니다.\n3. 파일이 로드되면 편집 화면으로 이동합니다.\n\n최근에 작업한 프로젝트는 홈 화면에 목록으로 표시됩니다.</string>
+    
+    <string name="help_page_3_title">2. 영역 마스킹하기</string>
+    <string name="help_page_3_content">먼저 하단의 마스킹 토글 버튼을 클릭합니다.\n\n민감한 정보를 가리려면:\n\n1. PDF 페이지에서 가리고 싶은 영역을 터치합니다.\n2. 손가락을 드래그하여 마스킹 영역을 그립니다.\n3. 손가락을 떼면 해당 영역이 검은색으로 가려집니다.\n\n여러 영역을 마스킹할 수 있으며, 각 영역은 개별적으로 관리됩니다.\n\n마스킹이 완료되면 토글 버튼을 다시 클릭하여 마스킹 모드를 해제합니다.</string>
+    
+    <string name="help_page_4_title">3. 페이지 탐색</string>
+    <string name="help_page_4_content">여러 페이지가 있는 PDF를 탐색하려면:\n\n• 화면 하단의 페이지 번호를 확인합니다.\n• 좌우 화살표 버튼으로 이전/다음 페이지로 이동합니다.\n• 각 페이지마다 독립적으로 마스킹 작업을 수행할 수 있습니다.</string>
+    
+    <string name="help_page_5_title">4. PDF 저장하기</string>
+    <string name="help_page_5_content">마스킹 작업을 완료한 후:\n\n1. 상단의 저장 버튼을 탭합니다.\n2. 수정된 PDF가 기기에 저장됩니다.\n3. 저장 위치는 시스템 알림으로 확인할 수 있습니다.\n\n원본 파일은 변경되지 않으며, 새로운 파일로 저장됩니다.\n\n※ PDF 파일의 용량은 50MB를 초과할 수 없습니다.</string>
+    
+    <string name="help_page_6_title">도움이 필요하신가요?</string>
+    <string name="help_page_6_content">추가 지원이 필요하시면:\n\n• 앱 정보에서 버전 정보를 확인하세요.\n• 문제가 발생하면 앱을 재시작해보세요.\n• 프로젝트를 삭제하려면 홈 화면에서 휴지통 아이콘을 탭하세요.\n\n문의사항은 voll1212@gmail.com으로 연락주세요.\n\nPDF Redactor를 사용해주셔서 감사합니다!</string>
+    
+    <!-- Exit Confirmation Dialog -->
+    <string name="exit_dialog_title">앱을 종료하시겠습니까?</string>
+    <string name="exit_dialog_yes">종료</string>
+    <string name="exit_dialog_no">취소</string>
+    <string name="exit_dialog_review">리뷰남기기</string>
+</resources>

@@ -34,6 +34,8 @@
     <string name="cancel_button">취소</string>
     <string name="notice_title">알림</string>
     <string name="pii_detection_result_message">문서에 있는 개인정보 탐지를 수행했습니다. \n탐지수 : %d개</string>
+    <string name="privacy_detection_title">개인정보 탐지</string>
+    <string name="privacy_detection_message">탐지 범위를 선택해주세요.</string>
 
     <!-- Mask Deletion Dialog -->
     <string name="delete_mask_title">마스킹 삭제</string>
@@ -56,4 +58,10 @@
     <!-- Error Messages -->
     <string name="error_document_not_found">문서를 찾을 수 없습니다</string>
     <string name="error_failed_to_open_output_stream">출력 스트림을 열 수 없습니다</string>
+    <string name="error_pdf_rendering_failed">PDF 렌더링 실패: %s</string>
+    <string name="error_pii_detection_failed">PII 탐지 실패</string>
+    <string name="error_redaction_failed">마스킹 처리 실패: %s</string>
+    <string name="error_redaction_process">마스킹 처리 오류: %s</string>
+    <string name="error_save_file_failed">파일 저장 실패: %s</string>
+    <string name="error_file_size_exceeded">PDF 파일의 용량은 50MB를 넘지 않아야 합니다.</string>
 </resources>

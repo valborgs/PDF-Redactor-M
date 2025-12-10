@@ -21,4 +21,5 @@
     <string name="failure_title">Failure</string>
     <string name="confirm_button">Confirm</string>
     <string name="unknown_error">Unknown Error</string>
+    <string name="pro_activation_success">Pro features have been activated.</string>
 </resources>

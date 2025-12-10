@@ -59,6 +59,7 @@ sealed interface EditorSideEffect {
     data object OpenSaveLauncher : EditorSideEffect
     data class ShowSnackbar(val message: String) : EditorSideEffect
     data object NavigateBack : EditorSideEffect
+    data object ShowFileSizeExceededDialog : EditorSideEffect
 }
 
 @HiltViewModel
@@ -160,7 +161,7 @@ class EditorViewModel @Inject constructor(
                 pdfRenderer = PdfRenderer(fileDescriptor!!)
             } catch (e: Exception) {
                 logger.error("Failed to initialize renderer", e)
-                sendSnackbar("PDF 렌더링 실패: ${e.message}")
+                sendSnackbar(application.getString(R.string.error_pdf_rendering_failed, e.message ?: ""))
             }
         }
     }
@@ -327,7 +328,7 @@ class EditorViewModel @Inject constructor(
                     }
                     .onFailure { e ->
                         _uiState.update { it.copy(isDetecting = false) }
-                        sendSnackbar(e.message ?: "PII 탐지 실패")
+                        sendSnackbar(e.message ?: application.getString(R.string.error_pii_detection_failed))
                     }
             }
         }
@@ -351,7 +352,7 @@ class EditorViewModel @Inject constructor(
                     }
                     .onFailure { e ->
                         _uiState.update { it.copy(isDetecting = false) }
-                        sendSnackbar(e.message ?: "PII 탐지 실패")
+                        sendSnackbar(e.message ?: application.getString(R.string.error_pii_detection_failed))
                     }
             }
         }
@@ -404,6 +405,15 @@ class EditorViewModel @Inject constructor(
         currentState.document?.let { doc ->
             viewModelScope.launch {
                 logger.info("Initiating Redaction Process")
+                
+                // Pro 기능 활성화 시 파일 용량 체크 (50MB 제한)
+                val maxFileSizeBytes = 50 * 1024 * 1024L // 50MB
+                if (currentState.isProEnabled && doc.file.length() > maxFileSizeBytes) {
+                    logger.info("File size exceeded: ${doc.file.length()} bytes (max: $maxFileSizeBytes bytes)")
+                    _sideEffect.send(EditorSideEffect.ShowFileSizeExceededDialog)
+                    return@launch
+                }
+                
                 _uiState.update { it.copy(isLoading = true) }
                 
                 try {
@@ -422,12 +432,12 @@ class EditorViewModel @Inject constructor(
                     }.onFailure { e ->
                         logger.error("Redaction failed", e)
                         _uiState.update { it.copy(isLoading = false) }
-                        sendSnackbar("Redaction Failed: ${e.message}")
+                        sendSnackbar(application.getString(R.string.error_redaction_failed, e.message ?: ""))
                     }
                 } catch (e: Exception) {
                     logger.error("Redaction process error", e)
                     _uiState.update { it.copy(isLoading = false) }
-                    sendSnackbar("Redaction Error: ${e.message}")
+                    sendSnackbar(application.getString(R.string.error_redaction_process, e.message ?: ""))
                 }
             }
         }
@@ -459,7 +469,7 @@ class EditorViewModel @Inject constructor(
                 .onFailure { e ->
                     logger.error("Failed to save file", e)
                     _uiState.update { it.copy(isLoading = false) }
-                    sendSnackbar("Failed to save file: ${e.message}")
+                    sendSnackbar(application.getString(R.string.error_save_file_failed, e.message ?: ""))
                 }
         }
     }

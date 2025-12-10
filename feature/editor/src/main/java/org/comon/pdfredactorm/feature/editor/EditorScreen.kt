@@ -55,6 +55,9 @@ fun EditorScreen(
     var showDeleteMaskDialog by remember { mutableStateOf(false) }
     var maskToDeleteId by remember { mutableStateOf<String?>(null) }
 
+    // File Size Exceeded Dialog State
+    var showFileSizeExceededDialog by remember { mutableStateOf(false) }
+
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Load PDF on initial composition
@@ -90,6 +93,9 @@ fun EditorScreen(
                 }
                 is EditorSideEffect.NavigateBack -> {
                     onBackClick()
+                }
+                is EditorSideEffect.ShowFileSizeExceededDialog -> {
+                    showFileSizeExceededDialog = true
                 }
             }
         }
@@ -371,6 +377,20 @@ fun EditorScreen(
                 count = uiState.piiDetectionCount ?: 0,
                 onDismiss = { viewModel.handleIntent(EditorIntent.ConsumePiiDetectionResult) },
                 onConfirm = { viewModel.handleIntent(EditorIntent.ConsumePiiDetectionResult) }
+            )
+        }
+
+        // File Size Exceeded Dialog
+        if (showFileSizeExceededDialog) {
+            AlertDialog(
+                onDismissRequest = { showFileSizeExceededDialog = false },
+                title = { Text(stringResource(R.string.notice_title)) },
+                text = { Text(stringResource(R.string.error_file_size_exceeded)) },
+                confirmButton = {
+                    TextButton(onClick = { showFileSizeExceededDialog = false }) {
+                        Text(stringResource(R.string.confirm_button))
+                    }
+                }
             )
         }
     }

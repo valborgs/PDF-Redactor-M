@@ -1,5 +1,6 @@
 package org.comon.pdfredactorm.feature.home
 
+import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,6 +28,7 @@ import org.comon.pdfredactorm.core.domain.usecase.LoadPdfUseCase
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    private val application: Application,
     private val getRecentProjectsUseCase: GetRecentProjectsUseCase,
     private val deletePdfDocumentUseCase: DeletePdfDocumentUseCase,
     private val loadPdfUseCase: LoadPdfUseCase,
@@ -77,7 +79,7 @@ class HomeViewModel @Inject constructor(
                 val uuid = getAppUuidUseCase()
                 val result = validateCodeUseCase(email, code, uuid)
                 result.onSuccess {
-                    _validationEvent.emit(Result.success("Pro 기능이 활성화되었습니다."))
+                    _validationEvent.emit(Result.success(application.getString(R.string.pro_activation_success)))
                 }.onFailure { e ->
                     _validationEvent.emit(Result.failure(e))
                 }
