@@ -11,7 +11,6 @@ import java.io.File
 import java.io.FileOutputStream
 import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.comon.pdfredactorm.core.data.BuildConfig
 import javax.inject.Inject
 
 class RemoteRedactionRepositoryImpl @Inject constructor(
@@ -28,7 +27,7 @@ class RemoteRedactionRepositoryImpl @Inject constructor(
             val redactionsJson = json.encodeToString(redactionDtos)
             val redactionsPart = redactionsJson.toRequestBody("text/plain".toMediaTypeOrNull())
 
-            val response = api.redactPdf(BuildConfig.REDACT_API_KEY, filePart, redactionsPart)
+            val response = api.redactPdf(filePart, redactionsPart)
 
             if (response.isSuccessful && response.body() != null) {
                 val responseBody = response.body()!!

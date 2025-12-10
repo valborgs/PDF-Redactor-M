@@ -182,6 +182,7 @@
 - [x] Editor 화면 MVI 패턴 적용: `EditorIntent` sealed interface 도입, `handleIntent()` 단일 진입점으로 사용자 행동 처리, 스낵바 메시지 Channel SideEffect 통합, `collectAsStateWithLifecycle` 적용으로 Lifecycle 인식 상태 수집
 - [x] DI 모듈 리팩토링: `AppModule` 제거, BuildConfig 설정을 각 모듈로 분산 (`core:network` - API_BASE_URL, `core:data` - API 키/DEBUG), Qualifier 어노테이션 제거로 DI 단순화
 - [x] 클린 아키텍처 개선: `RedeemRepositoryImpl`에서 `SettingsRepository` 의존성 제거, 비즈니스 로직("검증 성공 시 Pro 활성화")을 `ValidateCodeUseCase`로 이동하여 레이어 책임 명확화
-- [x] 문서화: 네비게이션 아키텍처 문서(`docs/navigation.md`) 추가, 리팩토링 과정 문서화(`docs/fix_note/`)
+- [x] API Key Interceptor 리팩토링: API 키 관리를 `core:data`에서 `core:network`로 이동, `ApiKeyInterceptor`를 통한 헤더 자동 추가, API별 OkHttpClient 분리 및 Qualifier 적용으로 Repository의 인프라 관심사 제거
+
 ## 추후 작업(개선) 사항
 - [ ] (없음)

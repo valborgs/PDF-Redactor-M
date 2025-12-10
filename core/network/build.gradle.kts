@@ -30,6 +30,13 @@ android {
         // API Base URL을 BuildConfig로 제공
         val apiBaseUrl = localProperties.getProperty("API_BASE_URL", "")
         buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
+
+        // API 키를 BuildConfig로 제공
+        val redactApiKey = localProperties.getProperty("REDACT_API_KEY", "")
+        buildConfigField("String", "REDACT_API_KEY", "\"$redactApiKey\"")
+
+        val redeemApiKey = localProperties.getProperty("REDEEM_API_KEY", "")
+        buildConfigField("String", "REDEEM_API_KEY", "\"$redeemApiKey\"")
     }
 
     buildFeatures {

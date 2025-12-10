@@ -11,9 +11,19 @@ import okhttp3.logging.HttpLoggingInterceptor
 import org.comon.pdfredactorm.core.network.api.RedactionApi
 import org.comon.pdfredactorm.core.network.api.RedeemApi
 import org.comon.pdfredactorm.core.network.BuildConfig
+import org.comon.pdfredactorm.core.network.interceptor.ApiKeyInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import javax.inject.Qualifier
 import javax.inject.Singleton
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class RedactOkHttpClient
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class RedeemOkHttpClient
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -27,37 +37,61 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
-        val logging = HttpLoggingInterceptor().apply {
+    fun provideLoggingInterceptor(): HttpLoggingInterceptor {
+        return HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
+    }
+
+    @Provides
+    @Singleton
+    @RedactOkHttpClient
+    fun provideRedactOkHttpClient(
+        loggingInterceptor: HttpLoggingInterceptor
+    ): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor(logging)
+            .addInterceptor(ApiKeyInterceptor("X-Redact-Api-Key", BuildConfig.REDACT_API_KEY))
+            .addInterceptor(loggingInterceptor)
             .build()
     }
 
     @Provides
     @Singleton
-    fun provideRetrofit(
-        okHttpClient: OkHttpClient,
+    @RedeemOkHttpClient
+    fun provideRedeemOkHttpClient(
+        loggingInterceptor: HttpLoggingInterceptor
+    ): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(ApiKeyInterceptor("X-Redeem-Api-Key", BuildConfig.REDEEM_API_KEY))
+            .addInterceptor(loggingInterceptor)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRedactionApi(
+        @RedactOkHttpClient okHttpClient: OkHttpClient,
         json: Json
-    ): Retrofit {
+    ): RedactionApi {
         return Retrofit.Builder()
             .baseUrl(BuildConfig.API_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
+            .create(RedactionApi::class.java)
     }
 
     @Provides
     @Singleton
-    fun provideRedactionApi(retrofit: Retrofit): RedactionApi {
-        return retrofit.create(RedactionApi::class.java)
-    }
-
-    @Provides
-    @Singleton
-    fun provideRedeemApi(retrofit: Retrofit): RedeemApi {
-        return retrofit.create(RedeemApi::class.java)
+    fun provideRedeemApi(
+        @RedeemOkHttpClient okHttpClient: OkHttpClient,
+        json: Json
+    ): RedeemApi {
+        return Retrofit.Builder()
+            .baseUrl(BuildConfig.API_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+            .create(RedeemApi::class.java)
     }
 }
