@@ -1,5 +1,6 @@
 package org.comon.pdfredactorm.core.data.repository
 
+import org.comon.pdfredactorm.core.common.logger.Logger
 import org.comon.pdfredactorm.core.network.api.RedactionApi
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -15,10 +16,12 @@ import javax.inject.Inject
 
 class RemoteRedactionRepositoryImpl @Inject constructor(
     private val api: RedactionApi,
-    private val json: Json
+    private val json: Json,
+    private val logger: Logger
 ) : RemoteRedactionRepository {
 
     override suspend fun redactPdf(file: File, redactions: List<RedactionMask>): Result<File> {
+        logger.debug("Starting remote PDF redaction: ${file.name}, ${redactions.size} redactions")
         return try {
             val requestFile = file.asRequestBody("application/pdf".toMediaTypeOrNull())
             val filePart = MultipartBody.Part.createFormData("file", file.name, requestFile)
@@ -38,11 +41,15 @@ class RemoteRedactionRepositoryImpl @Inject constructor(
                         inputStream.copyTo(outputStream)
                     }
                 }
+                logger.info("Remote redaction successful: ${outputFile.name}")
                 Result.success(outputFile)
             } else {
-                Result.failure(Exception("Redaction failed: ${response.code()} ${response.message()}"))
+                val errorMsg = "Redaction failed: ${response.code()} ${response.message()}"
+                logger.error(errorMsg)
+                Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
+            logger.error("Remote redaction exception", e)
             Result.failure(e)
         }
     }

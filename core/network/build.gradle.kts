@@ -67,6 +67,7 @@ android {
 dependencies {
     // Core 모듈 의존성
     implementation(project(":core:model"))
+    implementation(project(":core:common"))
 
     // Retrofit & OkHttp
     implementation(libs.retrofit)

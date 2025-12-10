@@ -8,11 +8,13 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.firstOrNull
+import org.comon.pdfredactorm.core.common.logger.Logger
 import org.comon.pdfredactorm.core.domain.repository.SettingsRepository
 import javax.inject.Inject
 
 class SettingsRepositoryImpl @Inject constructor(
-    private val dataStore: DataStore<Preferences>
+    private val dataStore: DataStore<Preferences>,
+    private val logger: Logger
 ) : SettingsRepository {
 
     private object PreferencesKeys {
@@ -32,12 +34,14 @@ class SettingsRepositoryImpl @Inject constructor(
         }
 
     override suspend fun setProEnabled(enabled: Boolean) {
+        logger.info("Pro status changed: $enabled")
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.IS_PRO_ENABLED] = enabled
         }
     }
 
     override suspend fun setFirstLaunch(isFirst: Boolean) {
+        logger.debug("First launch status changed: $isFirst")
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.IS_FIRST_LAUNCH] = isFirst
         }
@@ -48,6 +52,7 @@ class SettingsRepositoryImpl @Inject constructor(
             preferences[PreferencesKeys.APP_UUID]
         }.firstOrNull() ?: run {
             val newUuid = java.util.UUID.randomUUID().toString()
+            logger.info("Generated new app UUID: $newUuid")
             dataStore.edit { preferences ->
                 preferences[PreferencesKeys.APP_UUID] = newUuid
             }

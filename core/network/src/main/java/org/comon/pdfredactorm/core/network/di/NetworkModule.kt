@@ -8,6 +8,7 @@ import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import org.comon.pdfredactorm.core.common.logger.Logger
 import org.comon.pdfredactorm.core.network.api.RedactionApi
 import org.comon.pdfredactorm.core.network.api.RedeemApi
 import org.comon.pdfredactorm.core.network.BuildConfig
@@ -47,10 +48,11 @@ object NetworkModule {
     @Singleton
     @RedactOkHttpClient
     fun provideRedactOkHttpClient(
-        loggingInterceptor: HttpLoggingInterceptor
+        loggingInterceptor: HttpLoggingInterceptor,
+        logger: Logger
     ): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor(ApiKeyInterceptor("X-Redact-Api-Key", BuildConfig.REDACT_API_KEY))
+            .addInterceptor(ApiKeyInterceptor("X-Redact-Api-Key", BuildConfig.REDACT_API_KEY, logger))
             .addInterceptor(loggingInterceptor)
             .build()
     }
@@ -59,10 +61,11 @@ object NetworkModule {
     @Singleton
     @RedeemOkHttpClient
     fun provideRedeemOkHttpClient(
-        loggingInterceptor: HttpLoggingInterceptor
+        loggingInterceptor: HttpLoggingInterceptor,
+        logger: Logger
     ): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor(ApiKeyInterceptor("X-Redeem-Api-Key", BuildConfig.REDEEM_API_KEY))
+            .addInterceptor(ApiKeyInterceptor("X-Redeem-Api-Key", BuildConfig.REDEEM_API_KEY, logger))
             .addInterceptor(loggingInterceptor)
             .build()
     }
