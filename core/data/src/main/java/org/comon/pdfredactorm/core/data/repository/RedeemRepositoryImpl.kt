@@ -1,6 +1,6 @@
 package org.comon.pdfredactorm.core.data.repository
 
-import org.comon.pdfredactorm.core.data.di.RedeemApiKey
+import org.comon.pdfredactorm.core.data.BuildConfig
 import org.comon.pdfredactorm.core.network.dto.ValidateCodeRequestDto
 import org.comon.pdfredactorm.core.network.api.RedeemApi
 import org.comon.pdfredactorm.core.domain.repository.RedeemRepository
@@ -9,14 +9,13 @@ import javax.inject.Inject
 
 class RedeemRepositoryImpl @Inject constructor(
     private val api: RedeemApi,
-    private val settingsRepository: SettingsRepository,
-    @param:RedeemApiKey private val redeemApiKey: String
+    private val settingsRepository: SettingsRepository
 ) : RedeemRepository {
 
     override suspend fun validateCode(email: String, code: String, uuid: String): Result<Boolean> {
         return try {
             val request = ValidateCodeRequestDto(email, code, uuid)
-            val response = api.validateCode(redeemApiKey, request)
+            val response = api.validateCode(BuildConfig.REDEEM_API_KEY, request)
 
             if (response.isSuccessful && response.body() != null) {
                 val validateResponse = response.body()!!

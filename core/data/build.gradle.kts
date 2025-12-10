@@ -1,6 +1,7 @@
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.library)
@@ -8,6 +9,13 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hiltAndroid)
     alias(libs.plugins.kotlin.serialization)
+}
+
+// local.properties 파일에서 API 키 읽기
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.reader())
 }
 
 android {
@@ -18,6 +26,17 @@ android {
         minSdk = 26
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+        // API 키를 BuildConfig로 제공
+        val redeemApiKey = localProperties.getProperty("REDEEM_API_KEY", "")
+        buildConfigField("String", "REDEEM_API_KEY", "\"$redeemApiKey\"")
+
+        val redactApiKey = localProperties.getProperty("REDACT_API_KEY", "")
+        buildConfigField("String", "REDACT_API_KEY", "\"$redactApiKey\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {

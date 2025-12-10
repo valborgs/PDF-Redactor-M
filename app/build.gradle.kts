@@ -36,17 +36,8 @@ android {
             useSupportLibrary = true
         }
 
-        val apiBaseUrl = localProperties.getProperty("API_BASE_URL", "")
-        buildConfigField("String", "API_BASE_URL", "\"$apiBaseUrl\"")
-
         val coffeeChatUrl = localProperties.getProperty("COFFEE_CHAT_URL", "")
         buildConfigField("String", "COFFEE_CHAT_URL", "\"$coffeeChatUrl\"")
-
-        val redeemApiKey = localProperties.getProperty("REDEEM_API_KEY", "")
-        buildConfigField("String", "REDEEM_API_KEY", "\"$redeemApiKey\"")
-
-        val redactApiKey = localProperties.getProperty("REDACT_API_KEY", "")
-        buildConfigField("String", "REDACT_API_KEY", "\"$redactApiKey\"")
     }
 
     buildTypes {

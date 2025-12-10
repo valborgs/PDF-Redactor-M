@@ -10,6 +10,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.comon.pdfredactorm.core.network.api.RedactionApi
 import org.comon.pdfredactorm.core.network.api.RedeemApi
+import org.comon.pdfredactorm.core.network.BuildConfig
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import javax.inject.Singleton
@@ -38,12 +39,11 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideRetrofit(
-        @BaseUrl baseUrl: String,
         okHttpClient: OkHttpClient,
         json: Json
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(baseUrl)
+            .baseUrl(BuildConfig.API_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()

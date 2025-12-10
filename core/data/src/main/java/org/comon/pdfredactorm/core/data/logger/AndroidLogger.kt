@@ -2,6 +2,7 @@ package org.comon.pdfredactorm.core.data.logger
 
 import android.util.Log
 import org.comon.pdfredactorm.core.common.logger.Logger
+import org.comon.pdfredactorm.core.data.BuildConfig
 import javax.inject.Inject
 
 /**
@@ -11,12 +12,8 @@ import javax.inject.Inject
  * 릴리스 빌드에서는 debug 로그를 출력하지 않습니다.
  * 
  * 모든 로그는 "PDFLogger" 태그를 사용합니다.
- * 
- * @param isDebugBuild 디버그 빌드 여부. true일 경우 debug 로그를 출력합니다.
  */
-class AndroidLogger @Inject constructor(
-    @param:IsDebugBuild private val isDebugBuild: Boolean
-) : Logger {
+class AndroidLogger @Inject constructor() : Logger {
     
     companion object {
         private const val TAG = "PDFLogger"
@@ -24,7 +21,7 @@ class AndroidLogger @Inject constructor(
     
     override fun debug(message: String) {
         // Debug 로그는 디버그 빌드에서만 출력
-        if (isDebugBuild) {
+        if (BuildConfig.DEBUG) {
             Log.d(TAG, message)
         }
     }

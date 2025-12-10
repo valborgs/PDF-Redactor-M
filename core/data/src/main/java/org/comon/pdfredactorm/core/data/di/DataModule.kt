@@ -1,12 +1,15 @@
 package org.comon.pdfredactorm.core.data.di
 
 import android.content.Context
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import org.comon.pdfredactorm.core.common.logger.Logger
+import org.comon.pdfredactorm.core.data.logger.AndroidLogger
 import org.comon.pdfredactorm.core.data.repository.LocalPdfRepositoryImpl
 import org.comon.pdfredactorm.core.data.repository.RedeemRepositoryImpl
 import org.comon.pdfredactorm.core.data.repository.RemoteRedactionRepositoryImpl
@@ -48,14 +51,14 @@ abstract class DataModule {
     @Binds
     @Singleton
     abstract fun bindLogger(
-        impl: org.comon.pdfredactorm.core.data.logger.AndroidLogger
-    ): org.comon.pdfredactorm.core.common.logger.Logger
+        impl: AndroidLogger
+    ): Logger
 
     companion object {
         @Provides
         @Singleton
         fun providePdfBoxInitializer(@ApplicationContext context: Context): PdfBoxInitializer {
-            com.tom_roush.pdfbox.android.PDFBoxResourceLoader.init(context)
+            PDFBoxResourceLoader.init(context)
             return PdfBoxInitializer
         }
     }
