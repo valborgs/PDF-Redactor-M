@@ -4,12 +4,10 @@ import org.comon.pdfredactorm.core.data.BuildConfig
 import org.comon.pdfredactorm.core.network.dto.ValidateCodeRequestDto
 import org.comon.pdfredactorm.core.network.api.RedeemApi
 import org.comon.pdfredactorm.core.domain.repository.RedeemRepository
-import org.comon.pdfredactorm.core.domain.repository.SettingsRepository
 import javax.inject.Inject
 
 class RedeemRepositoryImpl @Inject constructor(
-    private val api: RedeemApi,
-    private val settingsRepository: SettingsRepository
+    private val api: RedeemApi
 ) : RedeemRepository {
 
     override suspend fun validateCode(email: String, code: String, uuid: String): Result<Boolean> {
@@ -20,7 +18,6 @@ class RedeemRepositoryImpl @Inject constructor(
             if (response.isSuccessful && response.body() != null) {
                 val validateResponse = response.body()!!
                 if (validateResponse.isValid) {
-                    settingsRepository.setProEnabled(true)
                     Result.success(true)
                 } else {
                     Result.failure(Exception(validateResponse.message))

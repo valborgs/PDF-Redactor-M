@@ -180,5 +180,8 @@
 - [x] 버그 수정 및 리팩토링: PdfBox 초기화 로직 복원(`PdfRepositoryInitializer`) 및 `core:data` 모듈로 캡슐화하여 Clean Architecture 원칙 준수 (앱 크래시 해결)
 - [x] 릴리즈 빌드 최적화: R8 난독화(`minifyEnabled`) 및 리소스 축소(`shrinkResources`) 설정 활성화, Proguard 규칙 추가(PdfBox, Retrofit, Room, Network DTO 등 예외 처리)로 앱 보안성 및 용량 최적화
 - [x] Editor 화면 MVI 패턴 적용: `EditorIntent` sealed interface 도입, `handleIntent()` 단일 진입점으로 사용자 행동 처리, 스낵바 메시지 Channel SideEffect 통합, `collectAsStateWithLifecycle` 적용으로 Lifecycle 인식 상태 수집
+- [x] DI 모듈 리팩토링: `AppModule` 제거, BuildConfig 설정을 각 모듈로 분산 (`core:network` - API_BASE_URL, `core:data` - API 키/DEBUG), Qualifier 어노테이션 제거로 DI 단순화
+- [x] 클린 아키텍처 개선: `RedeemRepositoryImpl`에서 `SettingsRepository` 의존성 제거, 비즈니스 로직("검증 성공 시 Pro 활성화")을 `ValidateCodeUseCase`로 이동하여 레이어 책임 명확화
+- [x] 문서화: 네비게이션 아키텍처 문서(`docs/navigation.md`) 추가, 리팩토링 과정 문서화(`docs/fix_note/`)
 ## 추후 작업(개선) 사항
 - [ ] (없음)
