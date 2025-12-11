@@ -20,12 +20,15 @@ class MainViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(true)
     val isLoading = _isLoading.asStateFlow()
 
+    private val _isProEnabled = MutableStateFlow(false)
+    val isProEnabled = _isProEnabled.asStateFlow()
+
     init {
         viewModelScope.launch {
             try {
                 // Check Pro status on startup
-                val isProEnabled = getProStatusUseCase().first()
-                logger.debug("App initialized, Pro status: $isProEnabled")
+                _isProEnabled.value = getProStatusUseCase().first()
+                logger.debug("App initialized, Pro status: ${_isProEnabled.value}")
             } catch (e: Exception) {
                 logger.error("Failed to initialize app settings", e)
             } finally {

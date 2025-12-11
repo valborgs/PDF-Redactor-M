@@ -22,6 +22,7 @@ import androidx.core.net.toUri
 @Composable
 fun ExitConfirmationDialog(
     nativeAdUnitId: String,
+    isProEnabled: Boolean = false,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
@@ -51,14 +52,17 @@ fun ExitConfirmationDialog(
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
-                NativeAdView(
-                    adUnitId = nativeAdUnitId,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(140.dp)
-                        .padding(bottom = 16.dp),
-                    onAdLoaded = { isAdLoaded = true }
-                )
+                // Pro 활성화 시 네이티브 광고 비활성화
+                if (!isProEnabled) {
+                    NativeAdView(
+                        adUnitId = nativeAdUnitId,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(140.dp)
+                            .padding(bottom = 16.dp),
+                        onAdLoaded = { isAdLoaded = true }
+                    )
+                }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -88,7 +92,7 @@ fun ExitConfirmationDialog(
 
                     Button(
                         onClick = onConfirm,
-                        enabled = isAdLoaded,
+                        enabled = isProEnabled || isAdLoaded,
                         shape = RoundedCornerShape(4.dp),
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                     ) {

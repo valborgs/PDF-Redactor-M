@@ -20,6 +20,8 @@ import org.comon.pdfredactorm.core.designsystem.theme.PDFRedactorMTheme
 
 import androidx.activity.viewModels
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -39,6 +41,8 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
+            val isProEnabled by mainViewModel.isProEnabled.collectAsStateWithLifecycle()
+            
             PDFRedactorMTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -57,15 +61,17 @@ class MainActivity : ComponentActivity() {
                             AppNavHost()
                         }
 
-                        // 하단 배너 광고
+                        // 하단 배너 광고 (Pro 활성화 시 비활성화)
                         // 광고 로딩 전에는 공간을 차지하지 않고,
                         // 광고 로딩 후에만 광고 높이만큼 공간 차지
-                        AdBanner(
-                            adUnitId = BuildConfig.ADMOB_BANNER_ID,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.CenterHorizontally)
-                        )
+                        if (!isProEnabled) {
+                            AdBanner(
+                                adUnitId = BuildConfig.ADMOB_BANNER_ID,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.CenterHorizontally)
+                            )
+                        }
                     }
                 }
             }

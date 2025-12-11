@@ -109,7 +109,21 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(config.appName) },
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(config.appName)
+                        if (uiState.isProEnabled) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_pro),
+                                contentDescription = "Pro",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                },
                 actions = {
                     val uriHandler = LocalUriHandler.current
                     
@@ -194,6 +208,7 @@ fun HomeScreen(
         if (showExitDialog) {
             ExitConfirmationDialog(
                 nativeAdUnitId = config.nativeAdUnitId,
+                isProEnabled = uiState.isProEnabled,
                 onDismiss = { showExitDialog = false },
                 onConfirm = { activity?.finish() }
             )
