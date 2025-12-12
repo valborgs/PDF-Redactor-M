@@ -201,6 +201,7 @@
 - [x] Home Feature MVI 리팩토링: `HomeContract.kt` 신규 생성(`HomeUiState`, `HomeEvent`, `HomeSideEffect`), `HomeViewModel` 단일 `uiState` 및 `onEvent()` 패턴 적용, `HomeScreen` `collectAsStateWithLifecycle` 적용 및 다이얼로그 상태 관리 정책 정리(비즈니스 로직은 ViewModel, UI 토글은 Screen에서 관리)
 - [x] API 에러 응답 DTO 구조화: `ApiErrorResponseDto` 및 `ApiErrorParser` 유틸리티 클래스 추가(`core:network`), Repository에서 JSON 직접 파싱 제거 및 에러 메시지 파싱 로직 캡슐화
 - [x] Google Analytics 이벤트 추적 시스템 구현: `core:common`에 `AnalyticsTracker` 인터페이스, `core:data`에 `FirebaseAnalyticsTracker` 구현체 생성, Logger와 동일한 Clean Architecture 패턴 적용, 5개 이벤트 추적(`pro_activated`, `open_coffeechat`, `pii_detected_current_page`, `pii_detected_all_pages`, `mask_saved`)
+- [x] 종료 다이얼로그 네이티브 광고 사전 로딩: `HomeViewModel`에서 홈 화면 진입 시 광고를 미리 로드하여 종료 다이얼로그 표시 시 즉시 광고 노출 및 종료 버튼 활성화, `NativeAdView` Composable을 `preloadedAd` 파라미터 기반으로 리팩토링
 
 ## 추후 작업(개선) 사항
-- [ ] 종료 다이얼로그 광고 미리 로드
+- [ ] (없음)

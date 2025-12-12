@@ -100,19 +100,42 @@ analyticsTracker.setUserProperty("is_pro_user", "true")
 
 ## 4. 디버깅
 
-### Firebase DebugView 활성화
+### 대시보드 업데이트 지연 시간
 
-Android Studio 터미널에서 다음 명령어 실행:
+Firebase Analytics 대시보드는 실시간이 아닙니다:
+
+| 보고서 종류 | 지연 시간 |
+|-------------|-----------|
+| **일반 대시보드 (Events)** | 24~48시간 |
+| **DebugView** | 실시간 (몇 초) |
+| **Realtime** | 몇 분 |
+
+### Firebase DebugView 사용법
+
+DebugView를 사용하면 이벤트를 **실시간**으로 확인할 수 있습니다.
+
+#### 1. 디버그 모드 활성화
+
+Android Studio 터미널 또는 명령 프롬프트에서:
 
 ```bash
 adb shell setprop debug.firebase.analytics.app org.comon.pdfredactorm
 ```
 
-비활성화:
+#### 2. Firebase Console에서 확인
+
+1. [Firebase Console](https://console.firebase.google.com) 접속
+2. 프로젝트 선택
+3. **Analytics** → **DebugView** 클릭
+4. 앱 실행 후 이벤트 발생시키면 즉시 표시됨
+
+#### 3. 디버그 모드 비활성화 (테스트 완료 후)
 
 ```bash
 adb shell setprop debug.firebase.analytics.app .none.
 ```
+
+> ⚠️ **주의**: 디버그 모드에서 발생한 이벤트는 일반 대시보드 통계에 포함되지 않습니다.
 
 ### Logcat 필터
 

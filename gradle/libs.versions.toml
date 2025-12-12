@@ -27,6 +27,7 @@ appcompat = "1.7.1"
 material = "1.13.0"
 coroutines = "1.10.2"
 composeMaterialCore = "1.5.6"
+playServicesAdsApi = "24.8.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -79,7 +80,10 @@ pdfbox-android = { group = "com.tom-roush", name = "pdfbox-android", version.ref
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
 
 # AdMob
+# play-services-ads: 전체 AdMob SDK (광고 로딩/표시) - app, core:ui 모듈에서 사용
+# play-services-ads-api: 타입/인터페이스만 포함된 경량 라이브러리 - feature:home 모듈에서 NativeAd 타입 참조용
 play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
+play-services-ads-api = { group = "com.google.android.gms", name = "play-services-ads-api", version.ref = "playServicesAdsApi" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 

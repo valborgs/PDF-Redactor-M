@@ -12,58 +12,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdLoader
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.nativead.NativeAd
-import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.google.android.gms.ads.nativead.NativeAdView
 import org.comon.pdfredactorm.core.ui.R
 
+/**
+ * 미리 로드된 NativeAd를 표시하는 Composable.
+ * 광고가 없으면 로딩 스피너를 표시합니다.
+ */
 @Composable
 fun NativeAdView(
-    adUnitId: String,
-    modifier: Modifier = Modifier,
-    onAdLoaded: () -> Unit = {}
+    preloadedAd: NativeAd?,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    var nativeAd by remember { mutableStateOf<NativeAd?>(null) }
-
-    DisposableEffect(Unit) {
-        val adLoader = AdLoader.Builder(context, adUnitId)
-            .forNativeAd { ad: NativeAd ->
-                nativeAd = ad
-                onAdLoaded()
-            }
-            .withAdListener(object : AdListener() {
-                override fun onAdFailedToLoad(adError: LoadAdError) {
-                    // Handle the failure by logging, altering the UI, and so on.
-                    onAdLoaded()
-                }
-            })
-            .withNativeAdOptions(
-                NativeAdOptions.Builder()
-                    .build()
-            )
-            .build()
-
-        adLoader.loadAd(AdRequest.Builder().build())
-
-        onDispose {
-            nativeAd?.destroy()
-        }
-    }
 
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        if (nativeAd != null) {
+        if (preloadedAd != null) {
             AndroidView(
                 factory = { ctx ->
                     val adView = LayoutInflater.from(ctx).inflate(R.layout.ad_native, null) as NativeAdView
-                    populateNativeAdView(nativeAd!!, adView)
+                    populateNativeAdView(preloadedAd, adView)
                     adView
                 },
                 modifier = Modifier.matchParentSize()

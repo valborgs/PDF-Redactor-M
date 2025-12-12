@@ -5,10 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -17,18 +13,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import org.comon.pdfredactorm.core.ui.R
 import org.comon.pdfredactorm.core.ui.ads.NativeAdView
+import com.google.android.gms.ads.nativead.NativeAd
 import androidx.core.net.toUri
 
 @Composable
 fun ExitConfirmationDialog(
-    nativeAdUnitId: String,
+    preloadedNativeAd: NativeAd?,
     isProEnabled: Boolean = false,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
     val context = LocalContext.current
 
-    var isAdLoaded by remember { mutableStateOf(false) }
+    // 미리 로드된 광고가 있으면 즉시 버튼 활성화
+    val isAdLoaded = preloadedNativeAd != null
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -55,12 +53,11 @@ fun ExitConfirmationDialog(
                 // Pro 활성화 시 네이티브 광고 비활성화
                 if (!isProEnabled) {
                     NativeAdView(
-                        adUnitId = nativeAdUnitId,
+                        preloadedAd = preloadedNativeAd,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(140.dp)
-                            .padding(bottom = 16.dp),
-                        onAdLoaded = { isAdLoaded = true }
+                            .padding(bottom = 16.dp)
                     )
                 }
 
@@ -103,3 +100,4 @@ fun ExitConfirmationDialog(
         }
     }
 }
+

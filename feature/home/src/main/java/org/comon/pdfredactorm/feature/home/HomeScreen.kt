@@ -55,6 +55,14 @@ fun HomeScreen(
     val activity = LocalActivity.current
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val preloadedNativeAd by viewModel.preloadedNativeAd.collectAsStateWithLifecycle()
+
+    // 홈 화면 진입 시 네이티브 광고 사전 로드 (Pro가 아닌 경우에만)
+    LaunchedEffect(uiState.isProEnabled) {
+        if (!uiState.isProEnabled) {
+            viewModel.preloadNativeAd(config.nativeAdUnitId)
+        }
+    }
 
     // UI-only states (transient, not business logic)
     var showManualHelpDialog by remember { mutableStateOf(false) }
@@ -213,7 +221,7 @@ fun HomeScreen(
 
         if (showExitDialog) {
             ExitConfirmationDialog(
-                nativeAdUnitId = config.nativeAdUnitId,
+                preloadedNativeAd = preloadedNativeAd,
                 isProEnabled = uiState.isProEnabled,
                 onDismiss = { showExitDialog = false },
                 onConfirm = { activity?.finish() }
