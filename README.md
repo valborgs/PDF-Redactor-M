@@ -204,4 +204,4 @@
 - [x] 종료 다이얼로그 네이티브 광고 사전 로딩: `HomeViewModel`에서 홈 화면 진입 시 광고를 미리 로드하여 종료 다이얼로그 표시 시 즉시 광고 노출 및 종료 버튼 활성화, `NativeAdView` Composable을 `preloadedAd` 파라미터 기반으로 리팩토링
 
 ## 추후 작업(개선) 사항
-- [ ] (없음)
+- [ ] 스플래시 스크린 구버전 대응 + Non-Blocking Splash Screens 알아보기
