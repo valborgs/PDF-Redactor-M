@@ -31,6 +31,7 @@ import androidx.core.graphics.createBitmap
 import android.app.Application
 import android.graphics.Bitmap
 import android.net.Uri
+import org.comon.pdfredactorm.core.common.analytics.AnalyticsTracker
 import org.comon.pdfredactorm.core.common.logger.Logger
 import org.comon.pdfredactorm.core.domain.usecase.settings.GetProStatusUseCase
 
@@ -46,7 +47,8 @@ class EditorViewModel @Inject constructor(
     private val detectPiiUseCase: DetectPiiUseCase,
     private val getProStatusUseCase: GetProStatusUseCase,
     private val checkNetworkUseCase: CheckNetworkUseCase,
-    private val logger: Logger
+    private val logger: Logger,
+    private val analyticsTracker: AnalyticsTracker
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditorUiState())
@@ -299,6 +301,12 @@ class EditorViewModel @Inject constructor(
                                 piiDetectionCount = detectedList.size
                             )
                         }
+                        // Analytics: PII 탐지 완료 (현재 페이지)
+                        val types = detectedList.map { it.type }.distinct().joinToString(",")
+                        analyticsTracker.logEvent("pii_detected_current_page", mapOf(
+                            "count" to detectedList.size,
+                            "types" to types
+                        ))
                     }
                     .onFailure { e ->
                         _uiState.update { it.copy(isDetecting = false) }
@@ -323,6 +331,12 @@ class EditorViewModel @Inject constructor(
                                 piiDetectionCount = detectedList.size
                             )
                         }
+                        // Analytics: PII 탐지 완료 (전체 페이지)
+                        val types = detectedList.map { it.type }.distinct().joinToString(",")
+                        analyticsTracker.logEvent("pii_detected_all_pages", mapOf(
+                            "count" to detectedList.size,
+                            "types" to types
+                        ))
                     }
                     .onFailure { e ->
                         _uiState.update { it.copy(isDetecting = false) }
@@ -422,6 +436,12 @@ class EditorViewModel @Inject constructor(
             
             result.onSuccess { redactedFile ->
                 logger.info("Redaction successful")
+                // Analytics: 마스킹 저장 완료
+                val method = if (forceLocal || !currentState.isProEnabled) "local" else "remote"
+                analyticsTracker.logEvent("mask_saved", mapOf(
+                    "mask_count" to currentState.redactions.size,
+                    "method" to method
+                ))
                  _uiState.update { 
                      it.copy(
                          isLoading = false, 

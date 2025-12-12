@@ -90,6 +90,7 @@
 - [개발 계획서](docs/development_plan.md)
 - [PII 탐지 가이드](docs/pii_detection.md)
 - [로깅 시스템 가이드](docs/logging.md)
+- [Analytics 시스템 가이드](docs/analytics.md)
 
 ## 갤러리
 <table>
@@ -199,7 +200,7 @@
 - [x] Repository 함수 타입 리팩토링: `isFirstLaunch`를 `Flow` 프로퍼티에서 `suspend fun checkFirstLaunch()`로 변경 (일회성 조회에 적합한 타입으로 개선, 클린코드 명명 규칙 적용)
 - [x] Home Feature MVI 리팩토링: `HomeContract.kt` 신규 생성(`HomeUiState`, `HomeEvent`, `HomeSideEffect`), `HomeViewModel` 단일 `uiState` 및 `onEvent()` 패턴 적용, `HomeScreen` `collectAsStateWithLifecycle` 적용 및 다이얼로그 상태 관리 정책 정리(비즈니스 로직은 ViewModel, UI 토글은 Screen에서 관리)
 - [x] API 에러 응답 DTO 구조화: `ApiErrorResponseDto` 및 `ApiErrorParser` 유틸리티 클래스 추가(`core:network`), Repository에서 JSON 직접 파싱 제거 및 에러 메시지 파싱 로직 캡슐화
+- [x] Google Analytics 이벤트 추적 시스템 구현: `core:common`에 `AnalyticsTracker` 인터페이스, `core:data`에 `FirebaseAnalyticsTracker` 구현체 생성, Logger와 동일한 Clean Architecture 패턴 적용, 5개 이벤트 추적(`pro_activated`, `open_coffeechat`, `pii_detected_current_page`, `pii_detected_all_pages`, `mask_saved`)
 
 ## 추후 작업(개선) 사항
-- [ ] google analytics 적용
 - [ ] 종료 다이얼로그 광고 미리 로드

@@ -143,6 +143,7 @@ fun HomeScreen(
                     }
 
                     IconButton(onClick = {
+                        viewModel.onEvent(HomeEvent.CoffeeChatClicked)
                         uriHandler.openUri(config.coffeeChatUrl)
                     }) {
                         Icon(

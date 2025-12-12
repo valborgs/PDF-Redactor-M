@@ -21,6 +21,7 @@ sealed interface HomeEvent {
     data class LoadPdf(val file: File) : HomeEvent
     data class ValidateCode(val email: String, val code: String) : HomeEvent
     data class DeleteProject(val pdfId: String) : HomeEvent
+    data object CoffeeChatClicked : HomeEvent
 }
 
 // 부수 효과 (Side Effect) - 일회성 이벤트

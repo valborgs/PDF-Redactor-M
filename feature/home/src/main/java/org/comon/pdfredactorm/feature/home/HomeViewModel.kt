@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.comon.pdfredactorm.core.common.analytics.AnalyticsTracker
 import org.comon.pdfredactorm.core.common.logger.Logger
 import org.comon.pdfredactorm.core.domain.usecase.LoadPdfUseCase
 import org.comon.pdfredactorm.core.domain.usecase.ValidateCodeUseCase
@@ -37,7 +38,8 @@ class HomeViewModel @Inject constructor(
     private val getProStatusUseCase: GetProStatusUseCase,
     private val getAppUuidUseCase: GetAppUuidUseCase,
     private val checkNetworkUseCase: CheckNetworkUseCase,
-    private val logger: Logger
+    private val logger: Logger,
+    private val analyticsTracker: AnalyticsTracker
 ) : ViewModel() {
 
     // Internal mutable states
@@ -90,7 +92,12 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.LoadPdf -> loadPdf(event.file)
             is HomeEvent.ValidateCode -> validateCode(event.email, event.code)
             is HomeEvent.DeleteProject -> deleteProject(event.pdfId)
+            is HomeEvent.CoffeeChatClicked -> onCoffeeChatClicked()
         }
+    }
+
+    private fun onCoffeeChatClicked() {
+        analyticsTracker.logEvent("open_coffeechat")
     }
 
     private fun consumeFirstLaunch() {
@@ -125,6 +132,7 @@ class HomeViewModel @Inject constructor(
                 val uuid = getAppUuidUseCase()
                 val result = validateCodeUseCase(email, code, uuid)
                 result.onSuccess {
+                    analyticsTracker.logEvent("pro_activated")
                     _sideEffect.send(
                         HomeSideEffect.ShowValidationResult(
                             Result.success(application.getString(R.string.pro_activation_success))

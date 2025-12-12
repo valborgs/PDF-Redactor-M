@@ -73,5 +73,9 @@ dependencies {
     // Coroutines
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
+    // Firebase Analytics
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+
     testImplementation(libs.junit)
 }
