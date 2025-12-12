@@ -3,11 +3,13 @@ package org.comon.pdfredactorm.core.data.repository
 import org.comon.pdfredactorm.core.common.logger.Logger
 import org.comon.pdfredactorm.core.network.dto.ValidateCodeRequestDto
 import org.comon.pdfredactorm.core.network.api.RedeemApi
+import org.comon.pdfredactorm.core.network.util.ApiErrorParser
 import org.comon.pdfredactorm.core.domain.repository.RedeemRepository
 import javax.inject.Inject
 
 class RedeemRepositoryImpl @Inject constructor(
     private val api: RedeemApi,
+    private val errorParser: ApiErrorParser,
     private val logger: Logger
 ) : RedeemRepository {
 
@@ -27,9 +29,9 @@ class RedeemRepositoryImpl @Inject constructor(
                     Result.failure(Exception(validateResponse.message))
                 }
             } else {
-                val errorMsg = response.errorBody()?.string() ?: "Unknown API Error"
-                logger.error("Redeem API error ${response.code()}: $errorMsg")
-                Result.failure(Exception("API Error ${response.code()}: $errorMsg"))
+                val errorMessage = errorParser.getErrorMessage(response)
+                logger.error("Redeem API error ${response.code()}: $errorMessage")
+                Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
             logger.error("Redeem code validation exception", e)
@@ -37,3 +39,4 @@ class RedeemRepositoryImpl @Inject constructor(
         }
     }
 }
+

@@ -186,6 +186,7 @@
 - [x] 로깅 시스템 확장: `RedeemRepositoryImpl`, `RemoteRedactionRepositoryImpl`, `SettingsRepositoryImpl`, `MainViewModel`, `ApiKeyInterceptor`에 Logger 주입 추가
 - [x] Repository 함수 타입 리팩토링: `isFirstLaunch`를 `Flow` 프로퍼티에서 `suspend fun checkFirstLaunch()`로 변경 (일회성 조회에 적합한 타입으로 개선, 클린코드 명명 규칙 적용)
 - [x] Home Feature MVI 리팩토링: `HomeContract.kt` 신규 생성(`HomeUiState`, `HomeEvent`, `HomeSideEffect`), `HomeViewModel` 단일 `uiState` 및 `onEvent()` 패턴 적용, `HomeScreen` `collectAsStateWithLifecycle` 적용 및 다이얼로그 상태 관리 정책 정리(비즈니스 로직은 ViewModel, UI 토글은 Screen에서 관리)
+- [x] API 에러 응답 DTO 구조화: `ApiErrorResponseDto` 및 `ApiErrorParser` 유틸리티 클래스 추가(`core:network`), Repository에서 JSON 직접 파싱 제거 및 에러 메시지 파싱 로직 캡슐화
 
 ## 추후 작업(개선) 사항
 - [ ] google analytics 적용

@@ -2,6 +2,7 @@ package org.comon.pdfredactorm.core.data.repository
 
 import org.comon.pdfredactorm.core.common.logger.Logger
 import org.comon.pdfredactorm.core.network.api.RedactionApi
+import org.comon.pdfredactorm.core.network.util.ApiErrorParser
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -17,6 +18,7 @@ import javax.inject.Inject
 class RemoteRedactionRepositoryImpl @Inject constructor(
     private val api: RedactionApi,
     private val json: Json,
+    private val errorParser: ApiErrorParser,
     private val logger: Logger
 ) : RemoteRedactionRepository {
 
@@ -44,9 +46,9 @@ class RemoteRedactionRepositoryImpl @Inject constructor(
                 logger.info("Remote redaction successful: ${outputFile.name}")
                 Result.success(outputFile)
             } else {
-                val errorMsg = "Redaction failed: ${response.code()} ${response.message()}"
-                logger.error(errorMsg)
-                Result.failure(Exception(errorMsg))
+                val errorMessage = errorParser.getErrorMessage(response)
+                logger.error("Redaction API error ${response.code()}: $errorMessage")
+                Result.failure(Exception(errorMessage))
             }
         } catch (e: Exception) {
             logger.error("Remote redaction exception", e)
@@ -54,3 +56,4 @@ class RemoteRedactionRepositoryImpl @Inject constructor(
         }
     }
 }
+
