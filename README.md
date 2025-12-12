@@ -100,6 +100,18 @@
                 <img width="750px" src="https://github.com/user-attachments/assets/10e85815-806d-4c40-bdb7-ed9ec12c3ecc" />
             </td>
         </tr>
+    <tr><th colspan="3">마스킹 기능 아키텍처</th></tr>
+        <tr>
+            <td colspan="3">
+                <img width="750px" src="https://github.com/user-attachments/assets/69102339-195b-4f71-be5f-4e7fedc9ae8b" />
+            </td>
+        </tr>
+    <tr><th colspan="3">마스킹 기능 흐름도</th></tr>
+        <tr>
+            <td colspan="3">
+                <img width="750px" src="https://github.com/user-attachments/assets/7a33fed8-ff73-4cbc-92df-4c47846d36b7" />
+            </td>
+        </tr>
         <tr>
             <th>마스킹</th>
             <th>마스킹 취소</th>
