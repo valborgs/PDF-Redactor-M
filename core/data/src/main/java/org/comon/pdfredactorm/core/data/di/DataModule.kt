@@ -18,6 +18,8 @@ import org.comon.pdfredactorm.core.domain.repository.LocalPdfRepository
 import org.comon.pdfredactorm.core.domain.repository.RedeemRepository
 import org.comon.pdfredactorm.core.domain.repository.RemoteRedactionRepository
 import org.comon.pdfredactorm.core.domain.repository.SettingsRepository
+import org.comon.pdfredactorm.core.common.network.NetworkChecker
+import org.comon.pdfredactorm.core.data.network.AndroidNetworkChecker
 import javax.inject.Singleton
 
 @Module
@@ -53,6 +55,12 @@ abstract class DataModule {
     abstract fun bindLogger(
         impl: AndroidLogger
     ): Logger
+
+    @Binds
+    @Singleton
+    abstract fun bindNetworkChecker(
+        impl: AndroidNetworkChecker
+    ): NetworkChecker
 
     companion object {
         @Provides

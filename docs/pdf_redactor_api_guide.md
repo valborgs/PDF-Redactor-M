@@ -31,7 +31,7 @@
     "y": 200.0,           // (Float) 영역의 왼쪽 상단 y 좌표
     "width": 50.0,        // (Float) 영역의 너비
     "height": 20.0,       // (Float) 영역의 높이
-    "color": -16777216    // (Integer, Optional) 마스킹 색상 (현재는 검은색으로 고정됨)
+    "color": -16777216    // (Integer, Optional) 마스킹 색상
   }
 ]
 ```
@@ -70,38 +70,4 @@
 {
   "error": "Error message details..."
 }
-```
-
-## 예시 (Python Requests)
-
-```python
-import requests
-import json
-
-url = "http://43.201.227.251/api/pdf/redact/"
-file_path = "example.pdf"
-
-# 마스킹할 영역 정보
-redactions = [
-    {
-        "pageIndex": 0,
-        "x": 50,
-        "y": 50,
-        "width": 100,
-        "height": 50
-    }
-]
-
-with open(file_path, 'rb') as f:
-    files = {'file': f}
-    data = {'redactions': json.dumps(redactions)}
-    
-    response = requests.post(url, files=files, data=data)
-
-if response.status_code == 200:
-    with open("redacted_output.pdf", 'wb') as f:
-        f.write(response.content)
-    print("마스킹 완료: redacted_output.pdf 저장됨")
-else:
-    print(f"오류 발생: {response.text}")
 ```

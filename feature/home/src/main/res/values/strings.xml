@@ -22,4 +22,7 @@
     <string name="confirm_button">Confirm</string>
     <string name="unknown_error">Unknown Error</string>
     <string name="pro_activation_success">Pro features have been activated.</string>
+    
+    <!-- Network Error -->
+    <string name="error_network_unavailable">Please check your internet connection.</string>
 </resources>

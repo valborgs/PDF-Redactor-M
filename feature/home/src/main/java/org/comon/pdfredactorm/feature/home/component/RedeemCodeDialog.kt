@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -23,6 +24,7 @@ import org.comon.pdfredactorm.feature.home.R
 @Composable
 fun RedeemCodeDialog(
     isLoading: Boolean,
+    networkError: String? = null,
     onDismiss: () -> Unit,
     onSubmit: (String, String) -> Unit
 ) {
@@ -86,6 +88,14 @@ fun RedeemCodeDialog(
                     isError = codeError != null,
                     supportingText = if (codeError != null) { { Text(codeError!!) } } else null
                 )
+                // 네트워크 에러 메시지 (별도 표시)
+                if (networkError != null) {
+                    Text(
+                        text = networkError,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
                 if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
                 }
@@ -106,3 +116,4 @@ fun RedeemCodeDialog(
         }
     )
 }
+

@@ -57,6 +57,9 @@ fun EditorScreen(
 
     // File Size Exceeded Dialog State
     var showFileSizeExceededDialog by remember { mutableStateOf(false) }
+    
+    // Network Fallback Dialog State
+    var showNetworkFallbackDialog by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -80,7 +83,8 @@ fun EditorScreen(
             when (effect) {
                 is EditorSideEffect.OpenSaveLauncher -> {
                     val originalName = viewModel.uiState.value.document?.fileName ?: "document.pdf"
-                    val fileName = if (viewModel.uiState.value.isProEnabled) {
+                    // Pro 모드이지만 네트워크 fallback으로 로컬 마스킹을 사용한 경우 pro_ 접두사 생략
+                    val fileName = if (viewModel.uiState.value.isProEnabled && !effect.isLocalFallback) {
                         "pro_redacted_$originalName"
                     } else {
                         "redacted_$originalName"
@@ -96,6 +100,9 @@ fun EditorScreen(
                 }
                 is EditorSideEffect.ShowFileSizeExceededDialog -> {
                     showFileSizeExceededDialog = true
+                }
+                is EditorSideEffect.ShowNetworkFallbackDialog -> {
+                    showNetworkFallbackDialog = true
                 }
             }
         }
@@ -389,6 +396,46 @@ fun EditorScreen(
                 confirmButton = {
                     TextButton(onClick = { showFileSizeExceededDialog = false }) {
                         Text(stringResource(R.string.confirm_button))
+                    }
+                }
+            )
+        }
+        
+        // Network Fallback Dialog (3 buttons: Cancel, Proceed, Settings)
+        if (showNetworkFallbackDialog) {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            AlertDialog(
+                onDismissRequest = { showNetworkFallbackDialog = false },
+                title = { Text(stringResource(R.string.notice_title)) },
+                text = { Text(stringResource(R.string.network_fallback_message)) },
+                confirmButton = {
+                    // 설정 버튼 (강조)
+                    Button(
+                        onClick = {
+                            showNetworkFallbackDialog = false
+                            val intent = android.content.Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS)
+                            context.startActivity(intent)
+                        }
+                    ) {
+                        Text(stringResource(R.string.button_settings))
+                    }
+                },
+                dismissButton = {
+                    Row {
+                        // 취소 버튼
+                        TextButton(onClick = { showNetworkFallbackDialog = false }) {
+                            Text(stringResource(R.string.cancel_button))
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        // 진행 버튼
+                        TextButton(
+                            onClick = {
+                                showNetworkFallbackDialog = false
+                                viewModel.handleIntent(EditorIntent.ProceedWithLocalRedaction)
+                            }
+                        ) {
+                            Text(stringResource(R.string.button_proceed))
+                        }
                     }
                 }
             )

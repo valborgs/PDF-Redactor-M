@@ -23,6 +23,7 @@ import org.comon.pdfredactorm.core.domain.usecase.DetectPiiUseCase
 import org.comon.pdfredactorm.core.domain.usecase.GetRedactionsUseCase
 import org.comon.pdfredactorm.core.domain.usecase.SaveRedactedPdfUseCase
 import org.comon.pdfredactorm.core.domain.usecase.SaveRedactionsUseCase
+import org.comon.pdfredactorm.core.domain.usecase.CheckNetworkUseCase
 import java.io.File
 import java.util.UUID
 import javax.inject.Inject
@@ -44,6 +45,7 @@ class EditorViewModel @Inject constructor(
     private val saveRedactedPdfUseCase: SaveRedactedPdfUseCase,
     private val detectPiiUseCase: DetectPiiUseCase,
     private val getProStatusUseCase: GetProStatusUseCase,
+    private val checkNetworkUseCase: CheckNetworkUseCase,
     private val logger: Logger
 ) : ViewModel() {
 
@@ -89,6 +91,7 @@ class EditorViewModel @Inject constructor(
             is EditorIntent.ConvertPiiToMask -> convertDetectedPiiToMask(intent.pii)
             is EditorIntent.RemoveDetectedPii -> removeDetectedPii(intent.pii)
             is EditorIntent.ConsumePiiDetectionResult -> consumePiiDetectionResult()
+            is EditorIntent.ProceedWithLocalRedaction -> proceedWithLocalRedaction()
         }
     }
 
@@ -385,32 +388,56 @@ class EditorViewModel @Inject constructor(
                     return@launch
                 }
                 
-                _uiState.update { it.copy(isLoading = true) }
-                
-                try {
-                    val tempFile = File.createTempFile("redacted_", ".pdf", application.cacheDir)
-                    val result = saveRedactedPdfUseCase(doc.file, currentState.redactions, tempFile)
-                    
-                    result.onSuccess { redactedFile ->
-                        logger.info("Redaction successful")
-                         _uiState.update { 
-                             it.copy(
-                                 isLoading = false, 
-                                 tempRedactedFile = redactedFile
-                             ) 
-                         }
-                         _sideEffect.send(EditorSideEffect.OpenSaveLauncher)
-                    }.onFailure { e ->
-                        logger.error("Redaction failed", e)
-                        _uiState.update { it.copy(isLoading = false) }
-                        sendSnackbar(application.getString(R.string.error_redaction_failed, e.message ?: ""))
-                    }
-                } catch (e: Exception) {
-                    logger.error("Redaction process error", e)
-                    _uiState.update { it.copy(isLoading = false) }
-                    sendSnackbar(application.getString(R.string.error_redaction_process, e.message ?: ""))
+                // Pro 기능 활성화 시 네트워크 확인
+                if (currentState.isProEnabled && !checkNetworkUseCase()) {
+                    logger.info("Network unavailable, showing fallback dialog")
+                    _sideEffect.send(EditorSideEffect.ShowNetworkFallbackDialog)
+                    return@launch
                 }
+                
+                executeRedaction(doc, currentState)
             }
+        }
+    }
+    
+    /**
+     * 로컬 마스킹으로 강제 진행 (네트워크 fallback 다이얼로그에서 "진행" 선택 시)
+     */
+    private fun proceedWithLocalRedaction() {
+        val currentState = _uiState.value
+        currentState.document?.let { doc ->
+            viewModelScope.launch {
+                logger.info("Proceeding with local redaction (network fallback)")
+                executeRedaction(doc, currentState, forceLocal = true)
+            }
+        }
+    }
+    
+    private suspend fun executeRedaction(doc: PdfDocument, currentState: EditorUiState, forceLocal: Boolean = false) {
+        _uiState.update { it.copy(isLoading = true) }
+        
+        try {
+            val tempFile = File.createTempFile("redacted_", ".pdf", application.cacheDir)
+            val result = saveRedactedPdfUseCase(doc.file, currentState.redactions, tempFile, forceLocal)
+            
+            result.onSuccess { redactedFile ->
+                logger.info("Redaction successful")
+                 _uiState.update { 
+                     it.copy(
+                         isLoading = false, 
+                         tempRedactedFile = redactedFile
+                     ) 
+                 }
+                 _sideEffect.send(EditorSideEffect.OpenSaveLauncher(isLocalFallback = forceLocal))
+            }.onFailure { e ->
+                logger.error("Redaction failed", e)
+                _uiState.update { it.copy(isLoading = false) }
+                sendSnackbar(application.getString(R.string.error_redaction_failed, e.message ?: ""))
+            }
+        } catch (e: Exception) {
+            logger.error("Redaction process error", e)
+            _uiState.update { it.copy(isLoading = false) }
+            sendSnackbar(application.getString(R.string.error_redaction_process, e.message ?: ""))
         }
     }
 

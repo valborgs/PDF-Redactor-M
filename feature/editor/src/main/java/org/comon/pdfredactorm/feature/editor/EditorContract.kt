@@ -68,12 +68,15 @@ sealed interface EditorIntent {
     data class ConvertPiiToMask(val pii: DetectedPii) : EditorIntent
     data class RemoveDetectedPii(val pii: DetectedPii) : EditorIntent
     data object ConsumePiiDetectionResult : EditorIntent
+    data object ProceedWithLocalRedaction : EditorIntent
 }
 
 // 부수 효과 (Side Effect) - 일회성 이벤트
 sealed interface EditorSideEffect {
-    data object OpenSaveLauncher : EditorSideEffect
+    data class OpenSaveLauncher(val isLocalFallback: Boolean = false) : EditorSideEffect
     data class ShowSnackbar(val message: String) : EditorSideEffect
     data object NavigateBack : EditorSideEffect
     data object ShowFileSizeExceededDialog : EditorSideEffect
+    data object ShowNetworkFallbackDialog : EditorSideEffect
 }
+

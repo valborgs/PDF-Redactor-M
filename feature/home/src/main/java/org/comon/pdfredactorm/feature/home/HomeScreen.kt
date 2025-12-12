@@ -62,6 +62,7 @@ fun HomeScreen(
     var showResultDialog by remember { mutableStateOf<String?>(null) }
     var isSuccessResult by remember { mutableStateOf(false) }
     var showExitDialog by remember { mutableStateOf(false) }
+    var networkError by remember { mutableStateOf<String?>(null) }
 
     // Collect SideEffects from ViewModel
     LaunchedEffect(Unit) {
@@ -73,12 +74,16 @@ fun HomeScreen(
                 is HomeSideEffect.ShowValidationResult -> {
                     effect.result.onSuccess { message ->
                         showRedeemDialog = false
+                        networkError = null
                         isSuccessResult = true
                         showResultDialog = message
                     }.onFailure { exception ->
                         isSuccessResult = false
                         showResultDialog = exception.message ?: context.getString(R.string.unknown_error)
                     }
+                }
+                is HomeSideEffect.ShowNetworkError -> {
+                    networkError = context.getString(R.string.error_network_unavailable)
                 }
             }
         }
@@ -217,8 +222,13 @@ fun HomeScreen(
         if (showRedeemDialog) {
             RedeemCodeDialog(
                 isLoading = uiState.isLoading,
-                onDismiss = { showRedeemDialog = false },
+                networkError = networkError,
+                onDismiss = { 
+                    showRedeemDialog = false
+                    networkError = null
+                },
                 onSubmit = { email, code ->
+                    networkError = null
                     viewModel.onEvent(HomeEvent.ValidateCode(email, code))
                 }
             )

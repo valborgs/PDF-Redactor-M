@@ -8,7 +8,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -16,6 +15,7 @@ import kotlinx.coroutines.launch
 import org.comon.pdfredactorm.core.common.logger.Logger
 import org.comon.pdfredactorm.core.domain.usecase.LoadPdfUseCase
 import org.comon.pdfredactorm.core.domain.usecase.ValidateCodeUseCase
+import org.comon.pdfredactorm.core.domain.usecase.CheckNetworkUseCase
 import org.comon.pdfredactorm.core.domain.usecase.pdf.DeletePdfDocumentUseCase
 import org.comon.pdfredactorm.core.domain.usecase.pdf.GetRecentProjectsUseCase
 import org.comon.pdfredactorm.core.domain.usecase.settings.GetAppUuidUseCase
@@ -36,6 +36,7 @@ class HomeViewModel @Inject constructor(
     private val setFirstLaunchUseCase: SetFirstLaunchUseCase,
     private val getProStatusUseCase: GetProStatusUseCase,
     private val getAppUuidUseCase: GetAppUuidUseCase,
+    private val checkNetworkUseCase: CheckNetworkUseCase,
     private val logger: Logger
 ) : ViewModel() {
 
@@ -111,6 +112,15 @@ class HomeViewModel @Inject constructor(
     private fun validateCode(email: String, code: String) {
         viewModelScope.launch {
             _isLoading.value = true
+            
+            // 네트워크 연결 확인
+            if (!checkNetworkUseCase()) {
+                logger.info("Network unavailable for code validation")
+                _sideEffect.send(HomeSideEffect.ShowNetworkError)
+                _isLoading.value = false
+                return@launch
+            }
+            
             try {
                 val uuid = getAppUuidUseCase()
                 val result = validateCodeUseCase(email, code, uuid)

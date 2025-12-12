@@ -27,4 +27,5 @@ sealed interface HomeEvent {
 sealed interface HomeSideEffect {
     data class NavigateToEditor(val pdfId: String) : HomeSideEffect
     data class ShowValidationResult(val result: Result<String>) : HomeSideEffect
+    data object ShowNetworkError : HomeSideEffect
 }

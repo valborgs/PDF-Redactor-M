@@ -64,4 +64,9 @@
     <string name="error_redaction_process">Redaction error: %s</string>
     <string name="error_save_file_failed">Failed to save file: %s</string>
     <string name="error_file_size_exceeded">PDF file size must not exceed 50MB.</string>
+    
+    <!-- Network Fallback Dialog -->
+    <string name="network_fallback_message">Internet connection is unavailable. Do you want to use basic masking instead of Pro masking?</string>
+    <string name="button_proceed">Proceed</string>
+    <string name="button_settings">Settings</string>
 </resources>
