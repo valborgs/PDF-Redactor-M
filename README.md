@@ -206,6 +206,7 @@
 - [x] 종료 다이얼로그 네이티브 광고 사전 로딩: `HomeViewModel`에서 홈 화면 진입 시 광고를 미리 로드하여 종료 다이얼로그 표시 시 즉시 광고 노출 및 종료 버튼 활성화, `NativeAdView` Composable을 `preloadedAd` 파라미터 기반으로 리팩토링
 - [x] 보안 강화 - 암호화된 DataStore: `security-crypto` 라이브러리를 사용하여 `AES256-GCM` 암호화된 Preferences DataStore 구현, 기존 DataStore에서 자동 마이그레이션 지원
 - [x] JWT 토큰 기반 Pro 인증: 리딤코드 검증 시 서버에서 JWT 토큰 발급, `JwtAuthInterceptor`를 통해 마스킹 API 호출 시 자동으로 `Authorization: Bearer` 헤더 추가, 기기 바인딩 지원
+- [x] 색상 추출 모드 UX 개선: PDF에서 색상 추출 버튼 클릭 시 마스킹 모드 자동 해제 (드래그 기능 충돌 방지)
 
 ## 추후 작업(개선) 사항
 - [ ] 스플래시 스크린 구버전 대응 + Non-Blocking Splash Screens 알아보기

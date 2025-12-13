@@ -214,7 +214,13 @@ class EditorViewModel @Inject constructor(
 
     private fun toggleColorPickingMode() {
         val newMode = !_uiState.value.isColorPickingMode
-        _uiState.update { it.copy(isColorPickingMode = newMode) }
+        _uiState.update { 
+            it.copy(
+                isColorPickingMode = newMode,
+                // 색상 추출 모드를 켤 때 마스킹 모드를 끔 (드래그 기능 충돌 방지)
+                isMaskingMode = if (newMode) false else it.isMaskingMode
+            ) 
+        }
         if (newMode) {
             sendSnackbar(application.getString(R.string.color_picker_mode_enabled))
         }
