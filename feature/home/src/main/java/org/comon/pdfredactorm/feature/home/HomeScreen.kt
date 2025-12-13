@@ -33,6 +33,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import org.comon.pdfredactorm.core.model.ProInfo
 import org.comon.pdfredactorm.core.ui.dialog.HelpDialog
 import org.comon.pdfredactorm.core.ui.dialog.ExitConfirmationDialog
 
@@ -71,6 +72,7 @@ fun HomeScreen(
     var isSuccessResult by remember { mutableStateOf(false) }
     var showExitDialog by remember { mutableStateOf(false) }
     var networkError by remember { mutableStateOf<String?>(null) }
+    var proInfoToShow by remember { mutableStateOf<ProInfo?>(null) }
 
     // Collect SideEffects from ViewModel
     LaunchedEffect(Unit) {
@@ -92,6 +94,9 @@ fun HomeScreen(
                 }
                 is HomeSideEffect.ShowNetworkError -> {
                     networkError = context.getString(R.string.error_network_unavailable)
+                }
+                is HomeSideEffect.ShowProInfoDialog -> {
+                    proInfoToShow = effect.proInfo
                 }
             }
         }
@@ -129,11 +134,16 @@ fun HomeScreen(
                         Text(config.appName)
                         if (uiState.isProEnabled) {
                             Spacer(modifier = Modifier.width(8.dp))
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_pro),
-                                contentDescription = "Pro",
-                                modifier = Modifier.size(24.dp)
-                            )
+                            IconButton(
+                                onClick = { viewModel.onEvent(HomeEvent.ShowProInfo) },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.ic_pro),
+                                    contentDescription = "Pro Info",
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
                         }
                     }
                 },
@@ -253,6 +263,13 @@ fun HomeScreen(
                         Text(stringResource(R.string.confirm_button))
                     }
                 }
+            )
+        }
+
+        proInfoToShow?.let { proInfo ->
+            ProInfoDialog(
+                proInfo = proInfo,
+                onDismiss = { proInfoToShow = null }
             )
         }
     }

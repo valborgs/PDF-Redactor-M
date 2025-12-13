@@ -8,8 +8,11 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.comon.pdfredactorm.core.common.logger.Logger
 import org.comon.pdfredactorm.core.domain.repository.SettingsRepository
+import org.comon.pdfredactorm.core.model.ProInfo
 import javax.inject.Inject
 
 class SettingsRepositoryImpl @Inject constructor(
@@ -17,11 +20,14 @@ class SettingsRepositoryImpl @Inject constructor(
     private val logger: Logger
 ) : SettingsRepository {
 
+    private val json = Json { ignoreUnknownKeys = true }
+
     private object PreferencesKeys {
         val IS_PRO_ENABLED = booleanPreferencesKey("is_pro_enabled")
         val IS_FIRST_LAUNCH = booleanPreferencesKey("first_launch")
         val APP_UUID = stringPreferencesKey("app_uuid")
         val JWT_TOKEN = stringPreferencesKey("jwt_token")
+        val PRO_INFO = stringPreferencesKey("pro_info")
     }
 
     override val isProEnabled: Flow<Boolean> = dataStore.data
@@ -80,6 +86,26 @@ class SettingsRepositoryImpl @Inject constructor(
         dataStore.edit { preferences ->
             preferences.remove(PreferencesKeys.JWT_TOKEN)
             preferences[PreferencesKeys.IS_PRO_ENABLED] = false
+        }
+    }
+
+    override suspend fun getProInfo(): ProInfo? {
+        return dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.PRO_INFO]
+        }.firstOrNull()?.let { jsonString ->
+            try {
+                json.decodeFromString<ProInfo>(jsonString)
+            } catch (e: Exception) {
+                logger.warning("Failed to parse ProInfo: ${e.message}")
+                null
+            }
+        }
+    }
+
+    override suspend fun setProInfo(proInfo: ProInfo) {
+        logger.info("Saving ProInfo for email: ${proInfo.email}")
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.PRO_INFO] = json.encodeToString(proInfo)
         }
     }
 }

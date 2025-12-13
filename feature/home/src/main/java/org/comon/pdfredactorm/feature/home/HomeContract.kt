@@ -1,6 +1,7 @@
 package org.comon.pdfredactorm.feature.home
 
 import org.comon.pdfredactorm.core.model.PdfDocument
+import org.comon.pdfredactorm.core.model.ProInfo
 import java.io.File
 
 /**
@@ -22,6 +23,7 @@ sealed interface HomeEvent {
     data class ValidateCode(val email: String, val code: String) : HomeEvent
     data class DeleteProject(val pdfId: String) : HomeEvent
     data object CoffeeChatClicked : HomeEvent
+    data object ShowProInfo : HomeEvent
 }
 
 // 부수 효과 (Side Effect) - 일회성 이벤트
@@ -29,4 +31,5 @@ sealed interface HomeSideEffect {
     data class NavigateToEditor(val pdfId: String) : HomeSideEffect
     data class ShowValidationResult(val result: Result<String>) : HomeSideEffect
     data object ShowNetworkError : HomeSideEffect
+    data class ShowProInfoDialog(val proInfo: ProInfo) : HomeSideEffect
 }

@@ -25,4 +25,10 @@
     
     <!-- Network Error -->
     <string name="error_network_unavailable">인터넷 연결을 확인하세요</string>
+    
+    <!-- Pro Info Dialog -->
+    <string name="pro_info_dialog_title">Pro 상태</string>
+    <string name="pro_info_email">이메일: %s</string>
+    <string name="pro_info_uuid">UUID: %s</string>
+    <string name="pro_info_activation_date">활성화일: %s</string>
 </resources>

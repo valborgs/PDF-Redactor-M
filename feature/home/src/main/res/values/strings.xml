@@ -25,4 +25,10 @@
     
     <!-- Network Error -->
     <string name="error_network_unavailable">Please check your internet connection.</string>
+    
+    <!-- Pro Info Dialog -->
+    <string name="pro_info_dialog_title">Pro Status</string>
+    <string name="pro_info_email">Email: %s</string>
+    <string name="pro_info_uuid">UUID: %s</string>
+    <string name="pro_info_activation_date">Activated: %s</string>
 </resources>

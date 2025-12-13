@@ -2,6 +2,7 @@ package org.comon.pdfredactorm.core.domain.usecase
 
 import org.comon.pdfredactorm.core.domain.repository.RedeemRepository
 import org.comon.pdfredactorm.core.domain.repository.SettingsRepository
+import org.comon.pdfredactorm.core.model.ProInfo
 import javax.inject.Inject
 
 /**
@@ -23,6 +24,13 @@ class ValidateCodeUseCase @Inject constructor(
                 settingsRepository.saveJwtToken(jwtToken)
                 // Pro 기능 활성화
                 settingsRepository.setProEnabled(true)
+                // Pro 활성화 정보 저장
+                val proInfo = ProInfo(
+                    email = email,
+                    uuid = deviceId,
+                    activationDate = System.currentTimeMillis()
+                )
+                settingsRepository.setProInfo(proInfo)
                 true
             }
     }

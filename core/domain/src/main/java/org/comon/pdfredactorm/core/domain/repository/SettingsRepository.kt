@@ -1,6 +1,7 @@
 package org.comon.pdfredactorm.core.domain.repository
 
 import kotlinx.coroutines.flow.Flow
+import org.comon.pdfredactorm.core.model.ProInfo
 
 interface SettingsRepository {
     val isProEnabled: Flow<Boolean>
@@ -13,4 +14,8 @@ interface SettingsRepository {
     suspend fun saveJwtToken(token: String)
     suspend fun getJwtToken(): String?
     suspend fun clearJwtToken()
+    
+    // Pro 활성화 정보
+    suspend fun getProInfo(): ProInfo?
+    suspend fun setProInfo(proInfo: ProInfo)
 }

@@ -22,6 +22,7 @@ import org.comon.pdfredactorm.core.domain.usecase.pdf.DeletePdfDocumentUseCase
 import org.comon.pdfredactorm.core.domain.usecase.pdf.GetRecentProjectsUseCase
 import org.comon.pdfredactorm.core.domain.usecase.settings.GetAppUuidUseCase
 import org.comon.pdfredactorm.core.domain.usecase.settings.GetFirstLaunchUseCase
+import org.comon.pdfredactorm.core.domain.usecase.settings.GetProInfoUseCase
 import org.comon.pdfredactorm.core.domain.usecase.settings.GetProStatusUseCase
 import org.comon.pdfredactorm.core.domain.usecase.settings.SetFirstLaunchUseCase
 import com.google.android.gms.ads.AdListener
@@ -43,6 +44,7 @@ class HomeViewModel @Inject constructor(
     private val setFirstLaunchUseCase: SetFirstLaunchUseCase,
     private val getProStatusUseCase: GetProStatusUseCase,
     private val getAppUuidUseCase: GetAppUuidUseCase,
+    private val getProInfoUseCase: GetProInfoUseCase,
     private val checkNetworkUseCase: CheckNetworkUseCase,
     private val logger: Logger,
     private val analyticsTracker: AnalyticsTracker
@@ -99,11 +101,21 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.ValidateCode -> validateCode(event.email, event.code)
             is HomeEvent.DeleteProject -> deleteProject(event.pdfId)
             is HomeEvent.CoffeeChatClicked -> onCoffeeChatClicked()
+            is HomeEvent.ShowProInfo -> showProInfo()
         }
     }
 
     private fun onCoffeeChatClicked() {
         analyticsTracker.logEvent("open_coffeechat")
+    }
+
+    private fun showProInfo() {
+        viewModelScope.launch {
+            val proInfo = getProInfoUseCase()
+            if (proInfo != null) {
+                _sideEffect.send(HomeSideEffect.ShowProInfoDialog(proInfo))
+            }
+        }
     }
 
     private fun consumeFirstLaunch() {
