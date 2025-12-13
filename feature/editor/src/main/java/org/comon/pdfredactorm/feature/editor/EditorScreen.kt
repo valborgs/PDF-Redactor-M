@@ -30,6 +30,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,7 +94,9 @@ fun EditorScreen(
                 }
                 is EditorSideEffect.ShowSnackbar -> {
                     snackbarHostState.currentSnackbarData?.dismiss()
-                    snackbarHostState.showSnackbar(effect.message, duration = SnackbarDuration.Short)
+                    launch {
+                        snackbarHostState.showSnackbar(effect.message, duration = SnackbarDuration.Short)
+                    }
                 }
                 is EditorSideEffect.NavigateBack -> {
                     onBackClick()
