@@ -7,5 +7,7 @@ import kotlinx.serialization.Serializable
 data class ValidateCodeResponseDto(
     val message: String,
     @SerialName("is_valid")
-    val isValid: Boolean
+    val isValid: Boolean,
+    @SerialName("jwt_token")
+    val jwtToken: String? = null  // 검증 성공 시 서버에서 JWT 토큰 발급
 )

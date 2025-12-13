@@ -45,3 +45,13 @@
 -keep class * extends androidx.room.RoomDatabase
 -keep class * extends androidx.room.TypeConverter
 -keep @androidx.room.Entity class * { *; }
+
+# Remove Android Log calls in release builds (Security: prevent sensitive data exposure)
+-assumenosideeffects class android.util.Log {
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+    public static int w(...);
+    public static int e(...);
+    public static int wtf(...);
+}

@@ -21,6 +21,7 @@ class SettingsRepositoryImpl @Inject constructor(
         val IS_PRO_ENABLED = booleanPreferencesKey("is_pro_enabled")
         val IS_FIRST_LAUNCH = booleanPreferencesKey("first_launch")
         val APP_UUID = stringPreferencesKey("app_uuid")
+        val JWT_TOKEN = stringPreferencesKey("jwt_token")
     }
 
     override val isProEnabled: Flow<Boolean> = dataStore.data
@@ -58,6 +59,27 @@ class SettingsRepositoryImpl @Inject constructor(
                 preferences[PreferencesKeys.APP_UUID] = newUuid
             }
             newUuid
+        }
+    }
+
+    override suspend fun saveJwtToken(token: String) {
+        logger.info("Saving JWT token")
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.JWT_TOKEN] = token
+        }
+    }
+
+    override suspend fun getJwtToken(): String? {
+        return dataStore.data.map { preferences ->
+            preferences[PreferencesKeys.JWT_TOKEN]
+        }.firstOrNull()
+    }
+
+    override suspend fun clearJwtToken() {
+        logger.info("Clearing JWT token")
+        dataStore.edit { preferences ->
+            preferences.remove(PreferencesKeys.JWT_TOKEN)
+            preferences[PreferencesKeys.IS_PRO_ENABLED] = false
         }
     }
 }

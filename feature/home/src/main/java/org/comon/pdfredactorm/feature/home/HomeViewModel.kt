@@ -135,8 +135,7 @@ class HomeViewModel @Inject constructor(
             }
             
             try {
-                val uuid = getAppUuidUseCase()
-                val result = validateCodeUseCase(email, code, uuid)
+                val result = validateCodeUseCase(email, code)
                 result.onSuccess {
                     analyticsTracker.logEvent("pro_activated")
                     _sideEffect.send(

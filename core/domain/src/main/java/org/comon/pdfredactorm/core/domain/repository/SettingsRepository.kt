@@ -8,4 +8,9 @@ interface SettingsRepository {
     suspend fun setProEnabled(enabled: Boolean)
     suspend fun setFirstLaunch(isFirst: Boolean)
     suspend fun getAppUuid(): String
+    
+    // JWT 토큰 관리
+    suspend fun saveJwtToken(token: String)
+    suspend fun getJwtToken(): String?
+    suspend fun clearJwtToken()
 }

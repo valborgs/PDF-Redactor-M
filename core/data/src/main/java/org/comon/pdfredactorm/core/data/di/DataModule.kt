@@ -11,6 +11,7 @@ import dagger.hilt.components.SingletonComponent
 import org.comon.pdfredactorm.core.common.analytics.AnalyticsTracker
 import org.comon.pdfredactorm.core.common.logger.Logger
 import org.comon.pdfredactorm.core.data.analytics.FirebaseAnalyticsTracker
+import org.comon.pdfredactorm.core.data.auth.JwtTokenProviderImpl
 import org.comon.pdfredactorm.core.data.logger.AndroidLogger
 import org.comon.pdfredactorm.core.data.repository.LocalPdfRepositoryImpl
 import org.comon.pdfredactorm.core.data.repository.RedeemRepositoryImpl
@@ -22,6 +23,7 @@ import org.comon.pdfredactorm.core.domain.repository.RemoteRedactionRepository
 import org.comon.pdfredactorm.core.domain.repository.SettingsRepository
 import org.comon.pdfredactorm.core.common.network.NetworkChecker
 import org.comon.pdfredactorm.core.data.network.AndroidNetworkChecker
+import org.comon.pdfredactorm.core.network.auth.JwtTokenProvider
 import javax.inject.Singleton
 
 @Module
@@ -69,6 +71,12 @@ abstract class DataModule {
     abstract fun bindAnalyticsTracker(
         impl: FirebaseAnalyticsTracker
     ): AnalyticsTracker
+
+    @Binds
+    @Singleton
+    abstract fun bindJwtTokenProvider(
+        impl: JwtTokenProviderImpl
+    ): JwtTokenProvider
 
     companion object {
         @Provides

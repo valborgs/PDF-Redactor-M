@@ -91,6 +91,8 @@
 - [PII 탐지 가이드](docs/pii_detection.md)
 - [로깅 시스템 가이드](docs/logging.md)
 - [Analytics 시스템 가이드](docs/analytics.md)
+- [암호화된 DataStore 가이드](docs/encrypted_datastore_guide.md)
+- [JWT 인증 시스템 가이드](docs/jwt_authentication_guide.md)
 
 ## 갤러리
 <table>
@@ -202,6 +204,8 @@
 - [x] API 에러 응답 DTO 구조화: `ApiErrorResponseDto` 및 `ApiErrorParser` 유틸리티 클래스 추가(`core:network`), Repository에서 JSON 직접 파싱 제거 및 에러 메시지 파싱 로직 캡슐화
 - [x] Google Analytics 이벤트 추적 시스템 구현: `core:common`에 `AnalyticsTracker` 인터페이스, `core:data`에 `FirebaseAnalyticsTracker` 구현체 생성, Logger와 동일한 Clean Architecture 패턴 적용, 5개 이벤트 추적(`pro_activated`, `open_coffeechat`, `pii_detected_current_page`, `pii_detected_all_pages`, `mask_saved`)
 - [x] 종료 다이얼로그 네이티브 광고 사전 로딩: `HomeViewModel`에서 홈 화면 진입 시 광고를 미리 로드하여 종료 다이얼로그 표시 시 즉시 광고 노출 및 종료 버튼 활성화, `NativeAdView` Composable을 `preloadedAd` 파라미터 기반으로 리팩토링
+- [x] 보안 강화 - 암호화된 DataStore: `security-crypto` 라이브러리를 사용하여 `AES256-GCM` 암호화된 Preferences DataStore 구현, 기존 DataStore에서 자동 마이그레이션 지원
+- [x] JWT 토큰 기반 Pro 인증: 리딤코드 검증 시 서버에서 JWT 토큰 발급, `JwtAuthInterceptor`를 통해 마스킹 API 호출 시 자동으로 `Authorization: Bearer` 헤더 추가, 기기 바인딩 지원
 
 ## 추후 작업(개선) 사항
 - [ ] 스플래시 스크린 구버전 대응 + Non-Blocking Splash Screens 알아보기

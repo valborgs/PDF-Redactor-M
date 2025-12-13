@@ -18,16 +18,17 @@ navigationCompose = "2.9.6"
 navigation3 = "1.0.0"
 pdfbox = "2.0.27.0"
 coil = "2.7.0"
-playServicesAds = "24.8.0"
+playServicesAds = "24.9.0"
 kotlinxSerializationJson = "1.9.0"
-datastore = "1.1.1"
-coreSplashscreen = "1.0.1"
+datastore = "1.2.0"
+securityCrypto = "1.1.0-alpha06"
+coreSplashscreen = "1.2.0"
 jetbrainsKotlinJvm = "2.2.21"
 appcompat = "1.7.1"
 material = "1.13.0"
 coroutines = "1.10.2"
 composeMaterialCore = "1.5.6"
-playServicesAdsApi = "24.8.0"
+playServicesAdsApi = "24.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -53,6 +54,7 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
 navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
 
 # Hilt

@@ -32,6 +32,7 @@ class RemoteRedactionRepositoryImpl @Inject constructor(
             val redactionsJson = json.encodeToString(redactionDtos)
             val redactionsPart = redactionsJson.toRequestBody("text/plain".toMediaTypeOrNull())
 
+            // JWT 토큰은 JwtAuthInterceptor에서 자동으로 헤더에 추가됨
             val response = api.redactPdf(filePart, redactionsPart)
 
             if (response.isSuccessful && response.body() != null) {
@@ -56,4 +57,3 @@ class RemoteRedactionRepositoryImpl @Inject constructor(
         }
     }
 }
-

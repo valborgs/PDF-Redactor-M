@@ -12,7 +12,9 @@ import org.comon.pdfredactorm.core.common.logger.Logger
 import org.comon.pdfredactorm.core.network.api.RedactionApi
 import org.comon.pdfredactorm.core.network.api.RedeemApi
 import org.comon.pdfredactorm.core.network.BuildConfig
+import org.comon.pdfredactorm.core.network.auth.JwtTokenProvider
 import org.comon.pdfredactorm.core.network.interceptor.ApiKeyInterceptor
+import org.comon.pdfredactorm.core.network.interceptor.JwtAuthInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import javax.inject.Qualifier
@@ -40,7 +42,11 @@ object NetworkModule {
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor {
         return HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            level = if (BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BODY
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
         }
     }
 
@@ -49,10 +55,12 @@ object NetworkModule {
     @RedactOkHttpClient
     fun provideRedactOkHttpClient(
         loggingInterceptor: HttpLoggingInterceptor,
+        jwtTokenProvider: JwtTokenProvider,
         logger: Logger
     ): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(ApiKeyInterceptor("X-Redact-Api-Key", BuildConfig.REDACT_API_KEY, logger))
+            .addInterceptor(JwtAuthInterceptor({ jwtTokenProvider.getJwtToken() }, logger))
             .addInterceptor(loggingInterceptor)
             .build()
     }

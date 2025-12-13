@@ -13,20 +13,30 @@ class RedeemRepositoryImpl @Inject constructor(
     private val logger: Logger
 ) : RedeemRepository {
 
-    override suspend fun validateCode(email: String, code: String, uuid: String): Result<Boolean> {
-        logger.debug("Validating redeem code for email: $email")
+    override suspend fun validateCode(email: String, code: String, deviceId: String): Result<String> {
+        logger.debug("Validating redeem code for email: $email, deviceId: $deviceId")
         return try {
-            val request = ValidateCodeRequestDto(email, code, uuid)
+            val request = ValidateCodeRequestDto(email, code, deviceId)
             val response = api.validateCode(request)
 
             if (response.isSuccessful && response.body() != null) {
                 val validateResponse = response.body()!!
-                if (validateResponse.isValid) {
-                    logger.info("Redeem code validation successful for email: $email")
-                    Result.success(true)
-                } else {
-                    logger.warning("Redeem code validation failed: ${validateResponse.message}")
-                    Result.failure(Exception(validateResponse.message))
+                val jwtToken = validateResponse.jwtToken
+                
+                when {
+                    validateResponse.isValid && jwtToken != null -> {
+                        logger.info("Redeem code validation successful, JWT token received")
+                        Result.success(jwtToken)
+                    }
+                    validateResponse.isValid -> {
+                        // 서버가 아직 JWT를 발급하지 않는 경우 (하위 호환성)
+                        logger.warning("Redeem code valid but no JWT token received")
+                        Result.failure(Exception("서버에서 JWT 토큰을 발급하지 않았습니다."))
+                    }
+                    else -> {
+                        logger.warning("Redeem code validation failed: ${validateResponse.message}")
+                        Result.failure(Exception(validateResponse.message))
+                    }
                 }
             } else {
                 val errorMessage = errorParser.getErrorMessage(response)
@@ -39,4 +49,3 @@ class RedeemRepositoryImpl @Inject constructor(
         }
     }
 }
-
