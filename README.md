@@ -12,6 +12,8 @@
 - **전문가급 기능**: 색상 선택, 스포이드, 목차 탐색 등 고급 편집 도구 제공
 - **확장 가능한 아키텍처**: SOLID 원칙과 Clean Architecture로 유지보수성 극대화
 
+<img width="750" alt="핵심 가치 제안 (Value Proposition)" src="https://github.com/user-attachments/assets/15a53662-0e01-4a81-81b2-da2c44407ab6" />
+
 ### 모듈 구조
 
 프로젝트는 **11개 모듈**로 구성된 멀티 모듈 아키텍처를 채택하고 있습니다:
@@ -34,6 +36,8 @@
 - **`feature:home`**: 홈 화면 (PDF 목록, 리딤 코드 입력, 종료 다이얼로그)
 - **`feature:editor`**: PDF 편집기 (마스킹, 뷰어, 색상 선택, PII 탐지, 목차 탐색)
 
+<img width="750" alt="프로젝트는 관심사의 분리(Separation of Concerns) 원칙을 철저히 준수합니다." src="https://github.com/user-attachments/assets/48abb44a-5d8b-444d-9cf9-8c34be91f31e" />
+
 ### 주요 기능
 
 #### 📄 핵심 PDF 기능
@@ -52,12 +56,18 @@
 - **두 가지 처리 방식**:
   - 로컬 마스킹 (PdfBox-Android 사용)
   - 원격 마스킹 (Pro 기능, 서버 API 연동)
+ 
+<img width="750" alt="단방향 데이터 흐름을 통해 예측 가능하고 테스트하기 쉬운 UI 상태 관리를 구현합니다" src="https://github.com/user-attachments/assets/6293b0fe-dc3b-4000-8046-b7c4ce929038" />
+
+<img width="750" alt="PDF 마스킹 워크플로우" src="https://github.com/user-attachments/assets/003de08e-1bd8-4e2c-894d-8b391b05b517" />
 
 #### 👑 Pro 기능
 - 리딤 코드 기반 Pro 버전 활성화
 - 서버 기반 고성능 PDF 마스킹 처리
 - DataStore를 통한 영구 상태 관리
 - 전용 UI (왕관 아이콘, 활성화 다이얼로그)
+
+<img width="750" alt="수익화 모델: Freemium + 리딤 코드" src="https://github.com/user-attachments/assets/9ae45814-c023-4cea-a6f9-f0cce7591329" />
 
 #### 🎯 UX/UI 기능
 - **다국어 지원**: 한국어/영어 자동 전환 (시스템 언어 기반)
@@ -86,6 +96,8 @@
 - **Network**: Retrofit
 - **PDF Engine**: PdfBox-Android (Primary), Android PdfRenderer (Viewer)
 
+<img width="750" alt="전체 시스템 아키텍처" src="https://github.com/user-attachments/assets/fbc6c51d-d84f-498b-9505-64da9c1bb0a2" />
+
 ## 📂 문서
 - [개발 계획서](docs/development_plan.md)
 - [PII 탐지 가이드](docs/pii_detection.md)
@@ -101,18 +113,6 @@
         <tr>
             <td colspan="3">
                 <img width="750px" src="https://github.com/user-attachments/assets/10e85815-806d-4c40-bdb7-ed9ec12c3ecc" />
-            </td>
-        </tr>
-    <tr><th colspan="3">마스킹 기능 아키텍처</th></tr>
-        <tr>
-            <td colspan="3">
-                <img width="750px" src="https://github.com/user-attachments/assets/69102339-195b-4f71-be5f-4e7fedc9ae8b" />
-            </td>
-        </tr>
-    <tr><th colspan="3">마스킹 기능 흐름도</th></tr>
-        <tr>
-            <td colspan="3">
-                <img width="750px" src="https://github.com/user-attachments/assets/7a33fed8-ff73-4cbc-92df-4c47846d36b7" />
             </td>
         </tr>
         <tr>
