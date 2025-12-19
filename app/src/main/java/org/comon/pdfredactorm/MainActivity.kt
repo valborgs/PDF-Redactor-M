@@ -17,27 +17,46 @@ import dagger.hilt.android.AndroidEntryPoint
 import org.comon.pdfredactorm.core.ui.ads.AdBanner
 import org.comon.pdfredactorm.presentation.navigation.AppNavHost
 import org.comon.pdfredactorm.core.designsystem.theme.PDFRedactorMTheme
-
 import androidx.activity.viewModels
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.activity.result.contract.ActivityResultContracts
+import org.comon.pdfredactorm.ui.InAppUpdateManager
+import android.widget.Toast
+import androidx.compose.runtime.getValue
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     private val mainViewModel: MainViewModel by viewModels()
+    private lateinit var inAppUpdateManager: InAppUpdateManager
+    private var isUpdateCheckComplete = false
+
+    private val updateLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode != RESULT_OK) {
+            // 업데이트가 취소되거나 실패한 경우 처리
+            Toast.makeText(this, "업데이트가 취소되었습니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
 
         splashScreen.setKeepOnScreenCondition {
-            mainViewModel.isLoading.value
+            mainViewModel.isLoading.value || !isUpdateCheckComplete
         }
 
         // AdMob SDK 초기화
         MobileAds.initialize(this)
+
+        // 앱 업데이트 체크
+        inAppUpdateManager = InAppUpdateManager(this)
+        inAppUpdateManager.checkForUpdates(this, updateLauncher) {
+            isUpdateCheckComplete = true
+        }
 
         enableEdgeToEdge()
         setContent {
@@ -62,8 +81,6 @@ class MainActivity : ComponentActivity() {
                         }
 
                         // 하단 배너 광고 (Pro 활성화 시 비활성화)
-                        // 광고 로딩 전에는 공간을 차지하지 않고,
-                        // 광고 로딩 후에만 광고 높이만큼 공간 차지
                         if (!isProEnabled) {
                             AdBanner(
                                 adUnitId = BuildConfig.ADMOB_BANNER_ID,
@@ -75,6 +92,13 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::inAppUpdateManager.isInitialized) {
+            inAppUpdateManager.onResumeCheck(this, updateLauncher)
         }
     }
 }

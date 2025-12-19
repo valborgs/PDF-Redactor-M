@@ -141,6 +141,10 @@ dependencies {
     // AdMob
     implementation(libs.play.services.ads)
 
+    // Play Update
+    implementation(libs.play.app.update)
+    implementation(libs.play.app.update.ktx)
+
     // firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
