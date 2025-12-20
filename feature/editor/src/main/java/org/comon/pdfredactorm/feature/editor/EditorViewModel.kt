@@ -16,6 +16,8 @@ import kotlinx.coroutines.withContext
 import org.comon.pdfredactorm.core.model.DetectedPii
 import org.comon.pdfredactorm.core.model.PdfDocument
 import org.comon.pdfredactorm.core.model.RedactionMask
+import org.comon.pdfredactorm.core.model.ApiException
+import org.comon.pdfredactorm.core.model.RedactionErrorCode
 import org.comon.pdfredactorm.core.domain.usecase.pdf.GetPdfDocumentUseCase
 import org.comon.pdfredactorm.core.domain.usecase.pdf.GetPdfOutlineUseCase
 import org.comon.pdfredactorm.core.domain.usecase.pdf.DeletePdfDocumentUseCase
@@ -458,7 +460,12 @@ class EditorViewModel @Inject constructor(
             }.onFailure { e ->
                 logger.error("Redaction failed", e)
                 _uiState.update { it.copy(isLoading = false) }
-                sendSnackbar(application.getString(R.string.error_redaction_failed, e.message ?: ""))
+                
+                if (e is ApiException && e.redactionErrorCode == RedactionErrorCode.DEVICE_MISMATCH) {
+                    _sideEffect.send(EditorSideEffect.ShowDeviceMismatchDialog(e.message))
+                } else {
+                    sendSnackbar(application.getString(R.string.error_redaction_failed, e.message ?: ""))
+                }
             }
         } catch (e: Exception) {
             logger.error("Redaction process error", e)

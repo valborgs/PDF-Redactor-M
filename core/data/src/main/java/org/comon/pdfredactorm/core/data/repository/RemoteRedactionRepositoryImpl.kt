@@ -15,6 +15,8 @@ import kotlinx.serialization.json.Json
 import okhttp3.RequestBody.Companion.toRequestBody
 import javax.inject.Inject
 
+import org.comon.pdfredactorm.core.model.ApiException
+
 class RemoteRedactionRepositoryImpl @Inject constructor(
     private val api: RedactionApi,
     private val json: Json,
@@ -47,9 +49,12 @@ class RemoteRedactionRepositoryImpl @Inject constructor(
                 logger.info("Remote redaction successful: ${outputFile.name}")
                 Result.success(outputFile)
             } else {
-                val errorMessage = errorParser.getErrorMessage(response)
-                logger.error("Redaction API error ${response.code()}: $errorMessage")
-                Result.failure(Exception(errorMessage))
+                val errorDto = errorParser.parseError(response)
+                val errorCode = errorDto.errorCode
+                val errorMessage = errorDto.message
+
+                logger.error("Redaction API error ${response.code()}, code: $errorCode: $errorMessage")
+                Result.failure(ApiException(errorCode ?: response.code(), errorMessage))
             }
         } catch (e: Exception) {
             logger.error("Remote redaction exception", e)

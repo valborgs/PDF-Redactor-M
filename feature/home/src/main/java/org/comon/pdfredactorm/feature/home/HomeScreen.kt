@@ -51,12 +51,18 @@ data class HomeScreenConfig(
 fun HomeScreen(
     config: HomeScreenConfig,
     viewModel: HomeViewModel = viewModel(),
+    showRedeemDialogInitial: Boolean = false,
+    onRedeemDialogConsumed: () -> Unit = {},
     onPdfClick: (String) -> Unit
 ) {
     val activity = LocalActivity.current
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val preloadedNativeAd by viewModel.preloadedNativeAd.collectAsStateWithLifecycle()
+
+    // UI-only states (transient, not business logic)
+    var showManualHelpDialog by remember { mutableStateOf(false) }
+    var showRedeemDialog by remember { mutableStateOf(showRedeemDialogInitial) }
 
     // 홈 화면 진입 시 네이티브 광고 사전 로드 (Pro가 아닌 경우에만)
     LaunchedEffect(uiState.isProEnabled) {
@@ -65,9 +71,7 @@ fun HomeScreen(
         }
     }
 
-    // UI-only states (transient, not business logic)
-    var showManualHelpDialog by remember { mutableStateOf(false) }
-    var showRedeemDialog by remember { mutableStateOf(false) }
+
     var showResultDialog by remember { mutableStateOf<String?>(null) }
     var isSuccessResult by remember { mutableStateOf(false) }
     var showExitDialog by remember { mutableStateOf(false) }
@@ -84,6 +88,7 @@ fun HomeScreen(
                 is HomeSideEffect.ShowValidationResult -> {
                     effect.result.onSuccess { message ->
                         showRedeemDialog = false
+                        onRedeemDialogConsumed()
                         networkError = null
                         isSuccessResult = true
                         showResultDialog = message
@@ -245,6 +250,7 @@ fun HomeScreen(
                 onDismiss = { 
                     showRedeemDialog = false
                     networkError = null
+                    onRedeemDialogConsumed()
                 },
                 onSubmit = { email, code ->
                     networkError = null

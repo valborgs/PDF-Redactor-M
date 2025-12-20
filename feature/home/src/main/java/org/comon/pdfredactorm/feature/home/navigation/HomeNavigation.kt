@@ -14,11 +14,13 @@ import org.comon.pdfredactorm.feature.home.HomeScreenConfig
  */
 @Composable
 fun homeEntry(
+    key: HomeKey,
     config: HomeScreenConfig,
     onPdfClick: (String) -> Unit
-): NavEntry<HomeKey> = NavEntry(HomeKey) {
+): NavEntry<HomeKey> = NavEntry(key) {
     HomeScreen(
         config = config,
+        showRedeemDialogInitial = key.showRedeemDialog,
         onPdfClick = onPdfClick
     )
 }

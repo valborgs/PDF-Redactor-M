@@ -44,7 +44,7 @@ graph TB
 ```kotlin
 // HomeRoute.kt
 @Serializable
-data object HomeKey : NavKey
+data class HomeKey(val showRedeemDialog: Boolean = false) : NavKey
 
 // EditorRoute.kt
 @Serializable

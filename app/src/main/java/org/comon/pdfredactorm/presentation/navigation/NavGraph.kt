@@ -30,15 +30,24 @@ fun AppNavHost() {
     )
 
     // Navigation3: Saveable back stack with initial destination
-    val backStack = rememberNavBackStack(HomeKey)
+    val backStack = rememberNavBackStack(HomeKey())
 
     NavDisplay(
         backStack = backStack,
         entryProvider = entryProvider {
             // Home 화면
-            entry<HomeKey> {
+            entry<HomeKey> { key ->
                 HomeScreen(
                     config = homeScreenConfig,
+                    showRedeemDialogInitial = key.showRedeemDialog,
+                    onRedeemDialogConsumed = {
+                        // 중요: 다이얼로그가 표시되었으므로 백스택의 키 상태를 업데이트하여 
+                        // 나중에 에디터에서 돌아올 때 다시 뜨지 않도록 함 (이벤트 소비)
+                        val index = backStack.indexOf(key)
+                        if (index != -1) {
+                            backStack[index] = key.copy(showRedeemDialog = false)
+                        }
+                    },
                     onPdfClick = { pdfId ->
                         backStack.add(EditorKey(pdfId))
                     }
@@ -51,7 +60,14 @@ fun AppNavHost() {
                     EditorScreen(
                         pdfId = key.pdfId,
                         onBackClick = {
+                            // 단순 remove 대신 HomeKey로 돌아가거나, 특정 상태를 전달해야 함
+                            // Navigation3에서 결과를 전달하는 가장 깔끔한 방법은 백스택을 조작하는 것
                             backStack.removeLastOrNull()
+                        },
+                        onBackToHomeWithRedeem = {
+                            // 기기 미매칭 에러 후 홈으로 돌아갈 때 리딤 다이얼로그를 띄우도록 백스택 리셋
+                            backStack.clear()
+                            backStack.add(HomeKey(showRedeemDialog = true))
                         }
                     )
                 }

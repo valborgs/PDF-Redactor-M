@@ -69,4 +69,6 @@
     <string name="network_fallback_message">인터넷 연결이 안되어있습니다. pro 마스킹 기능 대신 기본 마스킹 기능을 사용합니까?</string>
     <string name="button_proceed">진행</string>
     <string name="button_settings">설정</string>
+    <string name="device_mismatch_message">다른 기기에서 Pro 기능이 활성화되어 현재 기기의 권한이 비활성화되었습니다. 다시 사용하려면 리딤 코드를 입력해주세요.</string>
+    <string name="button_redeem_input">코드 입력</string>
 </resources>

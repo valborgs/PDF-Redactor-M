@@ -37,6 +37,7 @@ import kotlinx.coroutines.launch
 fun EditorScreen(
     pdfId: String,
     onBackClick: () -> Unit,
+    onBackToHomeWithRedeem: () -> Unit = {},
     viewModel: EditorViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -61,6 +62,9 @@ fun EditorScreen(
     
     // Network Fallback Dialog State
     var showNetworkFallbackDialog by remember { mutableStateOf(false) }
+
+    // Device Mismatch Dialog State
+    var showDeviceMismatchDialog by remember { mutableStateOf<String?>(null) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -106,6 +110,9 @@ fun EditorScreen(
                 }
                 is EditorSideEffect.ShowNetworkFallbackDialog -> {
                     showNetworkFallbackDialog = true
+                }
+                is EditorSideEffect.ShowDeviceMismatchDialog -> {
+                    showDeviceMismatchDialog = effect.message
                 }
             }
         }
@@ -439,6 +446,26 @@ fun EditorScreen(
                         ) {
                             Text(stringResource(R.string.button_proceed))
                         }
+                    }
+                }
+            )
+        }
+
+        // Device Mismatch Dialog (2003 Error)
+        showDeviceMismatchDialog?.let { message ->
+            AlertDialog(
+                onDismissRequest = { /* Dismiss not allowed */ },
+                title = { Text(stringResource(R.string.notice_title)) },
+                text = { Text(message.ifEmpty { stringResource(R.string.device_mismatch_message) }) },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showDeviceMismatchDialog = null
+                            // Navigate back and request to open redeem dialog
+                            onBackToHomeWithRedeem() 
+                        }
+                    ) {
+                        Text(stringResource(R.string.button_redeem_input))
                     }
                 }
             )

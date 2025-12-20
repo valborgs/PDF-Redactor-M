@@ -9,5 +9,7 @@ data class ValidateCodeResponseDto(
     @SerialName("is_valid")
     val isValid: Boolean,
     @SerialName("jwt_token")
-    val jwtToken: String? = null  // 검증 성공 시 서버에서 JWT 토큰 발급
+    val jwtToken: String? = null,  // 검증 성공 시 서버에서 JWT 토큰 발급
+    @SerialName("error_code")
+    val errorCode: Int? = null
 )

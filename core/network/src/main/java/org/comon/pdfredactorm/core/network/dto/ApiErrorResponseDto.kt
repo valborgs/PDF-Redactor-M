@@ -11,5 +11,7 @@ import kotlinx.serialization.Serializable
 data class ApiErrorResponseDto(
     val message: String = "Unknown error",
     @SerialName("is_valid")
-    val isValid: Boolean? = null
+    val isValid: Boolean? = null,
+    @SerialName("error_code")
+    val errorCode: Int? = null
 )

@@ -78,5 +78,6 @@ sealed interface EditorSideEffect {
     data object NavigateBack : EditorSideEffect
     data object ShowFileSizeExceededDialog : EditorSideEffect
     data object ShowNetworkFallbackDialog : EditorSideEffect
+    data class ShowDeviceMismatchDialog(val message: String) : EditorSideEffect
 }
 

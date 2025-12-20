@@ -7,4 +7,4 @@ import kotlinx.serialization.Serializable
  * Navigation3 - Home 화면 네비게이션 키
  */
 @Serializable
-data object HomeKey : NavKey
+data class HomeKey(val showRedeemDialog: Boolean = false) : NavKey

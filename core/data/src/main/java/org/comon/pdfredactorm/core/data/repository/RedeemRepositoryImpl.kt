@@ -5,6 +5,7 @@ import org.comon.pdfredactorm.core.network.dto.ValidateCodeRequestDto
 import org.comon.pdfredactorm.core.network.api.RedeemApi
 import org.comon.pdfredactorm.core.network.util.ApiErrorParser
 import org.comon.pdfredactorm.core.domain.repository.RedeemRepository
+import org.comon.pdfredactorm.core.model.ApiException
 import javax.inject.Inject
 
 class RedeemRepositoryImpl @Inject constructor(
@@ -29,19 +30,21 @@ class RedeemRepositoryImpl @Inject constructor(
                         Result.success(jwtToken)
                     }
                     validateResponse.isValid -> {
-                        // 서버가 아직 JWT를 발급하지 않는 경우 (하위 호환성)
                         logger.warning("Redeem code valid but no JWT token received")
                         Result.failure(Exception("서버에서 JWT 토큰을 발급하지 않았습니다."))
                     }
                     else -> {
-                        logger.warning("Redeem code validation failed: ${validateResponse.message}")
-                        Result.failure(Exception(validateResponse.message))
+                        val errorCode = validateResponse.errorCode ?: -1
+                        logger.warning("Redeem code validation failed (code: $errorCode): ${validateResponse.message}")
+                        Result.failure(ApiException(errorCode, validateResponse.message))
                     }
                 }
             } else {
-                val errorMessage = errorParser.getErrorMessage(response)
-                logger.error("Redeem API error ${response.code()}: $errorMessage")
-                Result.failure(Exception(errorMessage))
+                val errorDto = errorParser.parseError(response)
+                val errorCode = errorDto.errorCode ?: response.code()
+                val errorMessage = errorDto.message
+                logger.error("Redeem API error ${response.code()}, code: $errorCode: $errorMessage")
+                Result.failure(ApiException(errorCode, errorMessage))
             }
         } catch (e: Exception) {
             logger.error("Redeem code validation exception", e)
