@@ -141,6 +141,9 @@ dependencies {
     // AdMob
     implementation(libs.play.services.ads)
 
+    // Material Components (XML Themes)
+    implementation(libs.material)
+
     // Play Update
     implementation(libs.play.app.update)
     implementation(libs.play.app.update.ktx)
