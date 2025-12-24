@@ -35,7 +35,7 @@ fun AdBanner(
 
     // 광고를 한 번만 생성하고, 로딩 전후 visibility만 변경
     AndroidView(
-        modifier = modifier.navigationBarsPadding(),
+        modifier = modifier,
         factory = { context ->
             AdView(context).apply {
                 this.adUnitId = adUnitId

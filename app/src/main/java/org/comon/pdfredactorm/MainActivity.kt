@@ -23,7 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.activity.result.contract.ActivityResultContracts
 import org.comon.pdfredactorm.ui.InAppUpdateManager
 import android.widget.Toast
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.getValue
 
 @AndroidEntryPoint
@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .statusBarsPadding()
+                            .systemBarsPadding()
                     ) {
                         // NavGraph가 남은 공간을 차지
                         Box(

@@ -211,6 +211,7 @@
 - [x] Google Play In-App Updates SDK를 활용한 앱 업데이트 유도 기능 구현: 즉시 업데이트(Immediate) 방식 적용, 스플래시 스크린과 연동하여 업데이트 체크 시 지연 최소화 및 매끄러운 UX 제공
 - [x] API 에러 Handling 구조 리팩토링(Enum 도입) 및 기기 미매칭(2003) 대응 비즈니스 로직/UI 내비게이션 흐름 구현 완료
 - [x] Android 15 Edge-to-Edge 및 지원 중단 API 대응: Material3 테마 현대화, 중복 윈도우 설정 제거, 시스템 인셋(Padding) 보강 및 머티리얼 구성요소 의존성 최적화
+- [x] 시스템 네비게이션바 패딩 이슈 해결: `AdBanner` 중복 패딩 제거 및 `MainActivity` 최상위 `systemBarsPadding` 통합 관리를 통한 이중 패딩 문제 해결
 
 ## 추후 작업(개선) 사항
 - [ ] pro 활성화 새로고침 기능
