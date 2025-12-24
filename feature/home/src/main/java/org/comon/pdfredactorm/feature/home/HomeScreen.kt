@@ -77,6 +77,7 @@ fun HomeScreen(
     var showExitDialog by remember { mutableStateOf(false) }
     var networkError by remember { mutableStateOf<String?>(null) }
     var proInfoToShow by remember { mutableStateOf<ProInfo?>(null) }
+    var projectIdToDelete by remember { mutableStateOf<String?>(null) }
 
     // Collect SideEffects from ViewModel
     LaunchedEffect(Unit) {
@@ -213,7 +214,7 @@ fun HomeScreen(
                     ProjectItem(
                         project = project,
                         onClick = { onPdfClick(project.id) },
-                        onDelete = { viewModel.onEvent(HomeEvent.DeleteProject(project.id)) }
+                        onDelete = { projectIdToDelete = project.id }
                     )
                 }
             }
@@ -276,6 +277,30 @@ fun HomeScreen(
             ProInfoDialog(
                 proInfo = proInfo,
                 onDismiss = { proInfoToShow = null }
+            )
+        }
+
+        projectIdToDelete?.let { projectId ->
+            AlertDialog(
+                onDismissRequest = { projectIdToDelete = null },
+                title = { Text(stringResource(R.string.delete_confirmation_title)) },
+                text = { Text(stringResource(R.string.delete_confirmation_message)) },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.onEvent(HomeEvent.DeleteProject(projectId))
+                            projectIdToDelete = null
+                        },
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text(stringResource(R.string.delete_button))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { projectIdToDelete = null }) {
+                        Text(stringResource(R.string.cancel_button))
+                    }
+                }
             )
         }
     }

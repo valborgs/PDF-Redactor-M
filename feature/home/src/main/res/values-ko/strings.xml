@@ -31,4 +31,9 @@
     <string name="pro_info_email">이메일: %s</string>
     <string name="pro_info_uuid">UUID: %s</string>
     <string name="pro_info_activation_date">활성화일: %s</string>
+
+    <!-- Delete Confirmation -->
+    <string name="delete_confirmation_title">삭제 확인</string>
+    <string name="delete_confirmation_message">작업 내용을 삭제하시겠습니까?</string>
+    <string name="delete_button">삭제</string>
 </resources>
