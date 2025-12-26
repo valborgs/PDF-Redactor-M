@@ -32,4 +32,5 @@ sealed interface HomeSideEffect {
     data class ShowValidationResult(val result: Result<String>) : HomeSideEffect
     data object ShowNetworkError : HomeSideEffect
     data class ShowProInfoDialog(val proInfo: ProInfo) : HomeSideEffect
+    data object ShowProMismatchDialog : HomeSideEffect
 }

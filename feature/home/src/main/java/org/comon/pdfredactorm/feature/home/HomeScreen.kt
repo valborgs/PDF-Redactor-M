@@ -31,6 +31,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.comon.pdfredactorm.core.model.ProInfo
@@ -78,6 +79,7 @@ fun HomeScreen(
     var networkError by remember { mutableStateOf<String?>(null) }
     var proInfoToShow by remember { mutableStateOf<ProInfo?>(null) }
     var projectIdToDelete by remember { mutableStateOf<String?>(null) }
+    var showMismatchDialog by remember { mutableStateOf(false) }
 
     // Collect SideEffects from ViewModel
     LaunchedEffect(Unit) {
@@ -103,6 +105,9 @@ fun HomeScreen(
                 }
                 is HomeSideEffect.ShowProInfoDialog -> {
                     proInfoToShow = effect.proInfo
+                }
+                is HomeSideEffect.ShowProMismatchDialog -> {
+                    showMismatchDialog = true
                 }
             }
         }
@@ -301,6 +306,22 @@ fun HomeScreen(
                         Text(stringResource(R.string.cancel_button))
                     }
                 }
+            )
+        }
+
+        if (showMismatchDialog) {
+            AlertDialog(
+                onDismissRequest = { showMismatchDialog = false },
+                title = { Text(stringResource(R.string.pro_mismatch_dialog_title)) },
+                text = { Text(stringResource(R.string.pro_mismatch_dialog_message)) },
+                confirmButton = {
+                    TextButton(onClick = { showMismatchDialog = false }) {
+                        Text(stringResource(R.string.confirm_button))
+                    }
+                },
+                properties = DialogProperties(
+                    dismissOnClickOutside = false
+                )
             )
         }
     }

@@ -25,6 +25,8 @@ import org.comon.pdfredactorm.core.domain.usecase.settings.GetFirstLaunchUseCase
 import org.comon.pdfredactorm.core.domain.usecase.settings.GetProInfoUseCase
 import org.comon.pdfredactorm.core.domain.usecase.settings.GetProStatusUseCase
 import org.comon.pdfredactorm.core.domain.usecase.settings.SetFirstLaunchUseCase
+import org.comon.pdfredactorm.core.domain.usecase.CheckDeviceMismatchUseCase
+import org.comon.pdfredactorm.core.domain.repository.SettingsRepository
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
@@ -46,6 +48,8 @@ class HomeViewModel @Inject constructor(
     private val getAppUuidUseCase: GetAppUuidUseCase,
     private val getProInfoUseCase: GetProInfoUseCase,
     private val checkNetworkUseCase: CheckNetworkUseCase,
+    private val checkDeviceMismatchUseCase: CheckDeviceMismatchUseCase,
+    private val settingsRepository: SettingsRepository,
     private val logger: Logger,
     private val analyticsTracker: AnalyticsTracker
 ) : ViewModel() {
@@ -79,6 +83,28 @@ class HomeViewModel @Inject constructor(
 
     init {
         checkFirstLaunch()
+        checkProStatusConsistency()
+    }
+
+    private fun checkProStatusConsistency() {
+        viewModelScope.launch {
+            val isProEnabled = getProStatusUseCase().stateIn(viewModelScope).value
+            if (isProEnabled) {
+                val proInfo = settingsRepository.getProInfo()
+                if (proInfo != null) {
+                    checkDeviceMismatchUseCase(proInfo.redeemCode, proInfo.uuid).onSuccess { isMismatch ->
+                        if (isMismatch) {
+                            logger.warning("Pro device mismatch detected. Deactivating Pro features.")
+                            settingsRepository.setProEnabled(false)
+                            settingsRepository.clearJwtToken()
+                            _sideEffect.send(HomeSideEffect.ShowProMismatchDialog)
+                        }
+                    }.onFailure { e ->
+                        logger.error("Failed to verify Pro device consistency", e)
+                    }
+                }
+            }
+        }
     }
 
     private fun checkFirstLaunch() {

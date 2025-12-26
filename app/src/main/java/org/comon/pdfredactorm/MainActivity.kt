@@ -21,10 +21,10 @@ import androidx.activity.viewModels
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.activity.result.contract.ActivityResultContracts
-import org.comon.pdfredactorm.ui.InAppUpdateManager
 import android.widget.Toast
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.runtime.getValue
+import org.comon.pdfredactorm.ui.InAppUpdateManager
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
