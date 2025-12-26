@@ -9,5 +9,6 @@ import kotlinx.serialization.Serializable
 data class ProInfo(
     val email: String,
     val uuid: String,
+    val redeemCode: String,
     val activationDate: Long
 )

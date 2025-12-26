@@ -28,6 +28,7 @@ class ValidateCodeUseCase @Inject constructor(
                 val proInfo = ProInfo(
                     email = email,
                     uuid = deviceId,
+                    redeemCode = code,
                     activationDate = System.currentTimeMillis()
                 )
                 settingsRepository.setProInfo(proInfo)

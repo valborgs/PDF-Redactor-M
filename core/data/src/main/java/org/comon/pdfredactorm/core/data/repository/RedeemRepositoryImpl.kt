@@ -2,6 +2,8 @@ package org.comon.pdfredactorm.core.data.repository
 
 import org.comon.pdfredactorm.core.common.logger.Logger
 import org.comon.pdfredactorm.core.network.dto.ValidateCodeRequestDto
+import org.comon.pdfredactorm.core.network.dto.CheckDeviceRequestDto
+import org.comon.pdfredactorm.core.network.dto.CheckDeviceResponseDto
 import org.comon.pdfredactorm.core.network.api.RedeemApi
 import org.comon.pdfredactorm.core.network.util.ApiErrorParser
 import org.comon.pdfredactorm.core.domain.repository.RedeemRepository
@@ -48,6 +50,29 @@ class RedeemRepositoryImpl @Inject constructor(
             }
         } catch (e: Exception) {
             logger.error("Redeem code validation exception", e)
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun checkDeviceMismatch(code: String, deviceId: String): Result<Boolean> {
+        logger.debug("Checking device consistency for code: $code, deviceId: $deviceId")
+        return try {
+            val request = CheckDeviceRequestDto(code, deviceId)
+            val response = api.checkDevice(request)
+
+            if (response.isSuccessful && response.body() != null) {
+                val checkResponse = response.body()!!
+                logger.info("Device consistency check successful: isMismatch=${checkResponse.isMismatch}")
+                Result.success(checkResponse.isMismatch)
+            } else {
+                val errorDto = errorParser.parseError(response)
+                val errorCode = errorDto.errorCode ?: response.code()
+                val errorMessage = errorDto.message
+                logger.warning("Device check API error ${response.code()}, code: $errorCode: $errorMessage")
+                Result.failure(ApiException(errorCode, errorMessage))
+            }
+        } catch (e: Exception) {
+            logger.error("Device consistency check exception", e)
             Result.failure(e)
         }
     }
