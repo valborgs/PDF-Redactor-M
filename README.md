@@ -94,6 +94,7 @@
 - **Async**: Coroutines + Flow
 - **Local DB**: Room
 - **Network**: Retrofit
+- **Remote Config**: Firebase Remote Config (API URL 동적 관리)
 - **PDF Engine**: PdfBox-Android (Primary), Android PdfRenderer (Viewer)
 
 <img width="750" alt="전체 시스템 아키텍처" src="https://github.com/user-attachments/assets/fbc6c51d-d84f-498b-9505-64da9c1bb0a2" />
@@ -101,6 +102,7 @@
 ## 📂 문서
 - [개발 계획서](docs/development_plan.md)
 - [PII 탐지 가이드](docs/pii_detection.md)
+- [Firebase Remote Config 가이드](docs/remote_config.md)
 - [로깅 시스템 가이드](docs/logging.md)
 - [Analytics 시스템 가이드](docs/analytics.md)
 - [암호화된 DataStore 가이드](docs/encrypted_datastore_guide.md)
@@ -214,5 +216,6 @@
 - [x] 시스템 네비게이션바 패딩 이슈 해결: `AdBanner` 중복 패딩 제거 및 `MainActivity` 최상위 `systemBarsPadding` 통합 관리를 통한 이중 패딩 문제 해결
 - [x] 홈 화면 항목 삭제 확인 다이얼로그 추가: 최근 작업 목록에서 항목 삭제 시 "작업 내용을 삭제하시겠습니까?" 컨펌 다이얼로그를 통해 사용자의 실수 방지 및 UI 가이드 추가
 - [x] Pro 기기 정합성 체크 및 알림 기능 구현: 앱 실행 시 실시간으로 기기 일치 여부를 확인하고, 불일치 시 Pro 기능 자동 비활성화 및 사용자 안내 다이얼로그 표시 로직 추가
+- [x] Firebase Remote Config를 통한 URL 원격 관리 구현: `API_BASE_URL` 및 `COFFEE_CHAT_URL`을 앱 업데이트 없이 원격으로 변경 가능하도록 구축, 스플래시 화면에서 동기화 완료 후 진입하도록 설계
 
 ## 추후 작업(개선) 사항

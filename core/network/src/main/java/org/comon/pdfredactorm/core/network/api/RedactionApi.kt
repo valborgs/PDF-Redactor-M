@@ -10,7 +10,7 @@ import retrofit2.http.Part
 
 interface RedactionApi {
     @Multipart
-    @POST("api/pdf/redact/")
+    @POST("pdf/redact/")
     suspend fun redactPdf(
         @Part file: MultipartBody.Part,
         @Part("redactions") redactions: RequestBody

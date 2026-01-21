@@ -28,6 +28,14 @@ annotation class RedactOkHttpClient
 @Retention(AnnotationRetention.BINARY)
 annotation class RedeemOkHttpClient
 
+/**
+ * API Base URL을 식별하기 위한 Qualifier
+ * Remote Config에서 가져온 URL을 주입받습니다.
+ */
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class ApiBaseUrl
+
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
@@ -82,10 +90,11 @@ object NetworkModule {
     @Singleton
     fun provideRedactionApi(
         @RedactOkHttpClient okHttpClient: OkHttpClient,
-        json: Json
+        json: Json,
+        @ApiBaseUrl apiBaseUrl: String
     ): RedactionApi {
         return Retrofit.Builder()
-            .baseUrl(BuildConfig.API_BASE_URL)
+            .baseUrl(apiBaseUrl)
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
@@ -96,10 +105,11 @@ object NetworkModule {
     @Singleton
     fun provideRedeemApi(
         @RedeemOkHttpClient okHttpClient: OkHttpClient,
-        json: Json
+        json: Json,
+        @ApiBaseUrl apiBaseUrl: String
     ): RedeemApi {
         return Retrofit.Builder()
-            .baseUrl(BuildConfig.API_BASE_URL)
+            .baseUrl(apiBaseUrl)
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()

@@ -28,16 +28,19 @@ android {
         applicationId = "org.comon.pdfredactorm"
         minSdk = 26
         targetSdk = 36
-        versionCode = 14
-        versionName = "1.1.2"
+        versionCode = 15
+        versionName = "1.1.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
-
+        // Remote Config 기본값 (local.properties에서 읽음)
+        val apiBaseUrl = localProperties.getProperty("API_BASE_URL", "")
+        buildConfigField("String", "DEFAULT_API_BASE_URL", "\"$apiBaseUrl\"")
+        
         val coffeeChatUrl = localProperties.getProperty("COFFEE_CHAT_URL", "")
-        buildConfigField("String", "COFFEE_CHAT_URL", "\"$coffeeChatUrl\"")
+        buildConfigField("String", "DEFAULT_COFFEE_CHAT_URL", "\"$coffeeChatUrl\"")
     }
 
     buildTypes {
@@ -152,6 +155,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.crashlytics.ndk)
+    implementation(libs.firebase.config)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

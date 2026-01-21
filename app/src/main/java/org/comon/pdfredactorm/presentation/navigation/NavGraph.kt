@@ -2,6 +2,7 @@ package org.comon.pdfredactorm.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
@@ -22,10 +23,12 @@ import org.comon.pdfredactorm.feature.editor.navigation.EditorKey
  * - entryProvider: 키 타입에 따른 컴포저블 매핑
  */
 @Composable
-fun AppNavHost() {
+fun AppNavHost(
+    navViewModel: NavViewModel = hiltViewModel()
+) {
     val homeScreenConfig = HomeScreenConfig(
         appName = stringResource(R.string.app_name),
-        coffeeChatUrl = BuildConfig.COFFEE_CHAT_URL,
+        coffeeChatUrl = navViewModel.getCoffeeChatUrl(),
         nativeAdUnitId = BuildConfig.ADMOB_NATIVE_ID
     )
 
@@ -75,3 +78,4 @@ fun AppNavHost() {
         }
     )
 }
+

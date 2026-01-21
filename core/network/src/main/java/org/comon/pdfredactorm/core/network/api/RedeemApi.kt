@@ -9,12 +9,12 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 interface RedeemApi {
-    @POST("api/pdf-redeem/redeem/validate/")
+    @POST("pdf-redeem/redeem/validate/")
     suspend fun validateCode(
         @Body request: ValidateCodeRequestDto
     ): Response<ValidateCodeResponseDto>
 
-    @POST("api/pdf-redeem/redeem/check-device/")
+    @POST("pdf-redeem/redeem/check-device/")
     suspend fun checkDevice(
         @Body request: CheckDeviceRequestDto
     ): Response<CheckDeviceResponseDto>
